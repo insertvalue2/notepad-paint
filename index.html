@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title>메모장 그림</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -175,16 +175,77 @@ button.fl.none{background:linear-gradient(135deg,transparent 44%,var(--danger) 4
 .findbar .cnt{min-width:36px;color:var(--muted);font-size:12px}
 .findbar label{display:flex;align-items:center;gap:4px;color:var(--muted);white-space:nowrap}
 
+/* 탭 줄 가장자리 페이드(스크롤 힌트), 탭 목록 버튼 */
+#tabs{scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+#tabs::-webkit-scrollbar{display:none}
+#tabs.fade-l{-webkit-mask-image:linear-gradient(to right,transparent,#000 28px);mask-image:linear-gradient(to right,transparent,#000 28px)}
+#tabs.fade-r{-webkit-mask-image:linear-gradient(to left,transparent,#000 28px);mask-image:linear-gradient(to left,transparent,#000 28px)}
+#tabs.fade-l.fade-r{-webkit-mask-image:linear-gradient(to right,transparent,#000 28px,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,transparent,#000 28px,#000 calc(100% - 28px),transparent)}
+.tab span{max-width:42vw;overflow:hidden;text-overflow:ellipsis}
+#tablist{display:none;flex:none}
+#tablist .dropdown{left:auto;right:0;max-height:60vh;overflow-y:auto;min-width:220px}
+#tablist .item{display:flex;gap:8px;align-items:center;width:100%}
+#tablist .item.on{color:var(--accent);font-weight:500}
+#tablist .item small{color:var(--muted);font-weight:400}
+.dropdown{max-width:calc(100vw - 16px)}
+html{touch-action:manipulation}
+#board,#toolbar,#zoombar{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+
+/* 터치 기기: 누르기 쉽게 크게 */
+@media (pointer:coarse){
+  .menu>button,.menu .item{padding:10px 12px}
+  .tab{padding:8px 6px 8px 14px}
+  .tab .x{width:30px;height:30px}
+  #theme,#aboutbtn{width:40px;height:40px}
+  #addtab{width:40px;height:40px}
+  .tb{min-width:44px;height:44px}
+  button.sw{width:34px;height:34px}
+  button.fl{width:30px;height:30px}
+  .btn{padding:11px 10px}
+  .cgrip{width:18px;height:18px;margin:-9px 0 0 -9px}
+  #pbox i{width:18px;height:18px;margin:-9px 0 0 -9px}
+  #tsize{height:28px}
+}
+
 /* 좁은 화면: 속성 카드는 도구 모음 아래 가로 한 줄 */
 @media (max-width:720px){
-  #header{gap:6px;padding:6px 8px}
-  #props{left:8px;right:8px;top:60px;width:auto;flex-direction:row;align-items:center;gap:18px;padding:10px 12px;max-height:none;overflow-x:auto;overflow-y:hidden}
+  /* 헤더는 두 줄: 위는 메뉴와 버튼, 아래는 탭 줄(옆으로 밀어서 넘김) */
+  #header{flex-wrap:wrap;gap:2px 4px;padding:max(6px,env(safe-area-inset-top)) 8px 4px}
+  #menubar{order:1}
+  #addmenu{order:2;margin-left:0}
+  #tablist{order:3;display:block;margin-left:auto}
+  #theme{order:4}
+  #aboutmenu{order:5}
+  #tabs{order:6;flex:1 0 100%;padding:2px 0 4px;scroll-snap-type:x proximity}
+  .tab{scroll-snap-align:start;padding:8px 6px 8px 14px}
+  #props{left:8px;right:8px;top:68px;width:auto;flex-direction:row;align-items:center;gap:18px;padding:10px 12px;max-height:none;overflow-x:auto;overflow-y:hidden}
   #props .sec,#props #photoctl,#props .acts{flex:none}
   #props label{margin-bottom:4px}
   #props .acts{flex-direction:row}
-  #props .btn{white-space:nowrap}
-  :root{--pad-l:12px;--pad-r:12px;--pad-t:132px;--pad-b:72px}
-  #zoombar{left:8px;bottom:8px}
+  #props .btn{white-space:nowrap;width:auto;padding:8px 14px}
+  #fills{flex-wrap:nowrap}
+  /* 가로로 밀어서 보는 막대: 스크롤바는 숨기고 가장자리 그림자로 더 있음을 알린다 */
+  #toolbar,#props,#zoombar{scrollbar-width:none;overscroll-behavior:contain}
+  #toolbar::-webkit-scrollbar,#props::-webkit-scrollbar,#zoombar::-webkit-scrollbar{display:none}
+  #toolbar,#props{
+    background:linear-gradient(to right,var(--surface) 30%,transparent) left center,linear-gradient(to left,var(--surface) 30%,transparent) right center,
+      radial-gradient(farthest-side at 0 50%,rgba(0,0,0,.28),transparent) left center,radial-gradient(farthest-side at 100% 50%,rgba(0,0,0,.28),transparent) right center;
+    background-color:var(--surface);background-repeat:no-repeat;background-size:28px 100%,28px 100%,10px 100%,10px 100%;
+    background-attachment:local,local,scroll,scroll;
+  }
+  #props .cvsec{display:flex;flex-direction:row;align-items:center;gap:8px}
+  #props .cvsec>label{display:none}
+  #props .cvsec .dims{margin:0}
+  #props .cvsec .dims input{width:76px}
+  :root{--pad-l:12px;--pad-r:12px;--pad-t:148px;--pad-b:72px}
+  #zoombar{left:8px;bottom:8px;max-width:calc(100% - 16px);overflow-x:auto}
+  textarea.editor{margin:8px;width:calc(100% - 16px);padding:16px;border-radius:12px;font-size:16px}
+  .clsdlg{position:fixed;left:8px;right:8px;top:auto;bottom:40px;width:auto;max-height:46vh;z-index:30;gap:6px;padding:12px}
+  .clsdlg textarea{height:54px;min-height:0}
+  .findbar{left:8px;right:8px;max-width:none}
+  .findbar input[type=text]{flex:1 1 120px;width:auto}
+  .txt,.clsdlg input,.clsdlg textarea,.dims input,.tab input,.findbar input[type=text]{font-size:16px}
+  #msg{bottom:48px}
 }
 </style>
 </head>
@@ -224,6 +285,9 @@ button.fl.none{background:linear-gradient(135deg,transparent 44%,var(--danger) 4
     <button class="item" data-act="newText">텍스트 탭</button>
     <button class="item" data-act="newDraw">그림 탭</button>
   </div></div>
+  <div class="menu" id="tablist"><button id="tablistbtn" title="탭 목록" aria-label="탭 목록 열기">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button><div class="dropdown" id="tablistdd"></div></div>
   <div id="tabs" role="tablist"></div>
   <button id="theme" title="라이트/다크 전환" aria-label="라이트/다크 전환">
     <svg class="ico moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
@@ -462,7 +526,26 @@ function renderTabs(){
     el.title='더블클릭하거나 F2를 눌러 이름 바꾸기';
     el.append(name,x);bar.append(el);
   }
+  // 탭 목록 메뉴(좁은 화면에서 보이는 버튼)
+  const dd=$('#tablistdd');dd.innerHTML='';
+  for(const t of tabs){
+    const it=document.createElement('button');it.className='item'+(t.id===activeId?' on':'');it.dataset.tab=t.id;
+    const nm=document.createElement('span');nm.textContent=(t.id===activeId?'✓ ':'')+t.title;
+    const kd=document.createElement('small');kd.textContent=t.kind==='draw'?'그림':'메모';
+    it.append(nm,kd);dd.append(it);
+  }
+  const a=bar.querySelector('.tab.active');
+  if(a)a.scrollIntoView({block:'nearest',inline:'nearest'});
+  updateTabsFade();
 }
+// 탭 줄이 좌우로 더 있으면 가장자리를 흐리게 해서 밀어 볼 수 있음을 알린다
+function updateTabsFade(){
+  const b=$('#tabs');
+  b.classList.toggle('fade-l',b.scrollLeft>2);
+  b.classList.toggle('fade-r',b.scrollLeft+b.clientWidth<b.scrollWidth-2);
+}
+$('#tabs').addEventListener('scroll',updateTabsFade,{passive:true});
+window.addEventListener('resize',updateTabsFade);
 $('#tabs').addEventListener('dblclick',e=>{
   const el=e.target.closest('.tab');
   if(el&&!e.target.closest('.x,input'))renameTab(+el.dataset.id);
@@ -621,6 +704,13 @@ document.addEventListener('keydown',e=>{
 });
 document.addEventListener('click',e=>{
   if(e.target.closest('.about'))return;
+  const ti=e.target.closest('[data-tab]');
+  if(ti){
+    document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));
+    const id=+ti.dataset.tab;
+    if(id!==activeId){activeId=id;render();save()}
+    return;
+  }
   const item=e.target.closest('[data-act]');
   const top=e.target.closest('.menu>button');
   const wasOpen=top&&top.parentElement.classList.contains('open');
@@ -1046,7 +1136,7 @@ function renderDraw(t,host){
     '<div class="sec" id="labsec"><label>선 라벨</label><input class="txt" id="rlabel" list="rlabels" maxlength="30" placeholder="예: &lt;&lt;use&gt;&gt;" aria-label="선 라벨">'+
     '<datalist id="rlabels">'+['use','include','extend','import','create','call'].map(w=>'<option value="&lt;&lt;'+w+'&gt;&gt;">').join('')+'<option value="1"><option value="0..*"><option value="1..*"></datalist></div>'+
     '<div id="photoctl"><span id="photoinfo"></span><button class="btn photoonly" data-act="photoFit">사진 맞추기</button><button class="btn photoonly" data-act="photoFill">캔버스 채우기</button><button class="btn" id="seldel" data-act="selDelete">선택 삭제 (Delete)</button></div>'+
-    '<div class="sec"><label>캔버스 크기 (px)</label><div class="dims"><input type="number" id="cw" min="100" max="4000" step="10" aria-label="캔버스 가로"><span>×</span><input type="number" id="ch" min="100" max="4000" step="10" aria-label="캔버스 세로"></div><button class="btn" data-act="canvasApply">크기 적용</button></div>'+
+    '<div class="sec cvsec"><label>캔버스 크기 (px)</label><div class="dims"><input type="number" id="cw" min="100" max="4000" step="10" aria-label="캔버스 가로"><span>×</span><input type="number" id="ch" min="100" max="4000" step="10" aria-label="캔버스 세로"></div><button class="btn" data-act="canvasApply">크기 적용</button></div>'+
     '<div class="acts"><button class="btn" data-act="openPhoto">사진 열기</button><button class="btn" data-act="clearAll">전체 지우기</button></div>'+
     '</aside>'+
     '<div id="zoombar">'+
@@ -1364,12 +1454,43 @@ function renderDraw(t,host){
     if(si>=0&&BOXED.has(t.strokes[si].tool))openDlg(si);
   };
   const stage=$('#stage');let pan=null;
+  // 좁은 화면에서는 속성 카드 높이에 맞춰 캔버스 영역 위쪽 여백을 조절한다
+  if(window.ResizeObserver){
+    const pr=$('#props');
+    new ResizeObserver(()=>{
+      stage.style.paddingTop=matchMedia('(max-width:720px)').matches?(pr.offsetTop+pr.offsetHeight+8)+'px':'';
+    }).observe(pr);
+  }
   stage.addEventListener('wheel',e=>{
     if(!e.ctrlKey)return;
     e.preventDefault();
     zoomAt(t,e.deltaY<0?1.1:1/1.1,e.clientX,e.clientY);
   },{passive:false});
+  // 터치: 손가락 두 개로 확대/축소와 화면 이동 (그리던 획은 취소)
+  const touches=new Map();let pinch=null;
+  const cancelGesture=()=>{
+    if(cur){
+      if(cur.tool!=='del'){const i=t.strokes.indexOf(cur);if(i>=0)t.strokes.splice(i,1)}
+      cur=null;
+    }
+    if(sdrag){
+      for(const it of sdrag.items){const o=it.orig,s=it.ref;if(o.pts)s.pts=o.pts.map(c=>c.slice());else{s.x=o.x;s.y=o.y}}
+      sdrag=null;showGuides(null,null);
+    }
+    if(mq){mq=null;$('#mbox').style.display='none'}
+    r.drawing=false;redraw(t);redrawBg(t);placePhotoBox(t);
+  };
+  dr.oncontextmenu=e=>e.preventDefault();
   dr.onpointerdown=e=>{
+    if(e.pointerType==='touch'){
+      touches.set(e.pointerId,[e.clientX,e.clientY]);
+      if(touches.size>=2){
+        e.preventDefault();cancelGesture();
+        const [a,b]=[...touches.values()];
+        pinch={d:Math.hypot(a[0]-b[0],a[1]-b[1]),mx:(a[0]+b[0])/2,my:(a[1]+b[1])/2};
+        return;
+      }
+    }
     const ae=document.activeElement;if(ae&&ae.tagName==='BUTTON')ae.blur();
     if(e.button===1||(e.button===0&&spaceDown)){
       // 휠 클릭 또는 Space를 누른 채 끌면 화면 이동
@@ -1425,6 +1546,18 @@ function renderDraw(t,host){
     t.strokes.push(cur);r.redo=[];redraw(t);
   };
   dr.onpointermove=e=>{
+    if(e.pointerType==='touch'&&touches.has(e.pointerId)){
+      touches.set(e.pointerId,[e.clientX,e.clientY]);
+      if(pinch){
+        if(touches.size>=2){
+          const [a,b]=[...touches.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]),mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;
+          if(pinch.d>0&&d>0)zoomAt(t,d/pinch.d,mx,my);
+          stage.scrollLeft-=mx-pinch.mx;stage.scrollTop-=my-pinch.my;
+          pinch.d=d;pinch.mx=mx;pinch.my=my;
+        }
+        return;
+      }
+    }
     updateCursor(e);
     if(pan){stage.scrollLeft=pan.l-(e.clientX-pan.x);stage.scrollTop=pan.t-(e.clientY-pan.y);return}
     if(sdrag){moveStroke(pos(e));redraw(t);if(sdrag.hasPhoto)redrawBg(t);placePhotoBox(t);return}
@@ -1444,7 +1577,12 @@ function renderDraw(t,host){
     if(LABELABLE.has(c.tool)&&tool.label){tool.label='';placePhotoBox(t)}   // 라벨은 선 하나에만 붙는다
     if(BOXED.has(c.tool)){const i=t.strokes.indexOf(c);if(i>=0)openDlg(i)}
   };
-  dr.onpointerup=end;dr.onpointercancel=end;
+  const up=e=>{
+    touches.delete(e.pointerId);
+    if(pinch){if(touches.size<2)pinch=null;return}
+    end();
+  };
+  dr.onpointerup=up;dr.onpointercancel=up;
   dr.onpointerleave=()=>{ecur.style.display='none'};
 }
 

@@ -103,7 +103,7 @@ button:focus-visible,input:focus-visible,.tab:focus-visible{outline:2px solid va
 .rtbar .rc{position:relative;font-weight:700;align-content:center}
 .rtbar .rc input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .rtbar .rc i{display:block;width:16px;height:3px;border-radius:2px;margin-top:1px}
-.rtbar [data-c=md]{display:flex;align-items:center;gap:3px}
+.rtbar [data-c=md],.rtbar [data-c=pdf]{display:flex;align-items:center;gap:3px}
 .rtbar .mdl{font-size:11px;font-weight:700;letter-spacing:.02em}
 .rtbar .rsep{flex:none;width:1px;height:22px;background:var(--line);margin:0 4px}
 .seltb{position:fixed;z-index:30;display:flex;align-items:center;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:calc(100vw - 16px);overflow-x:auto;scrollbar-width:none}
@@ -116,7 +116,7 @@ button:focus-visible,input:focus-visible,.tab:focus-visible{outline:2px solid va
 .seltb .pal input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .seltb .ssep{flex:none;width:1px;height:20px;background:var(--line);margin:0 3px}
 .paper{flex:1;min-height:0;overflow:auto;padding:16px;display:flex;flex-direction:column}
-.editor{position:relative;flex:1 0 auto;width:100%;max-width:860px;margin:0 auto;outline:0;background:var(--surface);color:var(--text);border-radius:14px;box-shadow:var(--shadow);padding:28px 32px;font:15px/1.6 var(--ui);white-space:pre-wrap;overflow-wrap:anywhere;caret-color:var(--accent)}
+.editor{position:relative;flex:1 0 auto;width:100%;max-width:960px;margin:0 auto;outline:0;background:var(--surface);color:var(--text);border-radius:14px;box-shadow:var(--shadow);padding:28px 32px;font:15px/1.6 var(--ui);white-space:pre-wrap;overflow-wrap:anywhere;caret-color:var(--accent)}
 .editor:focus-visible{outline:2px solid var(--accent-soft)}
 .editor p,.editor div{margin:0}
 .editor h1{font-size:1.7em;margin:.3em 0;line-height:1.3}
@@ -436,6 +436,7 @@ html{touch-action:manipulation}
       <button class="item" data-act="save">저장 (Ctrl+S)</button>
       <button class="item" data-act="saveHtml">서식 포함 저장 (.html)</button>
       <button class="item" data-act="saveMd">마크다운으로 내보내기 (.md)</button>
+      <button class="item" data-act="savePdf">PDF로 내보내기 (.pdf)</button>
       <button class="item" data-act="exportPng">PNG로 내보내기</button>
       <button class="item" data-act="copyPng">PNG를 클립보드로 복사</button>
       <button class="item" data-act="saveProject">프로젝트 저장 (Ctrl+Shift+S)</button>
@@ -852,7 +853,8 @@ function renderText(t,host){
     '<span class="rsep"></span>'+
     '<button data-c="hr" title="구분선 (Alt+H)" aria-label="구분선">'+svg('<path d="M3 12h18"/>')+'</button>'+
     '<span class="rsep"></span>'+
-    '<button data-c="md" title="마크다운(.md)으로 내보내기 (이미지가 있으면 zip)" aria-label="마크다운으로 내보내기">'+svg('<path d="M12 3v11M7.5 10 12 14.5 16.5 10"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/>')+'<span class="mdl">MD</span></button>'+
+    '<button data-c="md" title="마크다운(.md) 파일로 내보내기 (이미지 포함, 압축 없음)" aria-label="마크다운으로 내보내기">'+svg('<path d="M12 3v11M7.5 10 12 14.5 16.5 10"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/>')+'<span class="mdl">MD</span></button>'+
+    '<button data-c="pdf" title="PDF 파일로 내보내기 (A4, 압축 없이 바로 .pdf)" aria-label="PDF로 내보내기">'+svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>')+'<span class="mdl">PDF</span></button>'+
     '</div>'+
     '<div class="paper"><div class="editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="메모 내용" spellcheck="false" data-ph="여기에 메모를 입력하세요"></div></div>';
   host.append(wrap);
@@ -1033,7 +1035,8 @@ function renderText(t,host){
     ul:()=>listToggle('ul'),ol:()=>listToggle('ol'),todo:()=>listToggle('todo'),
     justifyLeft:()=>cmd('justifyLeft'),justifyCenter:()=>cmd('justifyCenter'),justifyRight:()=>cmd('justifyRight'),
     hr:()=>insertHr(),
-    md:()=>saveMd(t)
+    md:()=>saveMd(t),
+    pdf:()=>savePdf(t)
   };
   // 도구 막대를 눌러도 편집 칸의 포커스와 선택이 풀리지 않게 한다
   bar.addEventListener('pointerdown',e=>{if(!e.target.closest('select,input'))e.preventDefault()});
@@ -1430,9 +1433,9 @@ function htmlToMd(html){
       if(tg==='IMG'){
         const m=/^data:image\/(png|jpe?g|gif|webp);base64,(.+)$/.exec(c.getAttribute('src')||'');
         if(!m)continue;
-        const ext=m[1]==='jpeg'?'jpg':m[1],name='image-'+(images.length+1)+'.'+ext;
-        images.push({name:'images/'+name,b64:m[2]});
-        out+='![이미지 '+images.length+'](images/'+name+')';continue;
+        // 긴 이미지 데이터는 본문에 두지 않고 파일 맨 끝에 모아, 글만 열어 봐도 읽기 편하게 한다
+        images.push('data:image/'+m[1]+';base64,'+m[2]);
+        out+='![이미지 '+images.length+'][image'+images.length+']';continue;
       }
       const inner=inline(c);
       if(tg==='B')out+=wrapInline('**',inner);
@@ -1487,47 +1490,98 @@ function htmlToMd(html){
     flush();
   };
   blocks(root);
-  const md=lines.join('\n').replace(/\n{3,}/g,'\n\n').replace(/^\n+/,'').replace(/\n+$/,'')+'\n';
+  let md=lines.join('\n').replace(/\n{3,}/g,'\n\n').replace(/^\n+/,'').replace(/\n+$/,'')+'\n';
+  if(images.length)md+='\n'+images.map((u,i)=>'[image'+(i+1)+']: '+u).join('\n')+'\n';
   return{md,images};
 }
-// 압축 없이 묶기만 하는 최소한의 zip 파일 만들기 (md 와 이미지를 한 번에 받기 위함)
-const CRC_TABLE=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
-function crc32(b){let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC_TABLE[(c^b[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
-function makeZip(files){
-  const enc=new TextEncoder(),parts=[],cen=[];
-  let off=0;
-  const d=new Date(),dt=((d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1))&0xFFFF,dd=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate())&0xFFFF;
-  files.forEach(f=>{
-    const name=enc.encode(f.name),crc=crc32(f.data),sz=f.data.length;
-    const lh=new DataView(new ArrayBuffer(30));
-    lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(8,0,true);
-    lh.setUint16(10,dt,true);lh.setUint16(12,dd,true);lh.setUint32(14,crc,true);lh.setUint32(18,sz,true);lh.setUint32(22,sz,true);
-    lh.setUint16(26,name.length,true);lh.setUint16(28,0,true);
-    parts.push(new Uint8Array(lh.buffer),name,f.data);
-    const ch=new DataView(new ArrayBuffer(46));
-    ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(10,0,true);
-    ch.setUint16(12,dt,true);ch.setUint16(14,dd,true);ch.setUint32(16,crc,true);ch.setUint32(20,sz,true);ch.setUint32(24,sz,true);
-    ch.setUint16(28,name.length,true);ch.setUint32(42,off,true);
-    cen.push(new Uint8Array(ch.buffer),name);
-    off+=30+name.length+sz;
-  });
-  const cenSize=cen.reduce((s,x)=>s+x.length,0);
-  const end=new DataView(new ArrayBuffer(22));
-  end.setUint32(0,0x06054b50,true);end.setUint16(8,files.length,true);end.setUint16(10,files.length,true);end.setUint32(12,cenSize,true);end.setUint32(16,off,true);
-  return new Blob([...parts,...cen,new Uint8Array(end.buffer)],{type:'application/zip'});
-}
+// 이미지는 data 주소로 .md 안에 그대로 넣으므로 파일 하나로 끝나고, 압축을 풀 필요가 없다
 function saveMd(t){
   const{md,images}=htmlToMd(t.html||textToHtml(t.text));
-  const base=safeName(t.title);
-  if(!images.length){download(new Blob([md],{type:'text/markdown;charset=utf-8'}),base+'.md');flash('마크다운 파일(.md)로 내보냈습니다');return}
-  // 이미지가 있으면 md 와 images 폴더를 zip 하나로 묶어서 내보낸다
-  const enc=new TextEncoder();
-  const files=[{name:base+'.md',data:enc.encode(md)}];
-  images.forEach(im=>{const bin=atob(im.b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);files.push({name:im.name,data:u})});
-  download(makeZip(files),base+'.zip');
-  flash('이미지 '+images.length+'개와 함께 zip으로 내보냈습니다 (압축을 풀면 '+base+'.md 와 images 폴더)');
+  download(new Blob([md],{type:'text/markdown;charset=utf-8'}),safeName(t.title)+'.md');
+  flash(images.length?'마크다운 파일(.md)로 내보냈습니다 (이미지 '+images.length+'개가 파일 안에 들어 있어요)':'마크다운 파일(.md)로 내보냈습니다');
 }
-// 서식을 그대로 담은 HTML 문서로 저장
+
+// ---- PDF 내보내기 ----
+// 메모를 A4 쪽 크기로 나눠 그린 뒤 쪽마다 이미지로 넣어 PDF 한 파일로 만든다 (압축 파일이 아니라 바로 열리는 .pdf)
+const PDF_CSS='.pdfdoc{font:15px/1.6 "Noto Sans KR","Malgun Gothic","Segoe UI",sans-serif;color:#111;white-space:pre-wrap;word-break:break-word}'+
+  '.pdfdoc p,.pdfdoc div{margin:0}.pdfdoc h1{font-size:1.7em;margin:.3em 0;line-height:1.3}.pdfdoc ul,.pdfdoc ol{margin:.2em 0;padding-left:1.6em}'+
+  '.pdfdoc ul.todo{list-style:none;padding-left:1.7em}.pdfdoc ul.todo>li{position:relative}.pdfdoc ul.todo>li::before{content:"☐";position:absolute;left:-1.5em}'+
+  '.pdfdoc ul.todo>li.done::before{content:"☑"}.pdfdoc ul.todo>li.done{color:#888;text-decoration:line-through}'+
+  '.pdfdoc hr{border:0;border-top:1px solid #ccc;margin:.8em 0}.pdfdoc img{max-width:100%;height:auto;vertical-align:bottom}';
+function makePdf(pages,ptW,ptH){
+  const enc=new TextEncoder(),parts=[],offs=[];let len=0;
+  const push=x=>{const b=typeof x==='string'?enc.encode(x):x;parts.push(b);len+=b.length};
+  const obj=(n,fn)=>{offs[n]=len;push(n+' 0 obj\n');fn();push('\nendobj\n')};
+  const N=pages.length,total=2+3*N;
+  push('%PDF-1.4\n');
+  obj(1,()=>push('<< /Type /Catalog /Pages 2 0 R >>'));
+  obj(2,()=>push('<< /Type /Pages /Kids ['+pages.map((_,i)=>(3+3*i)+' 0 R').join(' ')+'] /Count '+N+' >>'));
+  pages.forEach((pg,i)=>{
+    const page=3+3*i,content=4+3*i,img=5+3*i,cs='q '+ptW+' 0 0 '+ptH+' 0 0 cm /Im0 Do Q';
+    obj(page,()=>push('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+ptW+' '+ptH+'] /Resources << /XObject << /Im0 '+img+' 0 R >> >> /Contents '+content+' 0 R >>'));
+    obj(content,()=>push('<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream'));
+    obj(img,()=>{
+      push('<< /Type /XObject /Subtype /Image /Width '+pg.w+' /Height '+pg.h+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+pg.data.length+' >>\nstream\n');
+      push(pg.data);push('\nendstream');
+    });
+  });
+  const xref=len;
+  push('xref\n0 '+(total+1)+'\n0000000000 65535 f \n');
+  for(let i=1;i<=total;i++)push(String(offs[i]).padStart(10,'0')+' 00000 n \n');
+  push('trailer\n<< /Size '+(total+1)+' /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF\n');
+  return new Blob(parts,{type:'application/pdf'});
+}
+let pdfBusy=false;
+async function savePdf(t){
+  if(pdfBusy)return;
+  const src=sanitizeHtml(t.html||textToHtml(t.text));
+  if(!t.text.trim()&&!/<img\b/.test(src)){flash('내보낼 내용이 없습니다');return}
+  pdfBusy=true;flash('PDF를 만드는 중입니다…');
+  let probe=null;
+  try{
+    const PW=794,PH=1123,M=48,CW=PW-2*M,CH=PH-2*M,K=2;   // A4를 96dpi로 본 크기, 여백 48px, 2배 선명도
+    // 1) 화면 밖에서 같은 글꼴로 배치해 보고, 블록마다 위치를 잰다
+    const st=document.createElement('style');st.textContent=PDF_CSS;
+    probe=document.createElement('div');probe.style.cssText='position:fixed;left:-99999px;top:0;width:'+CW+'px;visibility:hidden';
+    const doc=document.createElement('div');doc.className='pdfdoc';doc.style.width=CW+'px';doc.innerHTML=src;
+    probe.append(st,doc);document.body.append(probe);
+    const imgs=[...doc.querySelectorAll('img')];
+    await Promise.all(imgs.map(im=>im.complete?0:new Promise(ok=>{im.onload=im.onerror=ok})));
+    const total=doc.scrollHeight,tops=[...doc.children].map(c=>c.offsetTop);
+    // 2) 쪽 나누기: 쪽 끝을 넘는 첫 블록의 위쪽에서 끊는다 (블록이 한 쪽보다 길면 그냥 자른다)
+    const cuts=[];let start=0;
+    while(start<total-1){
+      const lim=start+CH;
+      if(lim>=total){cuts.push([start,total]);break}
+      let at=0;for(const tp of tops)if(tp>start+CH*0.35&&tp<=lim)at=tp;
+      const end=at||lim;cuts.push([start,end]);start=end;
+    }
+    // 3) 쪽마다 SVG(foreignObject)로 그려 JPEG 로 만든다
+    const body=new XMLSerializer().serializeToString(doc);
+    const pages=[];
+    for(const[a,b]of cuts){
+      const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+PW*K+'" height="'+PH*K+'" viewBox="0 0 '+PW+' '+PH+'">'+
+        '<rect width="'+PW+'" height="'+PH+'" fill="#fff"/>'+
+        '<foreignObject x="'+M+'" y="'+M+'" width="'+CW+'" height="'+(b-a)+'">'+
+        '<div xmlns="http://www.w3.org/1999/xhtml" style="width:'+CW+'px;height:'+(b-a)+'px;overflow:hidden"><style>'+PDF_CSS+'</style>'+
+        '<div style="margin-top:-'+a+'px">'+body+'</div></div></foreignObject></svg>';
+      // blob 주소로 그리면 브라우저가 그림을 '보안상 위험'으로 표시해 JPEG로 뽑을 수 없으므로 data 주소를 쓴다
+      const url='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+      const im=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>no(new Error('render'));i.src=url});
+      const c=document.createElement('canvas');c.width=PW*K;c.height=PH*K;
+      const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0);
+      const jb=await new Promise((ok,no)=>c.toBlob(x=>x?ok(x):no(new Error('jpeg')),'image/jpeg',0.92));
+      pages.push({data:new Uint8Array(await jb.arrayBuffer()),w:c.width,h:c.height});
+    }
+    download(makePdf(pages,595.28,841.89),safeName(t.title)+'.pdf');
+    flash('PDF 파일로 내보냈습니다 ('+pages.length+'쪽)');
+  }catch(e){
+    flash('PDF로 만들지 못했습니다. HTML 저장 후 인쇄(PDF로 저장)를 이용해 주세요');
+  }finally{
+    if(probe)probe.remove();
+    pdfBusy=false;
+  }
+}
 function saveHtml(t){
   const doc='<!doctype html>\n<html lang="ko"><head><meta charset="utf-8"><title>'+esc(t.title)+'</title>'+
     '<style>body{font:15px/1.6 "Noto Sans KR","Malgun Gothic",sans-serif;max-width:860px;margin:2rem auto;padding:0 1rem;white-space:pre-wrap}'+
@@ -3572,6 +3626,7 @@ actions.copyCode=()=>{
 // ---- actions & input ----
 actions.newText=()=>newTab('text');
 actions.open=()=>pick('.txt,.log,.ini,.md,.json,.csv,.ps1,.html,.htm,.npaint,text/*,image/*');
+actions.savePdf=()=>{const t=active();if(t.kind==='text')savePdf(t);else flash('메모장에서만 PDF로 내보낼 수 있습니다')};
 actions.saveMd=()=>{const t=active();if(t.kind==='text')saveMd(t);else flash('메모장에서만 마크다운으로 내보낼 수 있습니다')};
 actions.saveHtml=()=>{const t=active();if(t.kind==='text')saveHtml(t);else flash('메모장에서만 서식 포함 저장을 쓸 수 있습니다')};
 // 프로젝트 파일(.npaint): 모든 탭을 사진과 획 그대로 저장하고 다시 불러온다

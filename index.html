@@ -96,6 +96,15 @@ button:focus-visible,input:focus-visible,.tab:focus-visible{outline:2px solid va
 .rtbar .rc input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .rtbar .rc i{display:block;width:16px;height:3px;border-radius:2px;margin-top:1px}
 .rtbar .rsep{flex:none;width:1px;height:22px;background:var(--line);margin:0 4px}
+.seltb{position:fixed;z-index:30;display:flex;align-items:center;gap:2px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:calc(100vw - 16px);overflow-x:auto;scrollbar-width:none}
+.seltb[hidden]{display:none}
+.seltb button{flex:none;min-width:30px;height:30px;padding:0 6px;border:0;background:none;border-radius:6px;cursor:pointer;color:var(--text);font:inherit;font-size:13px}
+.seltb button:hover{background:var(--hover)}
+.seltb .sw{min-width:0;width:22px;height:22px;margin:0 2px;padding:0;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
+.seltb .sw.hl{border-radius:5px}
+.seltb .pal{position:relative;display:block;box-sizing:content-box;cursor:pointer;background:conic-gradient(#f03e3e,#fab005,#40c057,#228be6,#be4bdb,#f03e3e)}
+.seltb .pal input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.seltb .ssep{flex:none;width:1px;height:20px;background:var(--line);margin:0 3px}
 .paper{flex:1;min-height:0;overflow:auto;padding:16px;display:flex;flex-direction:column}
 .editor{position:relative;flex:1 0 auto;width:100%;max-width:860px;margin:0 auto;outline:0;background:var(--surface);color:var(--text);border-radius:14px;box-shadow:var(--shadow);padding:28px 32px;font:15px/1.6 var(--ui);white-space:pre-wrap;overflow-wrap:anywhere;caret-color:var(--accent)}
 .editor:focus-visible{outline:2px solid var(--accent-soft)}
@@ -113,6 +122,89 @@ button:focus-visible,input:focus-visible,.tab:focus-visible{outline:2px solid va
 .editor ul.todo>li.done{color:var(--muted);text-decoration:line-through}
 ::highlight(find){background:#ffe58a;color:#000}
 ::highlight(findcur){background:#ff9f43;color:#000}
+
+/* 코드 탭: 줄 번호가 있는 편집기. 글자는 투명한 입력 칸 뒤에 색칠한 층을 겹쳐 보여 준다 */
+.codewrap{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--surface);--cfs:14px}
+.cedit{position:relative;flex:1;min-height:0;overflow:hidden;font:var(--cfs)/1.55 var(--mono);background:var(--surface)}
+.cbar .rs[data-c="lang"]{max-width:190px}
+.cbar .rs[data-c="sample"]{max-width:200px}
+.cvbar .rs[data-v="entry"]{max-width:230px}
+.csplit{flex:1;min-height:0;display:flex}
+.csplit>.cedit{flex:1 1 0;min-width:0}
+.csplitter{flex:none;width:7px;margin:0 -3px;cursor:col-resize;position:relative;z-index:4;touch-action:none}
+.csplitter::after{content:"";position:absolute;left:3px;top:0;bottom:0;width:1px;background:var(--line)}
+.csplitter:hover::after{background:var(--accent);width:2px;left:2.5px}
+.cview{flex:0 0 var(--vw,48%);min-width:0;display:flex;flex-direction:column;background:var(--surface)}
+.noview .cview,.noview .csplitter{display:none}
+.cvpane{flex:1;min-height:0;min-width:0;display:flex;flex-direction:column}
+.cvpane[hidden]{display:none}
+.cvtitle{flex:none;padding:0 8px;font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap}
+.cvframe{background:#e9eaf2;display:flex;justify-content:center;overflow:auto}
+.cvf{border:0;height:100%;width:100%;background:#fff;max-width:100%}
+.cvf.dev{box-shadow:0 2px 14px rgba(0,0,0,.18)}
+.cvout{overflow:auto;padding:10px 14px;background:#fff;color:#1b1b1f;font:13px/1.55 var(--mono)}
+.ol{white-space:pre-wrap;overflow-wrap:anywhere;padding:2px 0;border-bottom:1px solid #f0f0f5}
+.ol.warn{color:#9a6700;background:#fff8e1}
+.ol.error{color:#c42b1c;background:#fff0ee}
+.ol.sys{color:#6b6b7b;font-family:var(--ui);font-size:12px;border-bottom:0}
+.cvbar .runbtn{color:#fff;background:var(--accent);font-weight:500}
+.cvbar .runbtn:hover{background:var(--accent);filter:brightness(1.1)}
+.cvtree{overflow:auto;padding:10px 14px;background:#fff;color:#1b1b1f;font:13px/1.7 var(--mono)}
+.cvtree details>:not(summary){margin-left:20px}
+.cvtree summary{cursor:pointer}
+.jk{color:#0b6bcb}.jc{color:#888}.js{color:#0a7a3b}.jn{color:#b35900}.jb{color:#7a3ec8}.jm{color:#8a8a99;font-size:12px}
+.jstat{flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 12px;font-size:13px;line-height:1.5;border-bottom:1px solid var(--line);background:var(--surface);color:var(--muted)}
+.jstat.ok{background:#e8f6ec;color:#17692f}.jstat.bad{background:#fdecea;color:#b3261a}
+.jstat button{border:1px solid currentColor;background:none;color:inherit;border-radius:6px;padding:1px 8px;cursor:pointer;font:inherit;font-size:12px}
+.jstat .jw{color:#a15c00}
+.rtbar.jconv .rs{max-width:140px}
+.jconv .jroot{flex:none;width:96px;height:34px;padding:0 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px;margin:0 2px}
+.jmsg{font:14px/1.6 var(--ui);color:#6b6b7b;padding:10px 0}
+.jmsg.bad{color:#c42b1c;background:#fff0ee;border-radius:10px;padding:10px 14px}
+.jmsg.bad p{margin:6px 0}.jhelp{font-size:12px;color:#6b6b7b}
+.jmsg .btn{display:inline-block;width:auto;padding:3px 10px;color:#1b1b1f}
+.cvnone{display:grid;place-items:center;padding:24px;background:#fff;color:#1b1b1f}
+.cvnone-in{max-width:340px;text-align:center;font-size:14px;line-height:1.6}
+.cvnone-in p{margin:6px 0 14px;color:#6b6b7b}
+.cvpick{display:grid;gap:8px}
+.cvpick button{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border:1px solid #e6e6f0;border-radius:10px;background:#fff;color:#1b1b1f;cursor:pointer;font-weight:500}
+.cvpick button:hover{background:#f1f0ff;border-color:#6965db}
+.cvpick small{color:#6b6b7b;font-weight:400}
+.cvbar{border-bottom:1px solid var(--line)}
+.cvbar [hidden]{display:none}
+.cvbar button[data-v="class"],.cvbar button[data-v="flow"]{font-weight:500}
+.cvbody{position:relative;flex:1;min-height:0;background:#fff}
+.cvc{position:absolute;left:0;top:0;cursor:grab;touch-action:none}
+.cvc:active{cursor:grabbing}
+.cvempty{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:#6b6b7b;font-size:14px;line-height:1.6;pointer-events:none}
+.cvempty:empty{display:none}
+@media (max-width:720px){
+  .csplit{flex-direction:column}
+  .cview{flex:0 0 50%}
+  .csplitter{display:none}
+}
+.chl,.cta{position:absolute;left:0;top:0;margin:0;border:0;padding:12px 16px 40px 0;font:inherit;letter-spacing:0;tab-size:var(--tab,4);-moz-tab-size:var(--tab,4);white-space:pre;overflow-wrap:normal;word-break:normal}
+.codewrap.wrap .chl,.codewrap.wrap .cta{white-space:pre-wrap;overflow-wrap:anywhere}
+.chl{overflow:hidden;pointer-events:none;color:var(--text);counter-reset:ln}
+.chl .l{position:relative;padding-left:60px;min-height:1.55em;counter-increment:ln}
+.chl .l::before{content:counter(ln);position:absolute;left:0;width:46px;text-align:right;color:var(--muted);opacity:.65;user-select:none}
+.cta{inset:0;width:100%;height:100%;padding-left:60px;background:transparent;color:transparent;-webkit-text-fill-color:transparent;caret-color:var(--text);resize:none;outline:0;overflow:auto;z-index:1}
+.cta::selection{background:rgba(105,101,219,.35);-webkit-text-fill-color:transparent}
+.cta::placeholder{color:transparent}
+.tc{color:#6a737d;color:light-dark(#6a737d,#8b949e);font-style:italic}
+.ts{color:#0a7a3b;color:light-dark(#0a7a3b,#7ee787)}
+.tn{color:#b35900;color:light-dark(#b35900,#ffa657)}
+.tk{color:#7a3ec8;color:light-dark(#7a3ec8,#d2a8ff);font-weight:500}
+.tt{color:#0b6bcb;color:light-dark(#0b6bcb,#79c0ff)}
+.tf{color:#a03a00;color:light-dark(#a03a00,#ffc799)}
+.chint{position:absolute;left:60px;top:12px;right:16px;display:flex;flex-direction:column;gap:4px;color:var(--muted);font:14px/1.5 var(--ui);pointer-events:none;z-index:2}
+.chint[hidden]{display:none}
+.chint b{font-weight:500}
+.chint span{font-size:12px;opacity:.85}
+.cdrop{position:absolute;inset:8px;z-index:3;display:grid;place-items:center;border:2px dashed var(--accent);border-radius:14px;background:color-mix(in srgb,var(--surface) 88%,var(--accent));color:var(--accent);font-weight:500;pointer-events:none}
+.cdrop[hidden]{display:none}
+::highlight(cfind){background:#ffe58a;color:#000}
+::highlight(cfindcur){background:#ff9f43;color:#000}
 
 /* 그림 탭: 떠 있는 도구 모음, 속성 카드, 줌 바 */
 #toolbar,#zoombar,#props{position:absolute;z-index:5;background:var(--surface);border-radius:14px;box-shadow:var(--shadow)}
@@ -285,7 +377,9 @@ html{touch-action:manipulation}
     <div class="menu"><button title="파일">파일</button><div class="dropdown">
       <button class="item" data-act="newText">새 텍스트 탭</button>
       <button class="item" data-act="newDraw">새 그림 탭</button>
+      <button class="item" data-act="newCode">새 코드 탭</button>
       <button class="item" data-act="open">열기… (Ctrl+O)</button>
+      <button class="item" data-act="openCode">코드 파일 열기…</button>
       <button class="item" data-act="openPhoto">사진 열기…</button>
       <button class="item" data-act="save">저장 (Ctrl+S)</button>
       <button class="item" data-act="saveHtml">서식 포함 저장 (.html)</button>
@@ -315,6 +409,7 @@ html{touch-action:manipulation}
   <div class="menu" id="addmenu"><button id="addtab" title="새 탭" aria-label="새 탭">+</button><div class="dropdown">
     <button class="item" data-act="newText">텍스트 탭</button>
     <button class="item" data-act="newDraw">그림 탭</button>
+    <button class="item" data-act="newCode">코드 탭</button>
   </div></div>
   <div class="menu" id="tablist"><button id="tablistbtn" title="탭 목록" aria-label="탭 목록 열기">
     <svg class="ico" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
@@ -335,6 +430,10 @@ html{touch-action:manipulation}
     <dl class="keys">
       <dt>Alt+Shift+1</dt><dd>새 텍스트 탭</dd>
       <dt>Alt+Shift+2</dt><dd>새 그림 탭</dd>
+      <dt>Alt+Shift+3</dt><dd>새 코드 탭</dd>
+      <dt>Tab / Shift+Tab</dt><dd>코드 들여쓰기 / 내어쓰기 (여러 줄 선택 가능)</dd>
+      <dt>Ctrl+/</dt><dd>선택한 줄 주석 켜기/끄기 (코드)</dd>
+      <dt>Ctrl+D</dt><dd>현재 줄 복제 (코드)</dd>
       <dt>Alt+1</dt><dd>선택 모드 (그림 탭)</dd>
       <dt>Alt+2</dt><dd>펜 (그림 탭)</dd>
       <dt>Alt+3</dt><dd>텍스트 (그림 탭)</dd>
@@ -415,6 +514,15 @@ function cleanTab(t){
     const zoom=Number.isFinite(t.zoom)&&t.zoom>=0.5&&t.zoom<=3?t.zoom:1;
     return{id:t.id,kind:'text',title,def,custom,text,html,zoom};
   }
+  if(t.kind==='code'){
+    const code=typeof t.code==='string'?t.code:'';
+    const lang=t.lang==='auto'||(CL[t.lang]&&t.lang!=='plain')?t.lang:'auto';
+    const tab=[0,2,4,8].includes(t.tab)?t.tab:4;
+    const fs=Number.isFinite(t.fs)&&t.fs>=10&&t.fs<=28?Math.round(t.fs):14;
+    const vw=Number.isFinite(t.vw)&&t.vw>=25&&t.vw<=75?t.vw:48;
+    return{id:t.id,kind:'code',title,def,custom,code,lang,tab,fs,wrap:t.wrap===true,eol:t.eol==='crlf'?'crlf':'lf',
+      view:t.view!==false,vw,vmode:t.vmode==='flow'?'flow':'class',pv:['tablet','mobile'].includes(t.pv)?t.pv:'full',pauto:t.pauto!==false,csample:['form','card'].includes(t.csample)?t.csample:'doc',entry:typeof t.entry==='string'?t.entry.slice(0,120):'',hideAcc:t.hideAcc===true,dep:t.dep!==false};
+  }
   if(t.kind==='draw'){
     const dim=v=>Number.isInteger(v)&&v>=1&&v<=4000;
     const okPt=p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite);
@@ -466,9 +574,11 @@ function newTab(kind){
   if(!tabs.length)nextId=1;
   const id=nextId++;
   const sz=kind==='draw'?defaultCanvasSize():null;
-  const def=freeTitle(kind==='draw'?'그림':'제목 없음');
+  const def=freeTitle(kind==='draw'?'그림':kind==='code'?'코드':'제목 없음');
   const t=kind==='draw'
     ?{id,kind:'draw',title:def,def,custom:false,w:sz.w,h:sz.h,photos:[],strokes:[]}
+    :kind==='code'
+    ?{id,kind:'code',title:def,def,custom:false,code:'',lang:'auto',tab:4,fs:14,wrap:false,eol:'lf',view:true,vw:48,vmode:'class',pv:'full',pauto:true,csample:'doc',entry:'',hideAcc:false,dep:true}
     :{id,kind:'text',title:def,def,custom:false,text:'',html:'',zoom:1};
   tabs.push(t);activeId=id;render();
   if(kind==='draw'){
@@ -481,6 +591,7 @@ function newTab(kind){
 let dragTab=null;
 function hasContent(t){
   if(t.kind==='text')return t.text.trim()!=='';
+  if(t.kind==='code')return t.code.trim()!=='';
   const d=deletedSet(t);
   return t.strokes.some((s,i)=>s.tool!=='del'&&s.tool!=='photoDel'&&!d.has(i))||visiblePhotos(t).length>0;
 }
@@ -535,7 +646,7 @@ function render(){
   renderTabs();
   const main=$('#main');main.innerHTML='';
   const t=active();
-  if(t.kind==='text')renderText(t,main);else renderDraw(t,main);
+  if(t.kind==='text')renderText(t,main);else if(t.kind==='code')renderCode(t,main);else renderDraw(t,main);
 }
 function renderTabs(){
   const bar=$('#tabs');bar.innerHTML='';
@@ -573,7 +684,7 @@ function renderTabs(){
   for(const t of tabs){
     const it=document.createElement('button');it.className='item'+(t.id===activeId?' on':'');it.dataset.tab=t.id;
     const nm=document.createElement('span');nm.textContent=(t.id===activeId?'✓ ':'')+t.title;
-    const kd=document.createElement('small');kd.textContent=t.kind==='draw'?'그림':'메모';
+    const kd=document.createElement('small');kd.textContent=t.kind==='draw'?'그림':t.kind==='code'?'코드':'메모';
     it.append(nm,kd);dd.append(it);
   }
   const a=bar.querySelector('.tab.active');
@@ -878,6 +989,53 @@ function renderText(t,host){
     el.oninput=()=>cmdCss(name,el.value);
   };
   colorIn('foreColor');colorIn('hiliteColor');
+
+  // ---- 드래그로 선택하면 바로 위에 나타나는 빠른 서식 막대 ----
+  const stb=document.createElement('div');stb.className='seltb';stb.hidden=true;stb.setAttribute('role','toolbar');stb.setAttribute('aria-label','선택 영역 서식');
+  const FC=['#222222','#d92d20','#e8590c','#2f9e44','#1971c2','#7048e8'],HC=[['rgba(255,235,59,.4)','노랑'],['rgba(76,217,100,.35)','초록'],['rgba(66,165,245,.35)','파랑']];
+  stb.innerHTML='<button data-s="smaller" title="글자 작게" aria-label="글자 작게">A−</button><button data-s="bigger" title="글자 크게" aria-label="글자 크게">A+</button><span class="ssep"></span>'+
+    FC.map(c=>'<button class="sw" data-s="fc" data-v="'+c+'" style="background:'+c+'" title="글자색 '+c+'" aria-label="글자색 '+c+'"></button>').join('')+
+    '<label class="sw pal" title="팔레트에서 글자색 고르기"><input type="color" value="#d92d20" aria-label="글자색 팔레트"></label>'+
+    '<span class="ssep"></span>'+
+    HC.map(c=>'<button class="sw hl" data-s="hc" data-v="'+c[0]+'" style="background:'+c[0]+'" title="형광펜 '+c[1]+'" aria-label="형광펜 '+c[1]+'"></button>').join('')+
+    '<button data-s="nohl" title="형광펜 지우기" aria-label="형광펜 지우기">✕</button><span class="ssep"></span>'+
+    '<button data-s="bold" title="굵게" aria-label="굵게"><b>B</b></button>';
+  wrap.append(stb);
+  const curPx=()=>{const sp=closestOf('span[style*="font-size"]');return sp?Math.round(parseFloat(sp.style.fontSize)):15};
+  const placeTb=()=>{
+    const s=getSelection();
+    if(!s.rangeCount||s.isCollapsed||!ed.contains(s.anchorNode)||!ed.contains(s.focusNode)){stb.hidden=true;return}
+    const rs=[...s.getRangeAt(0).getClientRects()].filter(r=>r.width>0);
+    if(!rs.length){stb.hidden=true;return}
+    const r=rs[0];
+    stb.hidden=false;
+    const w=stb.offsetWidth,h=stb.offsetHeight;
+    let x=Math.max(8,Math.min(innerWidth-w-8,r.left));
+    let y=r.top-h-8;if(y<8)y=Math.min(innerHeight-h-8,rs[rs.length-1].bottom+8);
+    stb.style.left=x+'px';stb.style.top=y+'px';
+  };
+  let tbDown=false;
+  ed.addEventListener('pointerdown',()=>{tbDown=true;stb.hidden=true});
+  document.addEventListener('pointerup',()=>{if(!tbDown)return;tbDown=false;if(ed.isConnected)setTimeout(placeTb,0)});
+  ed.addEventListener('keyup',e=>{if(e.shiftKey||e.key==='a'||e.key==='A')placeTb()});
+  ed.addEventListener('input',()=>{stb.hidden=true});
+  ed.addEventListener('scroll',()=>{stb.hidden=true},true);paper.addEventListener('scroll',()=>{stb.hidden=true});
+  stb.addEventListener('pointerdown',e=>{if(!e.target.closest('input'))e.preventDefault()});
+  stb.querySelector('.pal input').oninput=e=>{cmdCss('foreColor',e.target.value);setTimeout(placeTb,0)};
+  stb.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-s]');if(!b)return;
+    const k=b.dataset.s;
+    if(k==='fc')cmdCss('foreColor',b.dataset.v);
+    else if(k==='hc')cmdCss('hiliteColor',b.dataset.v);
+    else if(k==='nohl')cmdCss('hiliteColor','transparent');
+    else if(k==='bold')cmd('bold');
+    else{
+      const p=curPx(),i=sizes.findIndex(x=>x>=p);
+      const n=k==='bigger'?sizes[Math.min(sizes.length-1,(i<0?sizes.length:sizes[i]>p?i:i+1))]:sizes[Math.max(0,(i<0?sizes.length:i)-1)];
+      setSize(n);
+    }
+    setTimeout(placeTb,0);
+  });
   // 색 버튼 아래 표시선
   bar.querySelectorAll('.rc').forEach(l=>{
     const i=l.querySelector('input'),m=document.createElement('i');
@@ -1056,6 +1214,8 @@ async function openFile(file){
   if(file.size>MAX_BYTES){flash('파일이 너무 큽니다 (20MB 이하만 열 수 있습니다)');return}
   if(file.type.startsWith('image/')){run('openImageFile',file);return}
   if(/\.npaint$/i.test(file.name)){importProject(await file.text());return}
+  // 코드 탭이 열려 있거나 코드 확장자이면 코드 탭으로 연다
+  if(active().kind==='code'||CODE_EXT_RE.test(file.name)){await openCodeFile(file);return}
   if(!(file.type.startsWith('text/')||TEXT_EXT.test(file.name))){flash('지원하지 않는 파일 형식입니다');return}
   const buf=await file.arrayBuffer();
   let text;
@@ -1073,6 +1233,1904 @@ async function openFile(file){
   t.title=file.name.replace(/\.[^.]+$/,'');t.custom=true;
   render();save();
 }
+
+// ---- 코드 해석 (클래스 구조, 호출 흐름) ----
+function umlStrip(src,py){
+  let o='',i=0;const n=src.length;
+  while(i<n){
+    const c=src[i],d=src[i+1];
+    if(!py&&c==='/'&&d==='/'){while(i<n&&src[i]!=='\n')i++;continue}
+    if(!py&&c==='/'&&d==='*'){i+=2;while(i<n&&!(src[i]==='*'&&src[i+1]==='/'))i++;i+=2;o+=' ';continue}
+    if(py&&c==='#'){while(i<n&&src[i]!=='\n')i++;continue}
+    if(py&&(src.startsWith('"""',i)||src.startsWith("'''",i))){const q=src.substr(i,3);i+=3;while(i<n&&!src.startsWith(q,i))i++;i+=3;o+='""';continue}
+    if(c==='"'||c==="'"||(c==='`'&&!py)){
+      let j=i+1;while(j<n&&src[j]!==c&&src[j]!=='\n'){if(src[j]==='\\')j++;j++}
+      o+=c+c;i=j+1;continue;
+    }
+    o+=c;i++;
+  }
+  return o;
+}
+function umlClose(s,i){let d=0;for(let k=i;k<s.length;k++){if(s[k]==='(')d++;else if(s[k]===')'&&--d===0)return k}return s.length}
+function umlBalanced(s){let d=0;for(const c of s){if(c==='(')d++;else if(c===')')d--}return d<=0}
+// 맨 바깥 쉼표로 나누기 (제네릭, 괄호 안은 건드리지 않는다)
+function umlSplit(s){
+  const o=[];let d=0,c='';
+  for(let i=0;i<s.length;i++){
+    const k=s[i];
+    if('(<[{'.includes(k))d++;
+    else if(')]}'.includes(k))d--;
+    else if(k==='>'&&s[i-1]!=='-'&&s[i-1]!=='=')d--;
+    if(k===','&&d<=0){o.push(c);c=''}else c+=k;
+  }
+  if(c.trim())o.push(c);
+  return o.map(x=>x.trim()).filter(Boolean);
+}
+const UML_MODS='public|private|protected|internal|static|final|abstract|override|virtual|readonly|const|val|var|lateinit|open|async|default|synchronized|native|volatile|transient|sealed|suspend|operator|inline|new|extern|unsafe|partial|export|declare|fun|function';
+const UML_MOD_RE=new RegExp('^('+UML_MODS+')\\s+');
+function umlMods(h){
+  const m={vis:'',prop:false};let x;
+  while((x=UML_MOD_RE.exec(h))){
+    const w=x[1];
+    if(w==='public')m.vis='+';else if(w==='private')m.vis='-';else if(w==='protected')m.vis='#';else if(w==='internal')m.vis='~';
+    if(/^(public|private|protected|internal|val|var|readonly)$/.test(w))m.prop=true;
+    h=h.slice(x[0].length);
+  }
+  return{h,m};
+}
+function umlParam(p){
+  p=p.trim();if(!p)return null;
+  const u=umlMods(p);let h=u.h.replace(/^(ref|out|params|this)\s+/,'');
+  h=h.replace(/\s*=(?!>)[\s\S]*$/,'').trim();
+  let name,type='',x;
+  if((x=/^(\.\.\.)?([\w$]+)\s*\??\s*:\s*([\s\S]+)$/.exec(h))){name=(x[1]||'')+x[2];type=x[3].trim()}
+  else if((x=/^([\s\S]*\S)\s+([\w$]+)$/.exec(h))){type=x[1].trim();name=x[2]}
+  else name=h;
+  return{name,type,prop:u.m.prop,vis:u.m.vis};
+}
+// 클래스 본문의 멤버 하나 (필드 또는 메소드)
+function umlCMember(h,cname){
+  h=h.replace(/\s+/g,' ').trim();if(!h)return null;
+  if(/^(return|throw|if|for|while|else|try|catch|finally|switch|import|package|using|init\b|static$|companion|typealias|case\b|default:|new\b|namespace)/.test(h))return null;
+  if(/(^|\s)(class|interface|enum|struct|trait|namespace|object|record|type|typealias)\s+[A-Za-z_$]/.test(h.split('(')[0].split('=')[0]))return null;
+  const u=umlMods(h),x=u.h,vis=u.m.vis||'+';
+  const eq=x.search(/=(?!>)/),par=x.indexOf('(');
+  const beforeP=par>=0?x.slice(0,par):'';
+  const isM=par>=0&&(eq<0||par<eq)&&!/:/.test(beforeP.replace(/<[^>]*>/g,''));
+  if(isM){
+    let pre=beforeP.trim().replace(/^(fun|function)\s+/,'').replace(/^<[^>]*(?:<[^>]*>[^>]*)*>\s*/,'');
+    const nm=/([A-Za-z_$][\w$]*)\s*\??$/.exec(pre);if(!nm)return null;
+    const name=nm[1];if(/^(if|for|while|switch|catch|return|new)$/.test(name))return null;
+    let ret=pre.slice(0,nm.index).trim();
+    if(/^(get|set)$/.test(ret))ret='';
+    const close=umlClose(x,par);
+    const params=umlSplit(x.slice(par+1,close)).map(umlParam).filter(Boolean);
+    const ar=/^:\s*([^{=]+?)(?:\s+(?:throws|where)\b.*)?$/.exec(x.slice(close+1).trim());
+    if(ar)ret=ar[1].trim();
+    return{k:'m',vis,name:name==='constructor'?cname:name,params,ret};
+  }
+  let d=x;const e2=d.search(/=(?!>)/);if(e2>=0)d=d.slice(0,e2);
+  d=d.trim().replace(/;$/,'');
+  let f;
+  const dec=umlSplit(d);
+  if(dec.length>1){   // int a, b;  처럼 한 줄에 여러 필드
+    const first=umlCMember((u.m.vis==='-'?'private ':u.m.vis==='#'?'protected ':'')+dec[0],cname);
+    if(first&&first.k==='f')return[first,...dec.slice(1).map(nm=>({k:'f',vis,name:nm.replace(/[^\w$].*$/,''),type:first.type}))];
+  }
+  if((f=/^([\w$]+)\s*\??\s*!?\s*:\s*([\s\S]+)$/.exec(d)))return{k:'f',vis,name:f[1],type:f[2].trim()};
+  if((f=/^([\s\S]*\S)\s+([\w$]+)$/.exec(d)))return{k:'f',vis,name:f[2],type:f[1].trim()};
+  if(/^[\w$]+$/.test(d))return{k:'f',vis,name:d,type:''};
+  return null;
+}
+// 본문을 문장 단위로 쪼갠다 (세미콜론 또는 줄바꿈, { } 블록은 건너뛴다)
+function umlStatements(body){
+  const out=[],n=body.length;let cur='',p=0;
+  for(let i=0;i<n;i++){
+    const c=body[i];
+    if(c==='('||c==='[')p++;else if(c===')'||c===']')p--;
+    if(c==='{'&&p<=0){
+      let d=1,j=i+1;while(j<n&&d){if(body[j]==='{')d++;else if(body[j]==='}')d--;j++}
+      out.push({h:cur.trim(),b:body.slice(i+1,j-1)});cur='';i=j-1;continue;
+    }
+    if(c===';'&&p<=0){out.push({h:cur.trim(),b:''});cur='';continue}
+    if(c==='\n'&&p<=0){
+      const t=cur.trim();
+      if(t&&!/[,:=+\-*/&|?<.]$/.test(t)&&!/^\s*(throws|where|extends|implements|\{|:|=|\.|\?)/.test(body.slice(i+1))){out.push({h:t,b:''});cur='';continue}
+    }
+    cur+=c;
+  }
+  if(cur.trim())out.push({h:cur.trim(),b:''});
+  return out.filter(x=>x.h);
+}
+function umlParseC(raw){
+  let src=umlStrip(raw,false).replace(/@interface\b/g,'interface');
+  src=src.replace(/@[A-Za-z_][\w.]*(?:\s*\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))?/g,' ')
+         .replace(/(^|[\s;{}])\[[A-Z][\w.]*(?:\([^\]]*\))?\](?=\s)/g,'$1 ');
+  const out=[],n=src.length;
+  const re=/(^|[\s;{}])((?:(?:public|private|protected|internal|static|final|abstract|sealed|open|data|partial|export|default|declare|readonly|inner|inline|value|annotation|enum|new|unsafe)\s+)*)(class|interface|enum|record|struct|trait|object)\s+([A-Za-z_$][\w$]*)/g;
+  let m;
+  while((m=re.exec(src))){
+    const mods=m[2],kw=m[3],name=m[4];let i=re.lastIndex,gen='';
+    while(i<n&&/\s/.test(src[i]))i++;
+    if(src[i]==='<'){let d=0,j=i;for(;j<n;j++){if(src[j]==='<')d++;else if(src[j]==='>'&&--d===0)break}gen=src.slice(i,j+1).replace(/\s+/g,' ');i=j+1}
+    let p=0,j=i;
+    for(;j<n;j++){
+      const c=src[j];
+      if(c==='(')p++;else if(c===')')p--;
+      else if(p<=0&&(c==='{'||c===';'))break;
+      else if(p<=0&&c==='\n'){
+        const h=src.slice(i,j).trim();
+        if(!/^\s*(extends|implements|permits|where|:|,|\{|\()/.test(src.slice(j+1))&&!/[,:]$/.test(h)&&!/\b(extends|implements)$/.test(h))break;
+      }
+    }
+    let head=src.slice(i,j).trim(),body='';
+    if(src[j]==='{'){let d=1,k=j+1;while(k<n&&d){if(src[k]==='{')d++;else if(src[k]==='}')d--;k++}body=src.slice(j+1,k-1)}
+    const kind=kw==='interface'||kw==='trait'?'interface':kw==='enum'||/\benum\b/.test(mods)?'enum':kw==='record'?'record':kw==='struct'?'struct':kw==='object'?'object':/\babstract\b/.test(mods)?'abstract':'class';
+    const c={name,disp:name+gen,kind,parents:[],attrs:[],meths:[],consts:[]};
+    let ctor='';
+    if(head.startsWith('(')){const e=umlClose(head,0);ctor=head.slice(1,e);head=head.slice(e+1)}
+    head=head.replace(/\bpermits\b[\s\S]*$/,'').replace(/\bwhere\b[\s\S]*$/,'');
+    const hm=/\b(extends|implements)\b|:/.exec(head);
+    if(hm){
+      umlSplit(head.slice(hm.index+hm[0].length).replace(/\b(extends|implements)\b/g,',')).forEach(s=>{
+        const id=/^[\w$.]+/.exec(s.trim());if(id)c.parents.push(id[0].split('.').pop());
+      });
+    }
+    umlSplit(ctor).map(umlParam).filter(Boolean).forEach(q=>{
+      if((q.prop||kind==='record')&&q.name)c.attrs.push({vis:q.vis||(kind==='record'?'-':'+'),name:q.name,type:q.type});
+    });
+    let rest=body;
+    if(kind==='enum'){
+      let d=0,k=0;for(;k<body.length;k++){const ch=body[k];if('({['.includes(ch))d++;else if(')}]'.includes(ch))d--;else if(ch===';'&&d<=0)break}
+      umlSplit(body.slice(0,k)).forEach(s=>{const id=/^[A-Za-z_$][\w$]*/.exec(s.trim());if(id)c.consts.push(id[0])});
+      rest=body.slice(k+1);
+    }
+    umlStatements(rest).forEach(st=>{
+      const q0=umlCMember(st.h,name);if(!q0)return;
+      if(Array.isArray(q0)){c.attrs.push(...q0);return}
+      const q=q0;
+      if(q.k==='f')c.attrs.push(q);
+      else{
+        q.body=st.b;
+        c.meths.push(q);
+        if(q.name===name)q.params.forEach(pp=>{if(pp.prop)c.attrs.push({vis:pp.vis||'+',name:pp.name,type:pp.type})});
+      }
+    });
+    out.push(c);
+  }
+  return out;
+}
+function umlParsePy(raw){
+  const lines=umlStrip(raw,true).split('\n').map(l=>l.replace(/\t/g,'    ').replace(/\s+$/,''));
+  const ind=l=>l.length-l.trimStart().length;
+  const visOf=nm=>/^__\w+__$/.test(nm)?'+':nm.startsWith('__')?'-':nm.startsWith('_')?'#':'+';
+  const out=[];
+  for(let i=0;i<lines.length;i++){
+    const m=/^(\s*)class\s+(\w+)\s*(?:\(([^)]*)\))?\s*:/.exec(lines[i]);if(!m)continue;
+    const ci=m[1].length,body=[];
+    let j=i+1;while(j<lines.length&&(lines[j].trim()===''||ind(lines[j])>ci)){body.push(lines[j]);j++}
+    const bases=umlSplit(m[3]||'').filter(b=>!b.includes('=')).map(b=>b.replace(/\[[\s\S]*$/,'').split('.').pop().trim());
+    const hasAbs=body.some(l=>/^\s*@abstractmethod\b|^\s*@abc\.abstractmethod\b/.test(l));
+    const kind=bases.includes('Protocol')?'interface':bases.some(b=>/^(Enum|IntEnum|StrEnum|Flag|IntFlag)$/.test(b))?'enum':bases.includes('ABC')||hasAbs?'abstract':'class';
+    const c={name:m[2],disp:m[2],kind,parents:bases.filter(b=>!/^(ABC|Protocol|object|Generic|Enum|IntEnum|StrEnum|Flag|IntFlag|Exception|metaclass)$/.test(b)),attrs:[],meths:[],consts:[]};
+    const real=body.filter(l=>l.trim()),mi=real.length?ind(real[0]):0;
+    const addAttr=(name,type)=>{if(name&&!c.attrs.some(a=>a.name===name))c.attrs.push({vis:visOf(name),name,type:type||''})};
+    let deco=[];
+    for(let k=0;k<body.length;k++){
+      const line=body[k];
+      if(!line.trim()||ind(line)!==mi)continue;
+      const t=line.trim();
+      if(t[0]==='@'){deco.push(t);continue}
+      let x;
+      if((x=/^(?:async\s+)?def\s+(\w+)\s*\(/.exec(t))){
+        let sig=t,kk=k;
+        while(!umlBalanced(sig)&&kk+1<body.length){kk++;sig+=' '+body[kk].trim()}
+        const open=sig.indexOf('('),close=umlClose(sig,open);
+        const rm=/^\s*(?:->\s*(.+?))?\s*:/.exec(sig.slice(close+1));
+        const ret=rm&&rm[1]?rm[1].trim():'';
+        const ps=[];
+        umlSplit(sig.slice(open+1,close)).forEach(s=>{
+          const q=/^(\*{0,2}\w+)\s*(?::\s*([^=]+?))?\s*(?:=.*)?$/.exec(s.trim());
+          if(q&&q[1]!=='self'&&q[1]!=='cls')ps.push({name:q[1],type:(q[2]||'').trim()});
+        });
+        const name=x[1];
+        if(deco.some(d=>/\.(setter|deleter)$/.test(d))){deco=[];continue}
+        if(deco.some(d=>/^@property\b|^@cached_property\b/.test(d)))addAttr(name,ret);
+        else{
+          const bl=[];for(let e=kk+1;e<body.length&&(!body[e].trim()||ind(body[e])>mi);e++)bl.push(body[e]);
+          c.meths.push({vis:visOf(name),name,params:ps,ret,body:bl.join('\n')});
+        }
+        if(name==='__init__'){
+          for(let e=kk+1;e<body.length&&(!body[e].trim()||ind(body[e])>mi);e++){
+            const a=/^\s*self\.(\w+)\s*(?::\s*([^=]+?))?\s*=\s*(.*)$/.exec(body[e]);if(!a)continue;
+            let ty=(a[2]||'').trim();
+            if(!ty){
+              const v=a[3].trim(),cm=/^([A-Z]\w*)\s*\(/.exec(v),pp=ps.find(q=>q.name===v);
+              ty=cm?cm[1]:pp?pp.type:'';
+            }
+            addAttr(a[1],ty);
+          }
+        }
+        deco=[];k=kk;continue;
+      }
+      deco=[];
+      if((x=/^(\w+)\s*(?::\s*([^=]+?))?\s*(?:=.*)?$/.exec(t))&&/^\w+\s*[:=]/.test(t)){
+        if(kind==='enum')c.consts.push(x[1]);else addAttr(x[1],(x[2]||'').trim());
+      }
+    }
+    out.push(c);
+  }
+  return out;
+}
+// 코드를 읽어 클래스, 관계 목록으로 만든다
+function umlModel(code,opts){
+  const py=/^[ \t]*def\s+\w+\s*\(/m.test(code)||/^[ \t]*class\s+\w+[^\n{]*:\s*(#.*)?$/m.test(code);
+  const seen=new Set(),classes=[];
+  (py?umlParsePy(code):umlParseC(code)).forEach(c=>{if(!seen.has(c.name)){seen.add(c.name);classes.push(c)}});
+  if(opts.hideAcc)classes.forEach(c=>{c.meths=c.meths.filter(q=>!(/^(get|set|is|has)[A-Z_]/.test(q.name)&&q.params.length<=1))});
+  const byName=new Map(classes.map((c,i)=>[c.name,i]));
+  const rels=[],pair=new Map();
+  const key=(a,b)=>a<b?a+'-'+b:b+'-'+a;
+  classes.forEach((c,a)=>{
+    c.parents.forEach(pn=>{
+      const b=byName.get(pn);if(b===undefined||b===a||pair.has(key(a,b)))return;
+      const iface=classes[b].kind==='interface'&&c.kind!=='interface';
+      pair.set(key(a,b),1);rels.push({a,b,tool:iface?'dashClosed':'arrowClosed',label:'',inh:true});
+    });
+  });
+  const COL=/\[\]|\b(List|Set|Collection|Array|ArrayList|LinkedList|Iterable|Queue|Deque|Stream|MutableList|MutableSet|Vector|HashSet|IEnumerable|ICollection|IList|Sequence|Flux|list|set|tuple|Sequence)\b/;
+  const refs=(ty,self)=>[...new Set((ty.match(/[A-Za-z_$][\w$]*/g)||[]).filter(w=>byName.has(w)&&w!==self))];
+  const assoc=new Map();
+  classes.forEach((c,a)=>{
+    c.attrs.forEach(f=>{
+      refs(f.type||'',c.name).forEach(w=>{
+        const b=byName.get(w),k=key(a,b);
+        const lab=f.name+(COL.test(f.type)||/\b(Map|Dictionary|HashMap|MutableMap|dict|Dict)\b/.test(f.type)?' 0..*':'');
+        const rv=assoc.get(b+'>'+a);
+        // 서로 가리키는 양방향 관계는 화살표 없는 선 하나에 양쪽 이름을 함께 적는다
+        if(rv&&!assoc.has(a+'>'+b)){rv.tool='line';rv.label+=' / '+lab;return}
+        if(pair.has(k)&&!assoc.has(a+'>'+b))return;
+        const ex=assoc.get(a+'>'+b);
+        if(ex)ex.label+=', '+lab;
+        else{const r={a,b,tool:'arrowOpen',label:lab};assoc.set(a+'>'+b,r);pair.set(k,1);rels.push(r)}
+      });
+    });
+  });
+  if(opts.dep){
+    classes.forEach((c,a)=>{
+      c.meths.forEach(q=>{
+        refs([q.ret,...q.params.map(p=>p.type)].join(' '),c.name).forEach(w=>{
+          const b=byName.get(w),k=key(a,b);
+          if(pair.has(k))return;
+          pair.set(k,1);rels.push({a,b,tool:'dashOpen',label:''});
+        });
+      });
+    });
+  }
+  return{classes,rels,py};
+}
+// 계층 배치: 부모는 위, 자식은 아래. 같은 줄에서는 연결된 상자끼리 가깝게
+function umlLayout(classes,rels){
+  const n=classes.length;
+  classes.forEach(c=>{
+    const L=boxLayout({tool:'classBox',pts:[[0,0],[0,0]],name:c.disp,stereo:umlStereo(c),attrs:umlAttrLines(c).join('\n'),meths:umlMethLines(c).join('\n'),fs:16});
+    c.w=Math.ceil(L.w);c.h=Math.ceil(L.h);
+  });
+  const inInh=new Set();rels.forEach(r=>{if(r.inh){inInh.add(r.a);inInh.add(r.b)}});
+  const edges=rels.filter(r=>r.inh||!inInh.has(r.b)).map(r=>r.inh?[r.b,r.a]:[r.a,r.b]);
+  const lay=new Array(n).fill(0);
+  for(let it=0;it<n;it++){
+    let ch=false;
+    edges.forEach(([a,b])=>{if(a!==b&&lay[b]<lay[a]+1&&lay[a]+1<n){lay[b]=lay[a]+1;ch=true}});
+    if(!ch)break;
+  }
+  const depth=Math.max(0,...lay),layers=[];
+  for(let d=0;d<=depth;d++)layers.push([]);
+  lay.forEach((d,i)=>layers[d].push(i));
+  const nb=Array.from({length:n},()=>[]);
+  rels.forEach(r=>{nb[r.a].push(r.b);nb[r.b].push(r.a)});
+  const pos=new Array(n).fill(0.5);
+  const setPos=()=>layers.forEach(L=>L.forEach((i,k)=>{pos[i]=L.length>1?k/(L.length-1):0.5}));
+  setPos();
+  const bary=(L,only)=>{
+    const sc=new Map(L.map(i=>{const q=nb[i].filter(o=>only(o));return[i,q.length?q.reduce((s,o)=>s+pos[o],0)/q.length:pos[i]]}));
+    L.sort((x,y)=>sc.get(x)-sc.get(y));
+  };
+  for(let s=0;s<4;s++){
+    for(let d=1;d<=depth;d++){bary(layers[d],o=>lay[o]<d);setPos()}
+    for(let d=depth-1;d>=0;d--){bary(layers[d],o=>lay[o]>d);setPos()}
+  }
+  const GX=60,GY=90,MAXW=1600,rows=[];
+  layers.forEach(L=>{
+    let row=[],w=0;
+    L.forEach(i=>{
+      const cw=classes[i].w;
+      if(row.length&&w+GX+cw>MAXW){rows.push(row);row=[];w=0}
+      w+=(row.length?GX:0)+cw;row.push(i);
+    });
+    if(row.length)rows.push(row);
+  });
+  const rw=rows.map(r=>r.reduce((s,i)=>s+classes[i].w,0)+GX*(r.length-1));
+  const W=Math.max(...rw);let y=0;
+  rows.forEach((r,k)=>{
+    let x=(W-rw[k])/2;
+    const h=Math.max(...r.map(i=>classes[i].h));
+    r.forEach(i=>{classes[i].x=Math.round(x);classes[i].y=Math.round(y);x+=classes[i].w+GX});
+    y+=h+GY;
+  });
+  return{W,H:y-GY};
+}
+const UML_STEREO={interface:'<<interface>>',abstract:'<<abstract>>',enum:'<<enumeration>>',record:'<<record>>',struct:'<<struct>>',object:'<<object>>'};
+const UML_FILL={interface:'#d6e6ff',abstract:'#ffe9d6',enum:'#d9f2d9',record:'#fff6b3',struct:'#fff6b3',object:'#fff6b3',class:'#fff6b3'};
+const umlStereo=c=>UML_STEREO[c.kind]||'';
+const umlAttrLines=c=>[...c.consts,...c.attrs.map(a=>a.vis+' '+a.name+(a.type?': '+a.type:''))];
+const umlMethLines=c=>c.meths.map(q=>q.vis+' '+q.name+'('+q.params.map(p=>p.name+(p.type?': '+p.type:'')).join(', ')+')'+(q.ret&&q.ret!==q.name?': '+q.ret:''));
+function umlStrokes(model){
+  const{classes,rels}=model,{W,H}=umlLayout(classes,rels);
+  const clip=(R,c,o)=>{
+    const dx=o[0]-c[0],dy=o[1]-c[1];if(!dx&&!dy)return c;
+    const k=Math.min(dx?R.w/2/Math.abs(dx):1e9,dy?R.h/2/Math.abs(dy):1e9);
+    return[c[0]+dx*k,c[1]+dy*k];
+  };
+  const out=[];
+  rels.forEach(r=>{
+    const A=classes[r.a],B=classes[r.b];
+    const ac=[A.x+A.w/2,A.y+A.h/2],bc=[B.x+B.w/2,B.y+B.h/2];
+    // 상속, 구현은 자식(a)에서 부모(b)로, 그 밖의 관계는 a에서 b로 향한다
+    const s={tool:r.tool,color:'#000000',size:2,pts:[clip(A,ac,bc),clip(B,bc,ac)]};
+    if(r.label)s.label=r.label;
+    out.push(s);
+  });
+  classes.forEach(c=>{
+    out.push({tool:'classBox',color:'#000000',size:2,pts:[[c.x,c.y],[c.x+c.w,c.y+c.h]],fill:UML_FILL[c.kind]||UML_FILL.class,
+      stereo:umlStereo(c),name:c.disp,attrs:umlAttrLines(c).join('\n'),meths:umlMethLines(c).join('\n'),fs:16});
+  });
+  return{strokes:out,W,H};
+}
+
+// ---- code tab (코드 작성, 업로드용 편집기) ----
+const CL={
+  plain:{n:'일반 텍스트',e:'txt log ini csv md yml yaml toml sh bat'},
+  java:{n:'Java',e:'java kt cs',lc:['//'],bc:1,q:'"\'',kw:'abstract assert boolean break byte case catch char class const continue default do double else enum extends final finally float for if implements import instanceof int interface long native new null package private protected public record return short static super switch synchronized this throw throws transient true false try var void volatile while sealed permits'},
+  json:{n:'JSON',e:'json jsonc',q:'"',kw:'true false null',key:1}
+};
+const CL_ORDER=['java','json'];
+const CODE_EXT_LANG={};
+Object.entries(CL).forEach(([k,v])=>v.e.split(' ').forEach(x=>{CODE_EXT_LANG[x]=k}));
+const CODE_EXT_RE=/\.(js|jsx|ts|tsx|mjs|cjs|java|cs|kt|kts|py|pyw|c|h|cpp|cc|cxx|hpp|hh|go|rs|php|sql|sh|bash|zsh|css|scss|less|vue|yml|yaml|toml|xml|svg|gradle|bat|ps1|rb|swift|dart|lua|r|vb|pl)$/i;
+const reEsc=s=>s.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&');
+const CL_CACHE={};
+function clRegex(k){
+  if(CL_CACHE[k])return CL_CACHE[k];
+  const L=CL[k],p=[];
+  if(L.ml){
+    p.push(['c','<!--[\\s\\S]*?(?:-->|$)'],['k','<\\/?[A-Za-z][\\w:.-]*|\\/?>'],['s','"[^"]*"?|\'[^\']*\'?'],['t','[\\w:.-]+(?==)']);
+  }else{
+    if(L.tq)p.push(['s','"""[\\s\\S]*?(?:"""|$)|\'\'\'[\\s\\S]*?(?:\'\'\'|$)']);
+    if(L.bc)p.push(['c','\\/\\*[\\s\\S]*?(?:\\*\\/|$)']);
+    (L.lc||[]).forEach(x=>p.push(['c',reEsc(x)+'[^\\n]*']));
+    for(const q of (L.q||'')){
+      p.push(['s',q==='`'?'`(?:[^`\\\\]|\\\\[\\s\\S])*(?:`|$)':reEsc(q)+'(?:[^'+reEsc(q)+'\\\\\\n]|\\\\.)*'+reEsc(q)+'?']);
+    }
+    if(L.keyre)p.push(['t','[\\w.-]+(?=[ \\t]*:(?:\\s|$))']);
+    if(L.css){p.push(['n','#[0-9a-fA-F]{3,8}\\b'],['k','@[\\w-]+'],['f','[\\w-]+(?=[ \\t]*:)']);}
+    p.push(['n','\\b(?:0[xX][\\da-fA-F_]+|\\d[\\d_]*\\.?\\d*(?:[eE][+-]?\\d+)?)[a-zA-Z%]*']);
+    p.push(['i',L.css?'[A-Za-z_-][\\w-]*':'[A-Za-z_$][\\w$]*']);
+  }
+  const o={re:new RegExp(p.map(x=>'(?:('+x[1]+'))').join('|'),'g'),cls:p.map(x=>x[0]),kw:new Set((L.kw||'').split(' ').filter(Boolean)),L};
+  return CL_CACHE[k]=o;
+}
+// 글을 색 조각 목록으로 나눈 뒤 줄 단위 HTML로 만든다
+function codeHtml(text,k){
+  const lines=[''];let any=false;
+  const add=(cls,s)=>{
+    const parts=s.split('\n');
+    parts.forEach((part,i)=>{
+      if(i>0)lines.push('');
+      if(part)lines[lines.length-1]+=cls?'<span class="'+cls+'">'+esc(part)+'</span>':esc(part);
+    });
+  };
+  if(k==='plain'||text.length>600000){text.split('\n').forEach((l,i)=>{if(i)lines.push('');lines[lines.length-1]+=esc(l)})}
+  else{
+    const C=clRegex(k),re=C.re;re.lastIndex=0;
+    let pos=0,m;
+    while((m=re.exec(text))){
+      if(m[0]===''){re.lastIndex++;continue}
+      if(m.index>pos)add('',text.slice(pos,m.index));
+      let gi=1;while(gi<m.length&&m[gi]===undefined)gi++;
+      let c=C.cls[gi-1];
+      if(c==='i'){
+        const w=C.L.ci?m[0].toLowerCase():m[0];
+        if(C.kw.has(w))c='k';
+        else if(/^[ \t]*\(/.test(text.slice(re.lastIndex,re.lastIndex+8)))c='f';
+        else if(/^[A-Z][A-Za-z0-9_$]*[a-z]/.test(m[0]))c='t';
+        else c='';
+      }else if(c==='s'&&C.L.key&&/^[ \t]*:/.test(text.slice(re.lastIndex,re.lastIndex+8)))c='t';
+      add(c?'t'+c:'',m[0]);
+      pos=re.lastIndex;
+    }
+    if(pos<text.length)add('',text.slice(pos));
+  }
+  return lines.map(l=>'<div class="l">'+l+'</div>').join('');
+}
+function guessLang(s){
+  const h=s.slice(0,4000);if(!h.trim())return'plain';
+  if(/^\s*[\[{]/.test(h)){if(jsonParse(s).ok)return'json';if(/"\s*:/.test(h)&&!/[;=]\s*$/m.test(h)&&!/\b(function|class|const|let|var)\b/.test(h))return'json'}
+  if(/^\s*package\s+[\w.]+;|^\s*import\s+java\.|System\.out|\b(public|private|protected)\s+(static\s+)?(final\s+)?(abstract\s+)?(class|interface|enum|record|void|[A-Z]\w*(<[^>]*>)?\s+\w+\s*[(;=])|^\s*@(Entity|Service|Component|RestController|Controller|Repository)\b/m.test(h))return'java';
+  if(/^\s*(abstract\s+)?(class|interface|enum)\s+\w+/m.test(h))return'java';
+  return'plain';
+}
+const CODE_SAMPLES={
+board:`import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "users")
+public class User {
+    @Id @GeneratedValue
+    private Long id;
+    private String email;
+    private String name;
+
+    @OneToMany(mappedBy = "author")
+    private List<Board> boards = new ArrayList<>();
+
+    public void addBoard(Board board) {
+        boards.add(board);
+        board.setAuthor(this);
+    }
+
+    public String getName() { return name; }
+}
+
+@Entity
+public class Board {
+    @Id @GeneratedValue
+    private Long id;
+    private String title;
+    private String content;
+    private LocalDateTime createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User author;
+
+    @OneToMany(mappedBy = "board")
+    private List<Comment> comments = new ArrayList<>();
+
+    public Board(String title, String content) {
+        this.title = title;
+        this.content = content;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public void changeContent(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
+
+    public void setAuthor(User author) { this.author = author; }
+}
+
+@Entity
+public class Comment {
+    @Id @GeneratedValue
+    private Long id;
+    private String text;
+
+    @ManyToOne
+    private Board board;
+
+    @ManyToOne
+    private User writer;
+}
+
+public interface BoardRepository extends JpaRepository<Board, Long> {
+    List<Board> findByAuthor(User author);
+}
+
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByEmail(String email);
+}
+
+@Service
+public class BoardService {
+    private final BoardRepository boardRepository;
+    private final UserRepository userRepository;
+
+    public Board write(String email, String title, String content) {
+        User user = userRepository.findByEmail(email).orElseThrow();
+        Board board = new Board(title, content);
+        user.addBoard(board);
+        return boardRepository.save(board);
+    }
+
+    public List<Board> myBoards(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow();
+        return boardRepository.findByAuthor(user);
+    }
+}
+
+@RestController
+public class BoardController {
+    private final BoardService boardService;
+
+    @PostMapping("/boards")
+    public Board create(String email, String title, String content) {
+        return boardService.write(email, title, content);
+    }
+
+    @GetMapping("/boards")
+    public List<Board> list(String email) {
+        return boardService.myBoards(email);
+    }
+}
+`,
+html:`<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>할 일 목록</title>
+  <style>
+    body { font-family: sans-serif; background: #f4f5fb; margin: 0; padding: 24px; }
+    .card { max-width: 420px; margin: 0 auto; background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+    h1 { font-size: 20px; margin: 0 0 12px; }
+    form { display: flex; gap: 8px; }
+    input { flex: 1; padding: 8px 10px; border: 1px solid #ccd; border-radius: 8px; }
+    button { padding: 8px 14px; border: 0; border-radius: 8px; background: #6965db; color: #fff; cursor: pointer; }
+    li { padding: 6px 0; cursor: pointer; }
+    li.done { text-decoration: line-through; color: #999; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>할 일 목록</h1>
+    <form id="f"><input id="t" placeholder="할 일을 입력하세요"><button>추가</button></form>
+    <ul id="list"></ul>
+  </div>
+  <script>
+    const list = document.getElementById('list');
+    document.getElementById('f').addEventListener('submit', e => {
+      e.preventDefault();
+      const t = document.getElementById('t');
+      if (!t.value.trim()) return;
+      const li = document.createElement('li');
+      li.textContent = t.value;
+      li.onclick = () => li.classList.toggle('done');
+      list.appendChild(li);
+      t.value = '';
+    });
+  <\/script>
+</body>
+</html>
+`,
+css:`/* 아래 규칙이 오른쪽 샘플 화면에 바로 적용됩니다 */
+body {
+  font-family: "Noto Sans KR", sans-serif;
+  background: #f4f5fb;
+  color: #222;
+}
+
+h1 {
+  color: #6965db;
+  border-bottom: 3px solid #6965db;
+  padding-bottom: 6px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .1);
+}
+
+.btn {
+  background: #6965db;
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 16px;
+}
+
+.btn:hover { background: #4f4bc4; }
+
+a { color: #d6336c; }
+
+li { margin: 4px 0; }
+
+th { background: #e0dfff; }
+td, th { border: 1px solid #ccd; padding: 6px 10px; }
+`,
+js:`// ▶ 실행 버튼(Ctrl+Enter)을 누르면 결과가 오른쪽에 나옵니다
+const users = [
+  { name: '민수', age: 31 },
+  { name: '지은', age: 27 },
+  { name: '하준', age: 35 },
+];
+
+console.log('전체 인원:', users.length);
+
+const adults = users.filter(u => u.age >= 30);
+console.log('30세 이상:', adults.map(u => u.name));
+
+const avg = users.reduce((s, u) => s + u.age, 0) / users.length;
+console.log('평균 나이:', avg.toFixed(1));
+
+function fib(n) {
+  return n < 2 ? n : fib(n - 1) + fib(n - 2);
+}
+console.log('fib(10) =', fib(10));
+
+setTimeout(() => console.log('0.5초 뒤에 실행됩니다'), 500);
+console.table && console.log(users);
+`,
+json:`{
+  "name": "메모장 그림",
+  "version": "1.0.0",
+  "author": { "name": "김근호", "license": "MIT" },
+  "tabs": ["메모", "그림", "코드"],
+  "features": [
+    { "id": 1, "title": "서식 있는 메모장", "done": true },
+    { "id": 2, "title": "클래스 다이어그램", "done": true },
+    { "id": 3, "title": "미리보기", "done": false }
+  ],
+  "limits": { "maxCanvas": 4000, "codeFileMB": 2 }
+}
+`};
+// ---- 호출 관계 분석 (실행 흐름) ----
+const UML_COLL=/\[\]|\b(List|Set|Collection|Array|ArrayList|LinkedList|Iterable|Queue|Deque|Stream|MutableList|MutableSet|Vector|HashSet|Map|HashMap|Dictionary|IEnumerable|ICollection|IList|Sequence|list|set|dict|tuple|Dict)\b/;
+function umlCalls(model){
+  const classes=model.classes,byName=new Map(classes.map(c=>[c.name,c]));
+  const findMeth=(c,name,seen=new Set())=>{
+    if(!c||seen.has(c.name))return null;seen.add(c.name);
+    const m=c.meths.find(q=>q.name===name);if(m)return{c,m};
+    for(const pn of c.parents){const r=findMeth(byName.get(pn),name,seen);if(r)return r}
+    return null;
+  };
+  const baseType=ty=>{
+    for(const w of (ty||'').match(/[A-Za-z_$][\w$]*/g)||[])if(byName.has(w))return{c:byName.get(w),coll:UML_COLL.test(ty)};
+    return null;
+  };
+  const uniq=new Map();
+  classes.forEach(c=>c.meths.forEach(q=>{if(!uniq.has(q.name))uniq.set(q.name,[]);uniq.get(q.name).push(c)}));
+  const COMMON=new Set(['get','put','add','remove','size','append','equals','toString','length','map','filter','forEach','push','pop','set','contains']);
+  const out=new Map();
+  classes.forEach(c=>c.meths.forEach(q=>{
+    const env=new Map();
+    c.attrs.forEach(a=>{if(a.type)env.set(a.name,a.type)});
+    q.params.forEach(p=>{if(p.type)env.set(p.name,p.type)});
+    const body=q.body||'';let m;
+    const L1=/\b([A-Z][\w$.]*)(?:<[^>;()]*>)?(?:\[\])?\s+([a-z_$][\w$]*)\s*(?:=|;|:|,|\))/g;
+    while((m=L1.exec(body)))env.set(m[2],m[1]);
+    const L2=/\b(?:val|var|let|const)\s+([\w$]+)\s*(?::\s*([A-Z][\w$.]*))?\s*=\s*(?:new\s+)?([A-Z][\w$]*)\s*[(<]/g;
+    while((m=L2.exec(body)))env.set(m[1],m[2]||m[3]);
+    const L3=/(?:^|\n)\s*([\w$]+)\s*=\s*([A-Z][\w$]*)\s*\(/g;
+    while((m=L3.exec(body)))if(!env.has(m[1]))env.set(m[1],m[2]);
+    const list=[];
+    const R=/\bnew\s+([A-Z][\w$]*)|([A-Za-z_$][\w$]*)\s*(?:\?\.|\.)\s*([A-Za-z_$][\w$]*)\s*\(|(?<![.\w$])([A-Z][\w$]*)\s*\(|(?<![.\w$])([a-z_$][\w$]*)\s*\(/g;
+    while((m=R.exec(body))){
+      const ctor=m[1]||m[4];
+      if(ctor){const tc=byName.get(ctor);if(tc){const f=tc.meths.find(x=>x.name===tc.name);list.push({to:tc.name,m:f?tc.name+'.'+tc.name:null,label:'new '+ctor+'()',create:true})}continue}
+      if(m[2]!==undefined){
+        const r=m[2],name=m[3];let tc=null,coll=false;
+        if(r==='this'||r==='self')tc=c;
+        else if(r==='super')tc=byName.get(c.parents[0])||null;
+        else if(env.has(r)){const b=baseType(env.get(r));if(b){tc=b.c;coll=b.coll}}
+        else if(byName.has(r))tc=byName.get(r);
+        if(!tc){const u=uniq.get(name);if(u&&u.length===1&&!COMMON.has(name))tc=u[0]}
+        if(!tc)continue;
+        const f=findMeth(tc,name);
+        if(coll&&!f)continue;
+        list.push({to:tc.name,m:f?f.c.name+'.'+f.m.name:null,label:name+'()'});
+        continue;
+      }
+      const f=findMeth(c,m[5]);
+      if(f)list.push({to:c.name,m:f.c.name+'.'+f.m.name,label:m[5]+'()'});
+    }
+    const key=c.name+'.'+q.name;
+    out.set(key,(out.get(key)||[]).concat(list));
+  }));
+  return out;
+}
+// 시작 메소드에서 출발한 호출을 순서대로 펼친다
+function umlSeq(model,calls,entry){
+  const byName=new Map(model.classes.map(c=>[c.name,c]));
+  const method=key=>{const i=key.indexOf('.'),c=byName.get(key.slice(0,i));return c&&c.meths.find(q=>q.name===key.slice(i+1))};
+  const i0=entry.indexOf('.'),ec=entry.slice(0,i0),em=entry.slice(i0+1);
+  const parts=['외부'],ev=[];
+  const add=n=>{if(!parts.includes(n))parts.push(n)};
+  const retOf=key=>{const m=method(key);return m&&m.ret&&!/^(void|None)$/i.test(m.ret)?m.ret.replace(/<.*>/,'').replace(/\s+/g,' '):''};
+  add(ec);
+  ev.push({f:'외부',t:ec,label:em+'()',kind:'call'});
+  const expand=(cls,key,depth,stack)=>{
+    for(const k of (calls.get(key)||[])){
+      if(ev.length>150)return;
+      add(k.to);
+      ev.push({f:cls,t:k.to,label:k.label,kind:'call'});
+      if(k.m&&!stack.includes(k.m)&&depth<8)expand(k.to,k.m,depth+1,[...stack,k.m]);
+      const r=k.m?retOf(k.m):'';
+      if(r&&k.to!==cls)ev.push({f:k.to,t:cls,label:r,kind:'ret'});
+    }
+  };
+  expand(ec,entry,1,[entry]);
+  const r0=retOf(entry);if(r0)ev.push({f:ec,t:'외부',label:r0,kind:'ret'});
+  return{parts,ev};
+}
+// 다이어그램을 그릴 장면 (크기와 그리는 함수)
+function umlClassScene(model,opts){
+  const res=umlStrokes(model);
+  res.strokes.forEach(s=>shiftStroke(s,30,30));
+  model.classes.forEach(c=>{c.x+=30;c.y+=30});
+  return{W:res.W+60,H:res.H+60,mode:'class',strokes:res.strokes,classes:model.classes,
+    draw(ctx,sel){
+      this.strokes.forEach(s=>paintStroke(ctx,s));
+      const c=sel&&this.classes.find(x=>x.name===sel);
+      if(c){ctx.save();ctx.strokeStyle='#6965db';ctx.lineWidth=3;ctx.setLineDash([]);ctx.strokeRect(c.x-4,c.y-4,c.w+8,c.h+8);ctx.restore()}
+    },
+    hit(x,y){const c=this.classes.find(c=>x>=c.x&&x<=c.x+c.w&&y>=c.y&&y<=c.y+c.h);return c?c.name:''},
+    toStrokes(){return JSON.parse(JSON.stringify(this.strokes))}};
+}
+function umlSeqScene(model,seq){
+  const{parts,ev}=seq,byName=new Map(model.classes.map(c=>[c.name,c]));
+  mctx.font='bold 14px '+FONT;
+  const pw=parts.map(p=>Math.max(104,Math.ceil(mctx.measureText(p).width)+30));
+  const sp=parts.slice(1).map((_,i)=>(pw[i]+pw[i+1])/2+36);
+  mctx.font='13px '+FONT;
+  ev.forEach(e=>{
+    const a=parts.indexOf(e.f),b=parts.indexOf(e.t);if(a===b)return;
+    const lo=Math.min(a,b),hi=Math.max(a,b),need=mctx.measureText((e.kind==='call'?'00. ':'')+e.label).width+36;
+    let have=0;for(let i=lo;i<hi;i++)have+=sp[i];
+    if(have<need)for(let i=lo;i<hi;i++)sp[i]+=(need-have)/(hi-lo);
+  });
+  const cx=[40+pw[0]/2];sp.forEach(s=>cx.push(cx[cx.length-1]+s));
+  const top=24,hh=34,y0=top+hh+34,step=40,last=y0+ev.length*step;
+  const selfCall=ev.some(e=>e.f===e.t),W=cx[cx.length-1]+pw[pw.length-1]/2+(selfCall?170:40),H=last+30;
+  const arrow=(ctx,x,y,dir,filled)=>{
+    ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-dir*10,y-5);ctx.lineTo(x-dir*10,y+5);ctx.closePath();
+    if(filled)ctx.fill();else{ctx.stroke()}
+  };
+  return{W,H,mode:'flow',parts,
+    draw(ctx){
+      ctx.save();ctx.lineJoin='miter';ctx.textBaseline='middle';
+      parts.forEach((p,i)=>{
+        ctx.setLineDash([5,4]);ctx.strokeStyle='#999';ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(cx[i],top+hh);ctx.lineTo(cx[i],H-10);ctx.stroke();ctx.setLineDash([]);
+        const c=byName.get(p);
+        ctx.fillStyle=c?(UML_FILL[c.kind]||UML_FILL.class):'#eeeeee';ctx.strokeStyle='#000';ctx.lineWidth=1.5;
+        ctx.fillRect(cx[i]-pw[i]/2,top,pw[i],hh);ctx.strokeRect(cx[i]-pw[i]/2,top,pw[i],hh);
+        ctx.fillStyle='#000';ctx.font='bold 14px '+FONT;ctx.textAlign='center';ctx.fillText(p,cx[i],top+hh/2);
+      });
+      let n=0;
+      ev.forEach((e,k)=>{
+        const y=y0+k*step,a=cx[parts.indexOf(e.f)],b=cx[parts.indexOf(e.t)],call=e.kind==='call';
+        if(call)n++;
+        const txt=(call?n+'. ':'')+e.label;
+        ctx.font=(call?'':'italic ')+'13px '+FONT;ctx.textAlign='center';
+        ctx.strokeStyle=call?'#000':'#777';ctx.fillStyle=call?'#000':'#777';ctx.lineWidth=1.5;
+        ctx.setLineDash(call?[]:[6,4]);
+        if(a===b){
+          ctx.beginPath();ctx.moveTo(a,y-8);ctx.lineTo(a+38,y-8);ctx.lineTo(a+38,y+8);ctx.lineTo(a,y+8);ctx.stroke();ctx.setLineDash([]);
+          arrow(ctx,a,y+8,-1,true);ctx.textAlign='left';ctx.fillText(txt,a+46,y);
+        }else{
+          const dir=b>a?1:-1;
+          ctx.beginPath();ctx.moveTo(a,y);ctx.lineTo(b-dir*(call?8:0),y);ctx.stroke();ctx.setLineDash([]);
+          if(call)arrow(ctx,b,y,dir,true);
+          else{ctx.beginPath();ctx.moveTo(b-dir*10,y-5);ctx.lineTo(b,y);ctx.lineTo(b-dir*10,y+5);ctx.stroke()}
+          ctx.fillText(txt,(a+b)/2,y-10);
+        }
+      });
+      ctx.restore();
+    },
+    hit(x,y){
+      if(y<top||y>top+hh)return'';
+      const i=cx.findIndex((c,i)=>Math.abs(x-c)<=pw[i]/2);
+      return i>0?parts[i]:'';
+    },
+    // 그림 탭에서 고칠 수 있는 도형(상자, 선, 글자)으로 바꾼다
+    toStrokes(){
+      const S=[],K='#000000',G='#777777';
+      const text=(s,size,x,y)=>S.push({tool:'text',color:K,size,x,y,text:s});
+      parts.forEach((p,i)=>{
+        const c=byName.get(p);
+        S.push({tool:'dashLine',color:'#999999',size:1,pts:[[cx[i],top+hh],[cx[i],H-10]]});
+        S.push({tool:'rect',color:K,size:2,pts:[[cx[i]-pw[i]/2,top],[cx[i]+pw[i]/2,top+hh]],fill:c?(UML_FILL[c.kind]||UML_FILL.class):'#eeeeee'});
+        mctx.font='14px '+FONT;
+        text(p,14,cx[i]-mctx.measureText(p).width/2,top+(hh-14*1.3)/2);
+      });
+      let n=0;
+      ev.forEach((e,k)=>{
+        const y=y0+k*step,a=cx[parts.indexOf(e.f)],b=cx[parts.indexOf(e.t)],call=e.kind==='call';
+        if(call)n++;
+        const txt=(call?n+'. ':'')+e.label;
+        if(a===b){
+          S.push({tool:'line',color:K,size:2,pts:[[a,y-8],[a+38,y-8]]});
+          S.push({tool:'line',color:K,size:2,pts:[[a+38,y-8],[a+38,y+8]]});
+          S.push({tool:'arrowOpen',color:K,size:2,pts:[[a+38,y+8],[a,y+8]]});
+          mctx.font='13px '+FONT;text(txt,13,a+46,y-8);
+        }else S.push({tool:call?'arrowOpen':'dashOpen',color:call?K:G,size:2,pts:[[a,y],[b,y]],label:txt});
+      });
+      return S;
+    }};
+}
+// 코드 탭의 다이어그램 패널: 코드가 바뀌면 잠시 뒤 자동으로 다시 그린다
+function codeView(t,host,ta,goto){
+  const jp=host.querySelector('.cvpane[data-p="java"]');
+  const box=jp.querySelector('.cvbody'),cv=jp.querySelector('.cvc'),empty=jp.querySelector('.cvempty'),vbar=jp.querySelector('.cvbar');
+  const ctx=cv.getContext('2d'),entrySel=vbar.querySelector('[data-v="entry"]');
+  let model=null,calls=null,scene=null,z=1,px=0,py=0,moved=false,sel='',tm=0,cands=[],selRect=null,pick=false;
+  cv.tabIndex=0;
+  const sizeOf=()=>({w:box.clientWidth,h:box.clientHeight});
+  const draw=()=>{
+    const d=devicePixelRatio||1;
+    ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
+    if(!scene)return;
+    ctx.setTransform(d*z,0,0,d*z,d*px,d*py);scene.draw(ctx,sel);
+    if(selRect){
+      ctx.save();ctx.fillStyle='rgba(105,101,219,.12)';ctx.strokeStyle='#6965db';ctx.lineWidth=1.5/z;ctx.setLineDash([6/z,4/z]);
+      ctx.fillRect(selRect.x,selRect.y,selRect.w,selRect.h);ctx.strokeRect(selRect.x,selRect.y,selRect.w,selRect.h);ctx.restore();
+    }
+  };
+  const resize=()=>{
+    const d=devicePixelRatio||1,{w,h}=sizeOf();
+    if(!w||!h)return;
+    cv.width=Math.round(w*d);cv.height=Math.round(h*d);cv.style.width=w+'px';cv.style.height=h+'px';
+    if(!moved)fit(false);else draw();
+  };
+  const fit=redraw=>{
+    moved=false;
+    if(!scene){if(redraw!==false)draw();return}
+    const{w,h}=sizeOf();
+    if(scene.mode==='class')z=Math.max(0.2,Math.min(1.25,(w-24)/scene.W,(h-24)/scene.H));
+    else z=Math.max(0.5,Math.min(1.1,(w-24)/scene.W));
+    px=Math.max(12,(w-scene.W*z)/2);py=scene.mode==='class'?Math.max(12,(h-scene.H*z)/2):12;
+    if(redraw!==false)draw();
+  };
+  const zoomAt=(f,cx,cy)=>{
+    const nz=Math.min(4,Math.max(0.15,z*f));if(nz===z)return;
+    px=cx-(cx-px)*nz/z;py=cy-(cy-py)*nz/z;z=nz;moved=true;draw();
+  };
+  const defaultEntry=()=>{
+    if(!cands.length)return'';
+    const m=cands.find(c=>/\.(main|__main__|run|start)$/.test(c.key));
+    return(m||cands[0]).key;
+  };
+  const build=()=>{
+    const mode=t.vmode;
+    vbar.querySelectorAll('[data-v="class"],[data-v="flow"]').forEach(b=>b.classList.toggle('on',b.dataset.v===mode));
+    vbar.querySelector('[data-v="acc"]').classList.toggle('on',t.hideAcc);
+    vbar.querySelector('[data-v="dep"]').classList.toggle('on',t.dep);
+    entrySel.hidden=mode!=='flow';
+    scene=null;selRect=null;empty.textContent='';
+    const code=ta.value;
+    if(!code.trim()){empty.textContent='코드를 입력하거나 붙여 넣으면 클래스 구조와 실행 흐름이 여기에 그려집니다. 위쪽 [예제 코드…]로 먼저 살펴보세요.';draw();return}
+    try{model=umlModel(code,{hideAcc:t.hideAcc,dep:t.dep})}catch(e){model=null}
+    if(!model||!model.classes.length){empty.textContent='클래스를 찾지 못했어요. class, interface 선언이 들어 있는지 확인해 주세요. (Java, C#, TypeScript, Kotlin, Python 지원)';draw();return}
+    try{calls=umlCalls(model)}catch(e){calls=new Map()}
+    cands=[];
+    calls.forEach((list,key)=>{if(list.length){const s=umlSeq(model,calls,key);cands.push({key,n:s.ev.length})}});
+    cands.sort((a,b)=>b.n-a.n);
+    entrySel.innerHTML=cands.map(c=>'<option value="'+esc(c.key)+'">'+esc(c.key)+'()</option>').join('')||'<option value="">(호출 없음)</option>';
+    let entry=cands.some(c=>c.key===t.entry)?t.entry:defaultEntry();
+    entrySel.value=entry;
+    if(mode==='flow'){
+      if(!entry){empty.textContent='메소드가 다른 클래스의 메소드를 부르는 코드가 아직 없어요. 메소드 안에서 다른 객체의 메소드를 호출해 보세요.';draw();return}
+      scene=umlSeqScene(model,umlSeq(model,calls,entry));
+    }else scene=umlClassScene(model);
+  };
+  const update=(refit,now)=>{
+    clearTimeout(tm);
+    const go=()=>{
+      const prev=scene&&scene.mode;
+      build();
+      if(refit||!scene||prev!==scene.mode||!moved)fit(false);
+      draw();
+    };
+    if(now)go();else tm=setTimeout(go,350);
+  };
+  // 편집기에서 커서가 있는 클래스를 다이어그램에서 강조한다
+  const caret=off=>{
+    if(!model||!model.classes.length)return;
+    const code=ta.value;let best='',bp=-1;
+    model.classes.forEach(c=>{
+      const m=new RegExp('\\b(?:class|interface|enum|record|struct|trait|object)\\s+'+reEsc(c.name)+'\\b').exec(code);
+      if(m&&m.index<=off&&m.index>bp){bp=m.index;best=c.name}
+    });
+    if(best!==sel){sel=best;draw()}
+  };
+  const declPos=name=>{
+    const m=new RegExp('\\b(?:class|interface|enum|record|struct|trait|object)\\s+'+reEsc(name)+'\\b').exec(ta.value);
+    return m?{i:m.index+m[0].length-name.length,len:name.length}:null;
+  };
+  // 마우스로 끌어 이동, 휠로 확대/축소, 상자를 누르면 코드의 해당 위치로 이동
+  let drag=null;
+  cv.addEventListener('pointerdown',e=>{
+    try{cv.setPointerCapture(e.pointerId)}catch(err){}
+    cv.focus({preventScroll:true});
+    drag={x:e.clientX,y:e.clientY,px,py,moved:false,box:pick||e.shiftKey};
+    if(drag.box){const r=cv.getBoundingClientRect();drag.wx=(e.clientX-r.left-px)/z;drag.wy=(e.clientY-r.top-py)/z}
+  });
+  cv.addEventListener('pointermove',e=>{
+    if(!drag)return;
+    const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+    if(!drag.moved&&Math.hypot(dx,dy)<4)return;
+    drag.moved=true;
+    if(drag.box){
+      const r=cv.getBoundingClientRect(),x=(e.clientX-r.left-px)/z,y=(e.clientY-r.top-py)/z;
+      selRect={x:Math.min(drag.wx,x),y:Math.min(drag.wy,y),w:Math.abs(x-drag.wx),h:Math.abs(y-drag.wy)};draw();return;
+    }
+    moved=true;px=drag.px+dx;py=drag.py+dy;draw();
+  });
+  const endDrag=e=>{
+    if(!drag)return;
+    const d=drag;drag=null;
+    if(d.box){
+      if(d.moved&&selRect&&selRect.w>4&&selRect.h>4)copyRegion();
+      else if(!d.moved&&selRect){selRect=null;draw()}
+      return;
+    }
+    if(d.moved||!scene)return;
+    if(selRect){selRect=null;draw()}
+    const r=cv.getBoundingClientRect(),name=scene.hit((e.clientX-r.left-px)/z,(e.clientY-r.top-py)/z);
+    if(name){const p=declPos(name);if(p){sel=name;draw();goto(p.i,p.len)}}
+  };
+  cv.addEventListener('pointerup',endDrag);
+  cv.addEventListener('pointercancel',()=>{drag=null});
+  cv.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const r=cv.getBoundingClientRect();
+    if(e.ctrlKey||scene&&scene.mode==='class')zoomAt(Math.exp(-e.deltaY*0.0015),e.clientX-r.left,e.clientY-r.top);
+    else{py-=e.deltaY;px-=e.deltaX;moved=true;draw()}
+  },{passive:false});
+  new ResizeObserver(resize).observe(box);
+
+  // 선택한 영역(없으면 전체)을 복사한다. 그림 탭에서 Ctrl+V 하면 고칠 수 있는 도형으로 붙고, 이미지로도 클립보드에 담는다
+  const copyRegion=async()=>{
+    if(!scene){flash('복사할 다이어그램이 없습니다');return}
+    let list=scene.toStrokes();
+    if(selRect){
+      const r=selRect;
+      list=list.filter(s=>{const b=strokeBox(s,true);return b.x<r.x+r.w&&b.x+b.w>r.x&&b.y<r.y+r.h&&b.y+b.h>r.y});
+    }
+    if(!list.length){flash('선택한 영역에 복사할 요소가 없습니다');return}
+    let x0=Infinity,y0=Infinity;
+    list.forEach(s=>{const b=strokeBox(s,true);x0=Math.min(x0,b.x);y0=Math.min(y0,b.y)});
+    list.forEach(s=>{shiftStroke(s,30-x0,30-y0);delete s.grp});
+    clip={strokes:list,photos:[],n:0,diagram:true,png:0};
+    let msg=list.length+'개 요소를 복사했습니다. 그림 탭에서 Ctrl+V로 붙여넣으면 고칠 수 있는 도형으로 붙습니다';
+    flash(msg);
+    try{
+      const r=selRect||{x:0,y:0,w:scene.W,h:scene.H},k=2,c=document.createElement('canvas');
+      c.width=Math.ceil(r.w*k);c.height=Math.ceil(r.h*k);
+      const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.setTransform(k,0,0,k,-r.x*k,-r.y*k);scene.draw(x,'');
+      const blob=await new Promise((ok,no)=>c.toBlob(b=>b?ok(b):no(new Error('blob')),'image/png'));
+      await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+      clip.png=blob.size;flash(msg+' (이미지로도 담았어요)');
+    }catch(e){}
+  };
+  cv.addEventListener('keydown',e=>{
+    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='c'){e.preventDefault();copyRegion()}
+    else if(e.key==='Escape'&&selRect){selRect=null;draw()}
+  });
+  const toBlobCanvas=()=>{
+    const s=2,c=document.createElement('canvas');c.width=Math.ceil(scene.W*s);c.height=Math.ceil(scene.H*s);
+    const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.setTransform(s,0,0,s,0,0);scene.draw(x,'');
+    return c;
+  };
+  const fillJ=()=>{
+    const sl=vbar.querySelector('[data-v="jcls"]');
+    let names=[];
+    try{names=umlModel(ta.value,{hideAcc:false,dep:false}).classes.filter(c=>c.attrs.length&&(c.kind==='class'||c.kind==='record'||c.kind==='struct')&&!/(Controller|Service|Repository|Dao|Config|Application|Test|Util|Utils)$/.test(c.name)).map(c=>c.name)}catch(e){}
+    sl.innerHTML='<option value="">JSON 만들기…</option>'+(names.length>1?'<option value="*">자동 (가장 바깥 클래스)</option>':'')+names.map(n=>'<option value="'+esc(n)+'">'+esc(n)+'</option>').join('');
+    sl.value='';
+  };
+  vbar.querySelector('[data-v="jcls"]').addEventListener('pointerdown',fillJ);
+  vbar.querySelector('[data-v="jcls"]').addEventListener('focus',fillJ);
+  vbar.addEventListener('change',e=>{
+    if(e.target.dataset.v==='jcls'){
+      const v=e.target.value;e.target.value='';
+      if(!v)return;
+      const r=javaToJson(ta.value,v==='*'?'':v);
+      if(!r){flash('JSON으로 만들 클래스가 없어요 (필드가 있는 클래스가 필요해요)');return}
+      openCodeTab(r.text+'\n','json',r.name+'.json');
+      flash(r.name+' 클래스의 샘플 JSON을 새 탭에 만들었습니다');
+      return;
+    }
+    if(e.target.dataset.v==='entry'){t.entry=e.target.value;saveSoon();update(true,true)}
+  });
+  vbar.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-v]');if(!b)return;
+    const v=b.dataset.v;
+    if(v==='class'||v==='flow'){t.vmode=v;saveSoon();update(true,true)}
+    else if(v==='acc'){t.hideAcc=!t.hideAcc;saveSoon();update(true,true)}
+    else if(v==='dep'){t.dep=!t.dep;saveSoon();update(true,true)}
+    else if(v==='fit'){fit()}
+    else if(v==='zin'||v==='zout'){const{w,h}=sizeOf();zoomAt(v==='zin'?1.25:0.8,w/2,h/2)}
+    else if(v==='png'){
+      if(!scene){flash('그릴 다이어그램이 없습니다');return}
+      toBlobCanvas().toBlob(bl=>download(bl,safeName(t.title.replace(/\.[^.]+$/,''))+'-'+(scene.mode==='class'?'클래스구조':'실행흐름')+'.png'),'image/png');
+    }
+    else if(v==='pick'){
+      pick=!pick;b.classList.toggle('on',pick);cv.style.cursor=pick?'crosshair':'';
+      if(pick)flash('다이어그램에서 끌어서 영역을 고르세요. 놓으면 바로 복사됩니다');
+    }
+    else if(v==='copy')copyRegion();
+    else if(v==='draw'){
+      if(!scene){flash('그릴 다이어그램이 없습니다');return}
+      sendToDraw(scene.toStrokes(),scene.W,scene.H,t.title.replace(/\.[^.]+$/,'')+(scene.mode==='class'?' 클래스 구조':' 실행 흐름'));
+    }
+  });
+  return{update,caret,fit,resize,draw};
+}
+// ---- 언어별 미리보기: HTML 화면, CSS 적용, JavaScript 실행 결과, JSON 트리, Java 클래스 다이어그램 ----
+const PV_SAMPLE={
+  doc:'<h1>제목 (h1)</h1><p>문단입니다. <a href="#">링크</a>와 <b>굵은 글씨</b>, <i>기울임</i>이 있어요.</p><h2>목록</h2><ul><li>첫째 항목</li><li>둘째 항목</li><li>셋째 항목</li></ul><table><tr><th>이름</th><th>나이</th></tr><tr><td>민수</td><td>31</td></tr><tr><td>지은</td><td>27</td></tr></table>',
+  form:'<h1>로그인</h1><form><p><label>이메일<br><input type="email" placeholder="you@example.com"></label></p><p><label>비밀번호<br><input type="password"></label></p><p><button class="btn">로그인</button> <button type="button">취소</button></p><p><a href="#">비밀번호를 잊으셨나요?</a></p></form>',
+  card:'<h1>카드 목록</h1><div class="card"><h2>첫 번째 카드</h2><p>카드 안의 설명입니다.</p><button class="btn">자세히</button></div><br><div class="card"><h2>두 번째 카드</h2><p>.card, .btn 규칙이 여기에 적용돼요.</p><button class="btn">자세히</button></div>'
+};
+// 워커 안에서 console 출력을 가로채 화면으로 보낸다 (화면이 멈추지 않고, 정지할 수 있다)
+const JS_PRE=[
+  "const __fmt=v=>{if(typeof v==='string')return v;if(v instanceof Error)return v.name+': '+v.message;if(typeof v==='undefined')return 'undefined';if(typeof v==='function')return String(v);try{const s=JSON.stringify(v,(k,x)=>typeof x==='bigint'?x+'n':x);return s&&s.length>90?JSON.stringify(v,(k,x)=>typeof x==='bigint'?x+'n':x,2):s}catch(e){return String(v)}};",
+  "const __post=(l,a)=>postMessage({l,a:a.map(__fmt)});",
+  "['log','info','warn','error','debug','table'].forEach(k=>{console[k]=(...a)=>__post(k==='table'?'log':k,a)});",
+  "self.onerror=(m,s,l,c,e)=>{postMessage({l:'error',a:[(e&&e.name?e.name+': '+e.message:String(m))+(l?'  (줄 '+(l-__N__)+')':'')]});return true};",
+  "self.addEventListener('unhandledrejection',e=>{postMessage({l:'error',a:['처리되지 않은 Promise 오류: '+(e.reason&&e.reason.message||e.reason)]})});",
+  ""
+].join('\n');
+// ---- JSON 도구: 검사, 정리, Java 클래스 <-> JSON ----
+// 숫자를 글자 그대로 보존하는 JSON 파서 (JSON.parse는 큰 숫자를 깎아 버리므로 직접 읽는다)
+function jsonParse(s){
+  let i=0;const n=s.length,dups=[];
+  const E=(m,p)=>{throw{pos:p===undefined?i:p,msg:m}};
+  const ws=()=>{while(i<n){const c=s.charCodeAt(i);if(c===32||c===9||c===10||c===13)i++;else break}};
+  const at=()=>i>=n?'입력이 갑자기 끝났어요':'여기에 예상하지 못한 글자 "'+s[i]+'"가 있어요';
+  const ESC={'"':'"','\\':'\\','/':'/',b:'\b',f:'\f',n:'\n',r:'\r',t:'\t'};
+  const str=()=>{
+    const st=i;i++;let out='';
+    for(;;){
+      if(i>=n)E('문자열이 닫히지 않았어요 (닫는 따옴표 "가 없음)',st);
+      const c=s[i];
+      if(c==='"'){i++;return out}
+      if(c==='\n'||c==='\r')E('문자열 안에서 줄을 바꿀 수 없어요. 줄바꿈은 \\n 으로 쓰세요',st);
+      if(c==='\\'){
+        const d=s[i+1];
+        if(d==='u'){
+          const h=s.slice(i+2,i+6);
+          if(!/^[0-9a-fA-F]{4}$/.test(h))E('\\u 뒤에는 16진수 4자리가 와야 해요');
+          out+=String.fromCharCode(parseInt(h,16));i+=6;continue;
+        }
+        if(d===undefined||!Object.prototype.hasOwnProperty.call(ESC,d))E('잘못된 이스케이프 \\'+(d||'')+' 예요. 역슬래시(\\)는 \\\\ 로 쓰세요');
+        out+=ESC[d];i+=2;continue;
+      }
+      if(c<' ')E('문자열 안에 제어 문자가 있어요');
+      out+=c;i++;
+    }
+  };
+  const NUM=/-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/y;
+  const val=d=>{
+    ws();
+    if(i>=n)E('값이 필요한데 입력이 끝났어요');
+    if(d>200)E('중첩이 너무 깊어요 (200단계까지)');
+    const c=s[i];
+    if(c==='{'){
+      const st=i;i++;const e=[],seen=new Set();ws();
+      if(s[i]==='}'){i++;return{t:'o',e}}
+      for(;;){
+        ws();
+        if(s[i]!=='"'){
+          if(i>=n)E('객체가 닫히지 않았어요 ({ 에 대응하는 }가 없음)',st);
+          if(s[i]==="'")E("키는 작은따옴표(')가 아니라 큰따옴표(\")로 감싸야 해요");
+          if(/[A-Za-z_$]/.test(s[i]))E('키에 큰따옴표가 없어요. "키" 처럼 감싸 주세요');
+          E('키(큰따옴표로 감싼 글자)가 와야 하는데 '+at());
+        }
+        const k=str();ws();
+        if(s[i]!==':')E(i>=n?'입력이 갑자기 끝났어요':'키 "'+k+'" 뒤에는 콜론(:)이 와야 해요');
+        i++;
+        const v=val(d+1);
+        if(seen.has(k)&&!dups.includes(k))dups.push(k);
+        seen.add(k);e.push([k,v]);ws();
+        if(s[i]===','){const cp=i;i++;ws();if(s[i]==='}')E('마지막 항목 뒤에 쉼표(,)가 남아 있어요. 쉼표를 지우세요',cp);continue}
+        if(s[i]==='}'){i++;return{t:'o',e}}
+        if(i>=n)E('객체가 닫히지 않았어요 ({ 에 대응하는 }가 없음)',st);
+        E('항목 사이에는 쉼표(,)가 필요해요 (끝이라면 }로 닫으세요)');
+      }
+    }
+    if(c==='['){
+      const st=i;i++;const e=[];ws();
+      if(s[i]===']'){i++;return{t:'a',e}}
+      for(;;){
+        e.push(val(d+1));ws();
+        if(s[i]===','){const cp=i;i++;ws();if(s[i]===']')E('마지막 항목 뒤에 쉼표(,)가 남아 있어요. 쉼표를 지우세요',cp);continue}
+        if(s[i]===']'){i++;return{t:'a',e}}
+        if(i>=n)E('배열이 닫히지 않았어요 ([ 에 대응하는 ]가 없음)',st);
+        E('항목 사이에는 쉼표(,)가 필요해요 (끝이라면 ]로 닫으세요)');
+      }
+    }
+    if(c==='"')return{t:'s',v:str()};
+    if(c==="'")E("문자열은 작은따옴표(')가 아니라 큰따옴표(\")로 감싸야 해요");
+    if(c==='-'||(c>='0'&&c<='9')){
+      NUM.lastIndex=i;const m=NUM.exec(s);
+      if(!m){
+        if(c==='-')E('- 뒤에는 숫자가 와야 해요');
+        E('숫자 형식이 올바르지 않아요');
+      }
+      const raw=m[0];i+=raw.length;
+      if(/[0-9]/.test(s[i]||'')&&raw==='0')E('0으로 시작하는 숫자는 쓸 수 없어요 (예: 007)',i-1);
+      if(s[i]==='.')E('소수점 뒤에는 숫자가 와야 해요');
+      return{t:'n',raw};
+    }
+    for(const[w,r]of[['true',{t:'b',v:true}],['false',{t:'b',v:false}],['null',{t:'z'}]]){
+      if(s.startsWith(w,i)&&!/[\w$]/.test(s[i+w.length]||'')){i+=w.length;return r}
+    }
+    if(/[A-Za-z_$]/.test(c)){
+      const m=/^[\w$]+/.exec(s.slice(i,i+40))[0];
+      E('알 수 없는 값 "'+m+'" 이에요. 글자는 큰따옴표로 감싸고, true/false/null은 소문자로 쓰세요');
+    }
+    E('값이 와야 하는데 '+at());
+  };
+  try{
+    const v=val(0);ws();
+    if(i<n)E('JSON이 끝난 뒤에 남은 내용이 있어요');
+    return{ok:true,v,dups};
+  }catch(x){
+    if(x&&typeof x.pos==='number'){
+      const p=Math.min(x.pos,n),pre=s.slice(0,p).split('\n');
+      return{ok:false,pos:p,msg:x.msg,line:pre.length,col:pre[pre.length-1].length+1};
+    }
+    return{ok:false,pos:0,msg:'읽을 수 없는 JSON이에요',line:1,col:1};
+  }
+}
+// 읽어 둔 값을 다시 글로 만든다. indent가 빈 글자면 한 줄, 숫자는 원래 모양 그대로
+function jsonOut(a,ind,sort,lv){
+  lv=lv||0;
+  const nl=ind?'\n'+ind.repeat(lv+1):'',end=ind?'\n'+ind.repeat(lv):'';
+  if(a.t==='s')return JSON.stringify(a.v);
+  if(a.t==='n')return a.raw;
+  if(a.t==='b')return String(a.v);
+  if(a.t==='z')return'null';
+  if(a.t==='a')return a.e.length?'['+nl+a.e.map(x=>jsonOut(x,ind,sort,lv+1)).join(','+nl)+end+']':'[]';
+  let e=a.e;if(sort)e=[...e].sort((x,y)=>x[0]<y[0]?-1:x[0]>y[0]?1:0);
+  return e.length?'{'+nl+e.map(([k,v])=>JSON.stringify(k)+(ind?': ':':')+jsonOut(v,ind,sort,lv+1)).join(','+nl)+end+'}':'{}';
+}
+function jsonStats(a){
+  let nodes=0,depth=0;
+  (function w(x,d){nodes++;if(d>depth)depth=d;if(x.t==='a')x.e.forEach(y=>w(y,d+1));else if(x.t==='o')x.e.forEach(y=>w(y[1],d+1))})(a,1);
+  return{nodes,depth};
+}
+
+// ---- Java 클래스 -> 샘플 JSON ----
+const J_STR=/^(String|char|Character|CharSequence|StringBuilder|StringBuffer)$/;
+const J_INT=/^(int|long|short|byte|Integer|Long|Short|Byte|BigInteger|AtomicInteger|AtomicLong)$/;
+const J_DEC=/^(double|float|Double|Float|BigDecimal|Number)$/;
+const J_BOOL=/^(boolean|Boolean)$/;
+const J_LIST=/^(List|Set|Collection|ArrayList|LinkedList|HashSet|LinkedHashSet|TreeSet|Iterable|Queue|Deque|Stream|Vector|SortedSet)$/;
+const J_MAP=/^(Map|HashMap|LinkedHashMap|TreeMap|SortedMap|ConcurrentHashMap)$/;
+function javaTypeParts(ty){
+  ty=(ty||'').replace(/\b(final|volatile|transient)\b/g,'').replace(/\s+/g,' ').trim();
+  let arr=0;while(/\[\]$/.test(ty)){ty=ty.slice(0,-2).trim();arr++}
+  const m=/^([\w.$]+)\s*(?:<(.*)>)?$/.exec(ty);
+  if(!m)return{base:ty,args:[],arr};
+  const args=[];
+  if(m[2]){let d=0,cur='';for(const ch of m[2]){if(ch==='<')d++;else if(ch==='>')d--;if(ch===','&&d===0){args.push(cur.trim());cur=''}else cur+=ch}args.push(cur.trim())}
+  return{base:m[1].split('.').pop(),args,arr};
+}
+function javaToJson(code,pick){
+  const M=umlModel(code,{hideAcc:false,dep:false}),byName=new Map(M.classes.map(c=>[c.name,c]));
+  const isData=c=>(c.kind==='class'||c.kind==='record'||c.kind==='struct')&&c.attrs.length&&!/(Controller|Service|Repository|Dao|Config|Application|Test|Util|Utils)$/.test(c.name);
+  const cands=M.classes.filter(isData);
+  let root=pick?byName.get(pick):null;
+  if(!root){
+    const used=new Set();
+    M.classes.forEach(c=>c.attrs.forEach(a=>{const p=javaTypeParts(a.type);[p.base,...p.args.map(x=>javaTypeParts(x).base)].forEach(w=>{if(w!==c.name)used.add(w)})}));
+    root=cands.find(c=>!used.has(c.name))||cands.slice().sort((a,b)=>b.attrs.length-a.attrs.length)[0];
+  }
+  if(!root)return null;
+  const sample=(ty,stack)=>{
+    const p=javaTypeParts(ty);
+    const one=base=>{
+      if(J_STR.test(base))return'string';
+      if(J_INT.test(base))return 0;
+      if(J_DEC.test(base))return 0.0;
+      if(J_BOOL.test(base))return false;
+      if(base==='UUID')return'123e4567-e89b-12d3-a456-426614174000';
+      if(/^(LocalDateTime|Date|Instant|ZonedDateTime|OffsetDateTime|Timestamp|Calendar)$/.test(base))return'2024-01-01T09:00:00';
+      if(base==='LocalDate')return'2024-01-01';
+      if(base==='LocalTime')return'09:00:00';
+      if(base==='Object')return null;
+      const c=byName.get(base);
+      if(!c)return null;
+      if(c.kind==='enum')return c.consts[0]||'';
+      if(stack.includes(c.name))return null;
+      const o={};
+      c.attrs.forEach(a=>{
+        if(/^[A-Z][A-Z0-9_]*$/.test(a.name)||a.name==='serialVersionUID')return;
+        o[a.name]=sample(a.type,[...stack,c.name]);
+      });
+      return o;
+    };
+    if(p.arr)return[sample(ty.replace(/\[\]\s*$/,''),stack)];
+    if(J_LIST.test(p.base)){const e=p.args[0]?sample(p.args[0],stack):null;return e===null&&p.args[0]&&byName.has(javaTypeParts(p.args[0]).base)?[]:[e]}
+    if(J_MAP.test(p.base)){const o={};o[p.args[0]&&/^(Integer|Long)$/.test(p.args[0])?'1':'key']=p.args[1]?sample(p.args[1],stack):null;return o}
+    if(p.base==='Optional'&&p.args[0])return sample(p.args[0],stack);
+    return one(p.base);
+  };
+  const v=sample(root.name,[]);
+  const text=JSON.stringify(v,null,2);
+  return{name:root.name,text,classes:cands.map(c=>c.name)};
+}
+
+// ---- JSON -> Java 클래스 ----
+const J_KW=new Set('abstract assert boolean break byte case catch char class const continue default do double else enum extends final finally float for goto if implements import instanceof int interface long native new package private protected public return short static strictfp super switch synchronized this throw throws transient try void volatile while true false null var record'.split(' '));
+function jsonToJava(ast,rootName,style){
+  const classes=[],used=new Set();
+  const camel=k=>{
+    let w=String(k).replace(/[^A-Za-z0-9_$]+(.)?/g,(m,c)=>c?c.toUpperCase():'');
+    if(!w)w='field';
+    if(/^[0-9]/.test(w))w='_'+w;
+    w=w[0].toLowerCase()+w.slice(1);
+    return J_KW.has(w)?w+'_':w;
+  };
+  const pascal=k=>{const c=camel(k).replace(/_$/,'');return c[0].toUpperCase()+c.slice(1)};
+  const sing=k=>{const w=pascal(k);return/ies$/.test(w)&&w.length>3?w.slice(0,-3)+'y':/(ss|us)$/.test(w)?w:/s$/.test(w)&&w.length>2?w.slice(0,-1):w};
+  const uniq=nm=>{let r=nm,i=2;while(used.has(r))r=nm+i++;used.add(r);return r};
+  const typeOf=(nodes,hint)=>{
+    // nodes: 같은 자리에 나온 값들 (배열 원소 여러 개를 합쳐서 본다)
+    const kinds=new Set(nodes.map(x=>x.t));
+    kinds.delete('z');
+    if(!kinds.size)return'Object';
+    if(kinds.size>1){
+      if([...kinds].every(k=>k==='n'))return nodes.some(x=>x.t==='n'&&/[.eE]/.test(x.raw))?'double':'long';
+      return'Object';
+    }
+    const k=[...kinds][0],nn=nodes.filter(x=>x.t===k);
+    if(k==='s')return'String';
+    if(k==='b')return'boolean';
+    if(k==='n'){
+      if(nn.some(x=>/[.eE]/.test(x.raw)))return'double';
+      return nn.every(x=>Math.abs(Number(x.raw))<=2147483647)?'int':'long';
+    }
+    if(k==='a'){
+      const inner=nn.flatMap(x=>x.e);
+      return'List<'+box(typeOf(inner,sing(hint)))+'>';
+    }
+    const name=uniq(pascal(hint));
+    makeClass(name,nn);
+    return name;
+  };
+  const box=t=>({int:'Integer',long:'Long',double:'Double',boolean:'Boolean'})[t]||t;
+  const makeClass=(name,objs)=>{
+    const order=[],byKey=new Map();
+    objs.forEach(o=>o.e.forEach(([k,v])=>{if(!byKey.has(k)){byKey.set(k,[]);order.push(k)}byKey.get(k).push(v)}));
+    const c={name,fields:[]};classes.push(c);
+    const seen=new Set();
+    order.forEach(k=>{
+      let f=camel(k);while(seen.has(f))f+='_';seen.add(f);
+      const vals=byKey.get(k);
+      // 값이 null이거나 빠진 적이 있으면 기본형 대신 래퍼형을 쓴다
+      let ty=typeOf(vals,k);
+      if((vals.some(x=>x.t==='z')||vals.length<objs.length))ty=box(ty);
+      c.fields.push({name:f,type:ty,key:k});
+    });
+  };
+  rootName=pascal(rootName||'Root');
+  if(ast.t==='o'){used.add(rootName);makeClass(rootName,[ast])}
+  else if(ast.t==='a'){
+    // 배열이 맨 위에 있으면 원소 하나를 루트 클래스로 삼는다
+    const inner=ast.e;
+    if(inner.length&&inner.every(x=>x.t==='o')){used.clear();classes.length=0;used.add(rootName);makeClass(rootName,inner)}
+    else return null;
+  }else return null;
+  const needList=classes.some(c=>c.fields.some(f=>f.type.includes('List<')));
+  const needJp=classes.some(c=>c.fields.some(f=>f.key!==f.name));
+  const L=[];
+  const imports=[];
+  if(needJp)imports.push('com.fasterxml.jackson.annotation.JsonProperty');
+  if(style==='lombok')imports.push('lombok.Data');
+  if(needList)imports.push('java.util.List');
+  imports.sort();
+  if(imports.length){imports.forEach(i=>L.push('import '+i+';'));L.push('')}
+  const cap=s=>s[0].toUpperCase()+s.slice(1);
+  classes.forEach((c,idx)=>{
+    if(style==='record'){
+      L.push('public record '+c.name+'('+(c.fields.length?'':'')+c.fields.map(f=>(f.key!==f.name?'@JsonProperty("'+f.key+'") ':'')+f.type+' '+f.name).join(', ')+') {}');
+    }else{
+      if(style==='lombok')L.push('@Data');
+      L.push('public class '+c.name+' {');
+      c.fields.forEach(f=>{
+        if(f.key!==f.name)L.push('    @JsonProperty("'+f.key+'")');
+        L.push('    private '+f.type+' '+f.name+';');
+      });
+      if(style!=='lombok'){
+        c.fields.forEach(f=>{
+          L.push('');
+          L.push('    public '+f.type+' '+(f.type==='boolean'?'is':'get')+cap(f.name.replace(/_$/,''))+'() { return '+f.name+'; }');
+          L.push('    public void set'+cap(f.name.replace(/_$/,''))+'('+f.type+' '+f.name+') { this.'+f.name+' = '+f.name+'; }');
+        });
+      }
+      L.push('}');
+    }
+    if(idx<classes.length-1)L.push('');
+  });
+  return{name:rootName,text:L.join('\n')+'\n',count:classes.length};
+}
+// 코드를 담은 새 코드 탭을 연다
+function openCodeTab(code,lang,title){
+  newTab('code');
+  const t=active();
+  t.code=code;t.lang=lang;t.title=title;t.custom=true;
+  render();save();
+}
+function codePreview(t,host,ta,getLang,jv,setLang,goto){
+  const panes={};host.querySelectorAll('.cvpane').forEach(p=>{panes[p.dataset.p]=p});
+  const NAME={java:'java',html:'html',css:'css',js:'js',json:'json'};
+  let cur='',tm=0,worker=null,wtimer=0,lastHtml=null;
+  const show=name=>{if(cur===name)return false;cur=name;Object.keys(panes).forEach(k=>{panes[k].hidden=k!==name});return true};
+  const hp=panes.html,hf=hp.querySelector('.cvf'),he=hp.querySelector('.cvempty');
+  const cp=panes.css,cf=cp.querySelector('.cvf'),ce=cp.querySelector('.cvempty');
+  const out=panes.js.querySelector('.cvout'),tree=panes.json.querySelector('.cvtree');
+  const act=(p,a)=>p.querySelector('[data-p-act="'+a+'"]');
+  const setBtns=()=>{
+    act(hp,'auto').classList.toggle('on',t.pauto);
+    ['full','tablet','mobile'].forEach(k=>act(hp,'pv-'+k).classList.toggle('on',t.pv===k));
+    hf.style.width=t.pv==='tablet'?'768px':t.pv==='mobile'?'375px':'100%';
+    hf.classList.toggle('dev',t.pv!=='full');
+    ['doc','form','card'].forEach(k=>act(cp,'cs-'+k).classList.toggle('on',t.csample===k));
+  };
+  // HTML
+  const htmlNow=()=>{
+    const c=ta.value;
+    he.textContent=c.trim()?'':'HTML 코드를 입력하면 결과가 여기에 보여요';
+    if(c===lastHtml)return;lastHtml=c;hf.srcdoc=c;
+  };
+  // CSS
+  const cssNow=()=>{
+    const c=ta.value.replace(/<\/style/gi,'<\\/style');
+    ce.textContent=c.trim()?'':'CSS 코드를 입력하면 샘플 화면에 바로 적용돼요';
+    cf.srcdoc='<!doctype html><meta charset="utf-8"><style>body{margin:16px;font-family:sans-serif;line-height:1.5}</style><style>'+c+'</style><body>'+PV_SAMPLE[t.csample];
+  };
+  // JavaScript
+  const line=(lvl,txt)=>{const d=document.createElement('div');d.className='ol '+lvl;d.textContent=txt;out.append(d);out.scrollTop=out.scrollHeight};
+  const stop=msg=>{
+    if(!worker)return;
+    worker.terminate();worker=null;clearTimeout(wtimer);
+    if(msg)line('sys',msg);
+  };
+  const hint=txt=>{if(/(document|window|alert|prompt|localStorage|navigator|location) is not defined/.test(txt))line('sys','힌트: 여기에는 화면(document, window)이 없어요. 화면을 다루는 코드는 HTML 탭에서 <script>로 확인해 보세요.')};
+  const run=()=>{
+    stop();out.textContent='';
+    const code=ta.value;
+    if(!code.trim()){line('sys','실행할 코드가 없어요');return}
+    const n=(JS_PRE.match(/\n/g)||[]).length,pre=JS_PRE.replace('__N__',String(n));
+    let url;
+    try{url=URL.createObjectURL(new Blob([pre+code+'\n;postMessage({done:1})'],{type:'text/javascript'}))}
+    catch(e){line('error',String(e));return}
+    let w;
+    try{w=worker=new Worker(url)}catch(e){line('error','실행할 수 없어요: '+e.message);return}
+    line('sys','▶ 실행');
+    w.onmessage=e=>{
+      const d=e.data;
+      if(d.done){line('sys','■ 끝 (타이머가 남아 있으면 계속 실행되다가 8초 뒤에 자동으로 멈춰요)');return}
+      const txt=d.a.join(' ');line(d.l,txt);if(d.l==='error')hint(txt);
+    };
+    w.onerror=e=>{
+      e.preventDefault();
+      const m=(e.message||'오류').replace(/^Uncaught /,'');
+      line('error',m+(e.lineno?'  (줄 '+Math.max(1,e.lineno-n)+')':''));hint(m);
+    };
+    wtimer=setTimeout(()=>{if(worker===w)stop('■ 8초가 지나 자동으로 멈췄어요')},8000);
+    setTimeout(()=>URL.revokeObjectURL(url),6000);
+  };
+  // JSON
+  const stat=panes.json.querySelector('.jstat');
+  let jlast=null;
+  const kb=n=>n<1024?n+'B':(n/1024).toFixed(1)+'KB';
+  const valHtml=x=>{
+    if(x.t==='s')return'<span class="js">"'+esc(x.v.length>300?x.v.slice(0,300)+'…':x.v)+'"</span>';
+    if(x.t==='n')return'<span class="jn">'+esc(x.raw)+'</span>';
+    if(x.t==='z')return'<span class="jb">null</span>';
+    return'<span class="jb">'+x.v+'</span>';
+  };
+  const jsonNow=manual=>{
+    const c=ta.value;tree.textContent='';stat.className='jstat';stat.textContent='';
+    const info=html=>{const d=document.createElement('div');d.className='jmsg';d.innerHTML=html;tree.append(d);return d};
+    if(!c.trim()){
+      jlast=null;stat.textContent='JSON을 입력하면 형식을 바로 검사해 드려요';
+      info('JSON을 입력하거나 붙여 넣으세요. 위쪽 [예제 코드…]에 JSON 예제가 있어요.');
+      if(manual)flash('검사할 JSON이 없어요');
+      return;
+    }
+    const r=jlast=jsonParse(c);
+    if(!r.ok){
+      stat.classList.add('bad');
+      stat.innerHTML='<span>✖ '+r.line+'줄 '+r.col+'열 · '+esc(r.msg)+'</span><button data-p-act="goto">오류 위치로</button>';
+      const lines=c.split('\n'),ln=lines[r.line-1]||'';
+      const box=info('<b>JSON 형식 오류</b><p>'+r.line+'번째 줄 '+r.col+'번째 글자 근처예요.</p><p style="font:12px var(--mono);white-space:pre-wrap;word-break:break-all">'+esc(ln.length>160?ln.slice(Math.max(0,r.col-60),r.col+60):ln)+'</p><p class="jhelp">자주 있는 실수: 마지막 항목 뒤의 쉼표, 작은따옴표(\'), 따옴표 없는 키, 주석(// /* */)</p>');
+      box.classList.add('bad');
+      if(manual){flash('JSON 형식 오류: '+r.line+'줄 '+r.col+'열');goto(Math.min(r.pos,Math.max(0,c.length-1)),1)}
+      return;
+    }
+    const st=jsonStats(r.v),root=r.v;
+    const kind=root.t==='o'?'객체':root.t==='a'?'배열':'값';
+    stat.classList.add('ok');
+    stat.innerHTML='<span>✔ 올바른 JSON · 맨 위가 '+kind+' · 값 '+st.nodes+'개 · 깊이 '+st.depth+' · '+kb(new Blob([c]).size)+'</span>'+
+      (r.dups.length?'<span class="jw">⚠ 같은 키가 겹쳐요: '+esc(r.dups.slice(0,5).join(', '))+(r.dups.length>5?' 외':'')+'</span>':'');
+    if(manual)flash('올바른 JSON입니다'+(r.dups.length?' (겹치는 키가 있어요)':''));
+    let count=0;
+    const node=(key,x,depth)=>{
+      if(++count>4000)return null;
+      const kh=key===null?'':'<span class="jk">'+esc(String(key))+'</span><span class="jc">: </span>';
+      if(x.t!=='o'&&x.t!=='a'){const d=document.createElement('div');d.className='jr';d.innerHTML=kh+valHtml(x);return d}
+      const arr=x.t==='a',ents=arr?x.e.map((y,i)=>[i,y]):x.e;
+      const det=document.createElement('details');det.open=depth<2;
+      const sm=document.createElement('summary');
+      sm.innerHTML=kh+'<span class="jm">'+(arr?'배열 '+ents.length+'개':'객체 '+ents.length+'개')+'</span>';
+      det.append(sm);
+      for(const[k,y]of ents){const n=node(k,y,depth+1);if(n)det.append(n)}
+      return det;
+    };
+    tree.append(node(null,root,0));
+    if(count>4000)info('항목이 많아 일부만 보여 드려요 (4000개까지)');
+  };
+  // 갱신 흐름
+  const update=(refit,now)=>{
+    const name=NAME[getLang()]||'none',switched=show(name);
+    setBtns();clearTimeout(tm);
+    if(name==='java'){if(switched)jv.resize();jv.update(refit||switched,now||switched);return}
+    if(name==='html'){
+      if(now||switched||t.pauto){if(now||switched)htmlNow();else tm=setTimeout(htmlNow,500)}
+    }else if(name==='css'){if(now||switched)cssNow();else tm=setTimeout(cssNow,250)}
+    else if(name==='json'){if(now||switched)jsonNow();else tm=setTimeout(jsonNow,300)}
+    else if(name==='js'&&switched&&!out.childNodes.length)line('sys','▶ 실행 버튼(또는 Ctrl+Enter)을 누르면 코드가 실행되고 console 출력이 여기에 나와요.');
+  };
+  const primary=()=>{
+    const name=NAME[getLang()]||'none';
+    if(name==='html'){lastHtml=null;htmlNow()}else if(name==='js')run();else if(name==='css')cssNow();else if(name==='json')jsonNow(true);
+    else if(name==='none')flash('아래에서 언어를 고르면 미리보기가 나옵니다');
+  };
+  host.querySelector('.cview').addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    const a=b.dataset.pAct,lg=b.dataset.pLang;
+    if(lg){setLang(lg);return}
+    if(!a)return;
+    if(a==='reload'){lastHtml=null;htmlNow()}
+    else if(a==='auto'){t.pauto=!t.pauto;saveSoon();setBtns();if(t.pauto)htmlNow()}
+    else if(a.startsWith('pv-')){t.pv=a.slice(3);saveSoon();setBtns()}
+    else if(a.startsWith('cs-')){t.csample=a.slice(3);saveSoon();setBtns();cssNow()}
+    else if(a==='run')run();
+    else if(a==='stop'){if(worker)stop('■ 정지했어요');else flash('실행 중인 코드가 없어요')}
+    else if(a==='clear')out.textContent='';
+    else if(a==='open'||a==='close')tree.querySelectorAll('details').forEach(d=>{d.open=a==='open'});
+    else if(a==='goto'){if(jlast&&!jlast.ok)goto(Math.min(jlast.pos,Math.max(0,ta.value.length-1)),1)}
+    else if(a==='check')jsonNow(true);
+    else if(a==='fmt'||a==='min'||a==='sort'){
+      const r=jsonParse(ta.value);
+      if(!r.ok){flash('JSON 형식 오류가 있어서 바꿀 수 없어요: '+r.line+'줄 '+r.col+'열 · '+r.msg);goto(Math.min(r.pos,Math.max(0,ta.value.length-1)),1);return}
+      const ind=a==='min'?'':(t.tab===0?'\t':' '.repeat(t.tab||2));
+      const out=jsonOut(r.v,ind,a==='sort')+(a==='min'?'':'\n');
+      if(out===ta.value){flash(a==='min'?'이미 한 줄이에요':'이미 정리되어 있어요');return}
+      ta.focus();ta.select();document.execCommand('insertText',false,out);
+      flash(a==='fmt'?'정리했습니다':a==='min'?'한 줄로 만들었습니다':'키를 정렬했습니다');
+    }
+    else if(a==='tojava'){
+      const r=jsonParse(ta.value);
+      if(!r.ok){flash('JSON 형식 오류부터 고쳐 주세요: '+r.line+'줄 '+r.col+'열');return}
+      const res=jsonToJava(r.v,panes.json.querySelector('[data-j="root"]').value.trim()||'Root',panes.json.querySelector('[data-j="style"]').value);
+      if(!res){flash('맨 위가 객체(또는 객체 배열)인 JSON만 클래스로 만들 수 있어요');return}
+      openCodeTab(res.text,'java',res.name+'.java');
+      flash('Java 클래스 '+res.count+'개를 새 탭에 만들었습니다');
+    }
+  });
+  return{update,primary,caret:s=>{if(cur==='java')jv.caret(s)},resize:()=>jv.resize(),stop};
+}
+// 클래스 구조를 새 그림 탭으로 보내서 상자와 선을 자유롭게 고칠 수 있게 한다
+function sendToDraw(strokes,W,H,title){
+  newTab('draw');
+  const d=active();
+  d.w=Math.min(4000,Math.max(d.w,Math.ceil(W)));d.h=Math.min(4000,Math.max(d.h,Math.ceil(H)));
+  const g=Date.now();
+  strokes.forEach(s=>{s.grp=g;d.strokes.push(s)});
+  d.title=title;d.custom=true;
+  if(rt[d.id])rt[d.id].zoom=fitZoom(d);
+  render();save();
+  flash('새 그림 탭으로 보냈습니다. 선택 모드에서 끌어 옮기거나 더블클릭해 고칠 수 있어요');
+}
+function renderCode(t,host){
+  const ex=rt[t.id]||{};
+  host.innerHTML=
+    '<div class="codewrap">'+
+    '<div class="rtbar cbar" role="toolbar" aria-label="코드 도구">'+
+    '<button data-c="open" title="컴퓨터에서 코드 파일 열기 (여러 개 선택 가능)">파일 열기</button>'+
+    '<button data-c="save" title="파일로 저장 (Ctrl+S)">저장</button>'+
+    '<button data-c="copy" title="전체 복사">복사</button>'+
+    '<button data-c="paste" title="클립보드에서 붙여넣기">붙여넣기</button>'+
+    '<span class="rsep"></span>'+
+    '<select class="rs" data-c="lang" aria-label="언어">'+
+      '<option value="auto">언어: 자동</option>'+CL_ORDER.map(k=>'<option value="'+k+'">'+CL[k].n+'</option>').join('')+'</select>'+
+    '<select class="rs" data-c="tab" aria-label="들여쓰기">'+[2,4,8,0].map(n=>'<option value="'+n+'">'+(n?'공백 '+n+'칸':'탭 문자')+'</option>').join('')+'</select>'+
+    '<select class="rs" data-c="eol" aria-label="줄 끝">'+'<option value="lf">LF</option><option value="crlf">CRLF</option></select>'+
+    '<span class="rsep"></span>'+
+    '<button data-c="fsm" title="글자 작게">A−</button><button data-c="fsp" title="글자 크게">A+</button>'+
+    '<button data-c="wrap" title="긴 줄 자동 줄바꿈">줄바꿈</button>'+
+    '<button data-c="find" title="찾기/바꾸기 (Ctrl+F)">찾기</button>'+
+    '<span class="rsep"></span>'+
+    '<select class="rs" data-c="sample" aria-label="예제 코드 넣기"><option value="">예제 코드…</option><option value="board">Java · 게시판 엔티티 (클래스 다이어그램)</option><option value="json">JSON · 설정 파일 (트리 보기)</option></select>'+
+    '<button data-c="view" title="미리보기 패널 보이기/숨기기 (언어에 맞는 결과가 나옵니다)">미리보기</button>'+
+    '</div>'+
+    '<div class="csplit">'+
+    '<div class="cedit"><pre class="chl" aria-hidden="true"></pre>'+
+    '<textarea class="cta" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="코드 입력"></textarea>'+
+    '<div class="cdrop" hidden><div>코드 파일을 여기에 놓으세요</div></div>'+
+    '<div class="chint"><b>여기에 코드를 입력하거나 붙여넣으세요</b><span>파일은 화면에 끌어다 놓거나 [파일 열기]로 올릴 수 있어요</span></div></div>'+
+    '<div class="csplitter" role="separator" aria-orientation="vertical" title="끌어서 너비 조절"></div>'+
+    '<section class="cview" aria-label="미리보기">'+
+    '<div class="cvpane" data-p="java">'+
+    '<div class="rtbar cvbar">'+
+      '<button data-v="class" title="클래스 구조 (UML 클래스 다이어그램)">클래스 구조</button>'+
+      '<button data-v="flow" title="메소드 호출 순서 (시퀀스 다이어그램)">실행 흐름</button>'+
+      '<select class="rs" data-v="entry" aria-label="시작 메소드" title="흐름을 시작할 메소드"></select>'+
+      '<span class="rsep"></span>'+
+      '<button data-v="zout" title="축소">−</button><button data-v="fit" title="화면에 맞추기">맞춤</button><button data-v="zin" title="확대">+</button>'+
+      '<span class="rsep"></span>'+
+      '<button data-v="acc" title="getXxx, setXxx 메소드 숨기기">getter 숨김</button>'+
+      '<button data-v="dep" title="메소드가 쓰는 클래스를 점선으로 잇기">의존 관계</button>'+
+      '<span class="rsep"></span>'+
+      '<button data-v="pick" title="켜고 끌어서 영역 선택 (Shift+끌기도 가능). 선택한 영역만 복사됩니다">영역 선택</button>'+
+      '<button data-v="copy" title="선택한 영역(없으면 전체)을 복사. 그림 탭에서 Ctrl+V로 붙여넣으면 고칠 수 있는 도형으로 붙습니다">복사</button>'+
+      '<button data-v="draw" title="지금 보이는 다이어그램 전체를 새 그림 탭으로 보내 자유롭게 고치기">그림 탭으로</button>'+
+      '<button data-v="png" title="PNG 이미지로 저장">PNG</button>'+
+      '<select class="rs" data-v="jcls" aria-label="클래스로 JSON 만들기" title="고른 클래스 모양의 샘플 JSON을 새 코드 탭에 만듦"><option value="">JSON 만들기…</option></select>'+
+    '</div>'+
+    '<div class="cvbody"><canvas class="cvc"></canvas><div class="cvempty"></div></div>'+
+    '</div>'+
+    // HTML: 실행 결과 미리보기
+    '<div class="cvpane" data-p="html" hidden>'+
+      '<div class="rtbar cvbar"><span class="cvtitle">결과 미리보기</span><span class="rsep"></span>'+
+      '<button data-p-act="reload" title="다시 불러오기 (Ctrl+Enter)">↻ 새로고침</button>'+
+      '<button data-p-act="auto" title="코드를 고칠 때마다 자동으로 갱신">자동 갱신</button><span class="rsep"></span>'+
+      '<button data-p-act="pv-full" title="전체 너비">전체</button><button data-p-act="pv-tablet" title="태블릿 너비 (768px)">태블릿</button><button data-p-act="pv-mobile" title="모바일 너비 (375px)">모바일</button></div>'+
+      '<div class="cvbody cvframe"><iframe class="cvf" sandbox="allow-scripts allow-forms allow-modals" title="HTML 결과"></iframe><div class="cvempty"></div></div>'+
+    '</div>'+
+    // CSS: 샘플 화면에 적용해 보기
+    '<div class="cvpane" data-p="css" hidden>'+
+      '<div class="rtbar cvbar"><span class="cvtitle">샘플 화면에 적용</span><span class="rsep"></span>'+
+      '<button data-p-act="cs-doc" title="제목, 문단, 목록, 표">문서</button><button data-p-act="cs-form" title="입력칸, 버튼, 링크">폼</button><button data-p-act="cs-card" title="카드 목록">카드</button></div>'+
+      '<div class="cvbody cvframe"><iframe class="cvf" sandbox="" title="CSS 결과"></iframe><div class="cvempty"></div></div>'+
+    '</div>'+
+    // JavaScript: 실행 결과(console)
+    '<div class="cvpane" data-p="js" hidden>'+
+      '<div class="rtbar cvbar"><span class="cvtitle">실행 결과</span><span class="rsep"></span>'+
+      '<button data-p-act="run" class="runbtn" title="코드 실행 (Ctrl+Enter)">▶ 실행</button><button data-p-act="stop" title="실행 중인 코드를 멈추기">■ 정지</button><button data-p-act="clear" title="결과 지우기">지우기</button></div>'+
+      '<div class="cvbody cvout" role="log" aria-live="polite"></div>'+
+    '</div>'+
+    // JSON: 트리 보기
+    '<div class="cvpane" data-p="json" hidden>'+
+      '<div class="rtbar cvbar"><span class="cvtitle">JSON</span><span class="rsep"></span>'+
+      '<button data-p-act="fmt" title="들여쓰기를 정리해 코드를 바꿈">정리</button><button data-p-act="min" title="공백을 없애 한 줄로 만듦">한 줄로</button><button data-p-act="sort" title="모든 객체의 키를 ABC순으로 정렬">키 정렬</button><button data-p-act="check" title="형식 검사 (Ctrl+Enter)">검사</button><span class="rsep"></span>'+
+      '<button data-p-act="open" title="모두 펼치기">펼치기</button><button data-p-act="close" title="모두 접기">접기</button></div>'+
+      '<div class="jstat" role="status" aria-live="polite"></div>'+
+      '<div class="rtbar cvbar jconv"><span class="cvtitle">Java로</span><input class="jroot" data-j="root" value="Root" maxlength="40" spellcheck="false" aria-label="맨 위 클래스 이름" title="맨 위 클래스 이름">'+
+      '<select class="rs" data-j="style" aria-label="클래스 모양"><option value="pojo">getter/setter</option><option value="lombok">Lombok @Data</option><option value="record">record</option></select>'+
+      '<button data-p-act="tojava" title="이 JSON에 맞는 Java 클래스를 새 코드 탭에 만듦">클래스 만들기</button></div>'+
+      '<div class="cvbody cvtree"></div>'+
+    '</div>'+
+    // 그 밖의 형식
+    '<div class="cvpane" data-p="none" hidden>'+
+      '<div class="cvbody cvnone"><div class="cvnone-in"><b>이 형식은 미리보기가 없어요</b>'+
+      '<p>언어를 고르면 코드에 맞는 미리보기가 나옵니다.</p>'+
+      '<div class="cvpick"><button data-p-lang="java">Java<small>클래스 다이어그램</small></button><button data-p-lang="json">JSON<small>트리 보기</small></button></div></div></div>'+
+    '</div>'+
+    '</section></div>'+
+    '</div>';
+  const wrap=host.querySelector('.codewrap'),bar=host.querySelector('.cbar'),ed=host.querySelector('.cedit'),
+    hl=host.querySelector('.chl'),ta=host.querySelector('.cta'),hint=host.querySelector('.chint');
+  const sel=n=>bar.querySelector('[data-c="'+n+'"]');
+  const curLang=()=>t.lang==='auto'?guessLang(t.code):t.lang;
+  ta.value=t.code;
+  let lang=curLang(),view=null;
+
+  const unit=()=>t.tab?' '.repeat(t.tab):'\t';
+  const applyOpts=()=>{
+    wrap.style.setProperty('--cfs',t.fs+'px');wrap.style.setProperty('--tab',t.tab||4);
+    wrap.classList.toggle('wrap',!!t.wrap);
+    wrap.classList.toggle('noview',!t.view);wrap.style.setProperty('--vw',t.vw+'%');
+    sel('view').classList.toggle('on',!!t.view);
+    sel('wrap').classList.toggle('on',!!t.wrap);
+    sel('lang').value=t.lang;sel('tab').value=String(t.tab);sel('eol').value=t.eol;
+    sync();
+  };
+  const sync=()=>{
+    hl.style.width=ta.clientWidth+'px';hl.style.height=ta.clientHeight+'px';
+    hl.scrollTop=ta.scrollTop;hl.scrollLeft=ta.scrollLeft;
+  };
+  let raf=0;
+  const paintNow=()=>{raf=0;hl.innerHTML=codeHtml(ta.value,lang);sync();if(!fbar.hidden)refreshFind()};
+  const repaint=()=>{if(!raf)raf=requestAnimationFrame(paintNow)};
+  const upd=()=>{
+    const v=ta.value,s=ta.selectionStart,e=ta.selectionEnd;
+    const before=v.slice(0,s),ln=before.split('\n').length,col=s-before.lastIndexOf('\n');
+    const total=v?v.split('\n').length:0;
+    if(view)view.caret(s);
+    setStatus('줄 '+ln+', 열 '+col+(e>s?' (선택 '+(e-s)+'자)':''),CL[lang].n+' · '+(t.tab?'공백 '+t.tab:'탭')+' · '+t.eol.toUpperCase()+' · '+total+'줄 · '+v.length+'자');
+  };
+  const changed=()=>{
+    t.code=ta.value;
+    if(t.lang==='auto'){const g=guessLang(t.code);if(g!==lang){lang=g}}
+    hint.hidden=t.code!=='';
+    repaint();upd();saveSoon();
+    if(view)view.update();
+  };
+  ta.addEventListener('input',changed);
+  ta.addEventListener('scroll',sync,{passive:true});
+  ['keyup','click','focus'].forEach(ev=>ta.addEventListener(ev,upd));
+  document.addEventListener('selectionchange',()=>{if(document.activeElement===ta&&tabs.length&&active()===t)upd()});
+  new ResizeObserver(sync).observe(ta);
+
+  const put=s=>{ta.focus();document.execCommand('insertText',false,s)};
+  const lineStart=(v,i)=>v.lastIndexOf('\n',i-1)+1;
+  // 선택한 줄들을 한꺼번에 바꾼다 (들여쓰기, 내어쓰기, 주석)
+  const editLines=fn=>{
+    const v=ta.value,s=ta.selectionStart,e=ta.selectionEnd;
+    const ls=lineStart(v,s);let ee=e;if(ee>s&&v[ee-1]==='\n')ee--;
+    const nx=v.indexOf('\n',ee),le=nx<0?v.length:nx;
+    const old=v.slice(ls,le).split('\n'),nw=fn(old);
+    const oldS=old.join('\n'),newS=nw.join('\n');
+    ta.setSelectionRange(ls,le);put(newS);
+    const first=nw[0].length-old[0].length;
+    ta.setSelectionRange(Math.max(ls,s+first),Math.max(ls,e+newS.length-oldS.length));
+  };
+  const indent=back=>{
+    const s=ta.selectionStart,e=ta.selectionEnd;
+    if(!back&&s===e){put(unit());return}
+    const re=new RegExp('^(?:\\t| {1,'+(t.tab||4)+'})');
+    editLines(ls=>ls.map(l=>back?l.replace(re,''):(l.trim()===''?l:unit()+l)));
+  };
+  const toggleComment=()=>{
+    const L=CL[lang],pre=L.lc&&L.lc[0];
+    if(!pre){flash('이 언어는 한 줄 주석을 지원하지 않습니다');return}
+    editLines(ls=>{
+      const ne=ls.filter(l=>l.trim()!=='');
+      const all=ne.length&&ne.every(l=>l.trimStart().startsWith(pre));
+      if(all)return ls.map(l=>l.replace(pre+' ',m=>'').replace(new RegExp('^(\\s*)'+reEsc(pre)),'$1'));
+      const m=Math.min(...ne.map(l=>/^[ \t]*/.exec(l)[0].length));
+      return ls.map(l=>l.trim()===''?l:l.slice(0,m)+pre+' '+l.slice(m));
+    });
+  };
+  const PAIR={'(':')','[':']','{':'}','"':'"',"'":"'",'`':'`'};
+  ta.addEventListener('keydown',e=>{
+    if(e.isComposing||e.keyCode===229)return;
+    const v=ta.value,s=ta.selectionStart,en=ta.selectionEnd,mod=e.ctrlKey||e.metaKey;
+    if(e.key==='Tab'&&!mod&&!e.altKey){e.preventDefault();indent(e.shiftKey);return}
+    if(mod&&e.key==='Enter'){e.preventDefault();if(view)view.primary();return}
+    if(mod&&e.key==='/'){e.preventDefault();toggleComment();return}
+    if(mod&&!e.shiftKey&&e.key.toLowerCase()==='d'){
+      e.preventDefault();
+      if(s===en){const ls=lineStart(v,s),nx=v.indexOf('\n',s),le=nx<0?v.length:nx;ta.setSelectionRange(le,le);put('\n'+v.slice(ls,le));ta.setSelectionRange(s+(le-ls)+1,s+(le-ls)+1)}
+      else{ta.setSelectionRange(en,en);put(v.slice(s,en));ta.setSelectionRange(en,en+en-s)}
+      return;
+    }
+    if(e.key==='Enter'&&!mod&&!e.altKey&&!e.shiftKey){
+      e.preventDefault();
+      const line=v.slice(lineStart(v,s),s),ind=/^[\t ]*/.exec(line)[0],tl=line.trimEnd();
+      const extra=/[{(\[]$/.test(tl)||(lang==='py'&&/:$/.test(tl))?unit():'';
+      const p=v[s-1],nx=v[en];
+      if(s===en&&p&&nx&&PAIR[p]&&PAIR[p]===nx&&'{(['.includes(p)){
+        put('\n'+ind+extra+'\n'+ind);const c=s+1+ind.length+extra.length;ta.setSelectionRange(c,c);
+      }else put('\n'+ind+extra);
+      return;
+    }
+    if(mod||e.altKey||lang==='plain')return;
+    if(PAIR[e.key]&&e.key.length===1){
+      const o=e.key,c=PAIR[o],quote=o===c;
+      if(s!==en){e.preventDefault();const inner=v.slice(s,en);put(o+inner+c);ta.setSelectionRange(s+1,s+1+inner.length);return}
+      const prev=v[s-1]||'',next=v[s]||'';
+      if(quote&&v[s]===o){e.preventDefault();ta.setSelectionRange(s+1,s+1);return}
+      const ok=quote?!/[\w]/.test(prev)&&!/[\w]/.test(next):(next===''||/[\s)\]}.,;:]/.test(next));
+      if(ok){e.preventDefault();put(o+c);ta.setSelectionRange(s+1,s+1)}
+      return;
+    }
+    if(')]}'.includes(e.key)&&e.key.length===1&&s===en&&v[s]===e.key){e.preventDefault();ta.setSelectionRange(s+1,s+1);return}
+    if(e.key==='Backspace'&&s===en&&s>0&&PAIR[v[s-1]]&&PAIR[v[s-1]]===v[s]){e.preventDefault();ta.setSelectionRange(s-1,s+1);document.execCommand('delete')}
+  });
+  // 붙여넣은 글이 줄 끝만 다른 경우를 정리 (CRLF를 LF로)
+  ta.addEventListener('paste',e=>{
+    const cd=e.clipboardData,tx=cd&&cd.getData('text/plain');
+    if(tx&&tx.includes('\r')){e.preventDefault();put(tx.replace(/\r\n?/g,'\n'))}
+  });
+
+  // ---- 찾기/바꾸기 ----
+  const fbar=document.createElement('div');fbar.className='findbar';fbar.hidden=true;
+  fbar.innerHTML='<input type="text" class="fi" placeholder="찾기" aria-label="찾을 내용">'+
+    '<input type="text" class="ri" placeholder="바꿀 내용" aria-label="바꿀 내용">'+
+    '<span class="cnt" role="status"></span>'+
+    '<button class="btn" data-f="prev" title="이전 (Shift+Enter)">▲</button>'+
+    '<button class="btn" data-f="next" title="다음 (Enter, F3)">▼</button>'+
+    '<button class="btn" data-f="rep">바꾸기</button><button class="btn" data-f="all">모두 바꾸기</button>'+
+    '<label><input type="checkbox" class="cs"> 대소문자</label>'+
+    '<button class="btn" data-f="x" aria-label="찾기 닫기">✕</button>';
+  host.append(fbar);
+  const fi=fbar.querySelector('.fi'),ri=fbar.querySelector('.ri'),cnt=fbar.querySelector('.cnt'),cs=fbar.querySelector('.cs');
+  let cur=-1,pos=[];
+  const norm=s=>cs.checked?s:s.toLowerCase();
+  const findAll=()=>{
+    pos=[];const q=fi.value;if(!q)return pos;
+    const h=norm(ta.value),nq=norm(q);let i=0;
+    while((i=h.indexOf(nq,i))>=0){pos.push(i);i+=q.length}
+    return pos;
+  };
+  // 글자 위치를 색칠용 레이어의 글 조각 위치로 바꾼다
+  const rangeAt=(a,b)=>{
+    const v=ta.value,lines=hl.children;
+    const loc=(p,end)=>{
+      const li=v.slice(0,p).split('\n').length-1,div=lines[li];if(!div)return null;
+      let c=p-(v.lastIndexOf('\n',p-1)+1);
+      const w=document.createTreeWalker(div,NodeFilter.SHOW_TEXT);let n;
+      while((n=w.nextNode())){const len=n.nodeValue.length;if(c<len||(end&&c===len))return[n,c];c-=len}
+      return div.lastChild?null:[div,0];
+    };
+    const x=loc(a,false),y=loc(b,true);if(!x||!y)return null;
+    const r=document.createRange();try{r.setStart(x[0],x[1]);r.setEnd(y[0],y[1])}catch(e){return null}return r;
+  };
+  const paint=()=>{
+    if(!(window.CSS&&CSS.highlights&&window.Highlight))return;
+    const q=fi.value.length,rs=fbar.hidden?[]:pos.slice(0,2000).map(p=>rangeAt(p,p+q)).filter(Boolean);
+    if(!rs.length){CSS.highlights.delete('cfind');CSS.highlights.delete('cfindcur');return}
+    CSS.highlights.set('cfind',new Highlight(...rs));
+    const c=cur>=0&&pos[cur]!==undefined?rangeAt(pos[cur],pos[cur]+q):null;
+    if(c)CSS.highlights.set('cfindcur',new Highlight(c));else CSS.highlights.delete('cfindcur');
+  };
+  const refreshFind=()=>{
+    findAll();if(cur>=pos.length)cur=pos.length-1;
+    cnt.textContent=fi.value?(pos.length?(cur>=0?(cur+1)+'/':'')+pos.length+'개':'없음'):'';
+    paint();
+  };
+  const reveal=p=>{
+    const v=ta.value,li=v.slice(0,p).split('\n').length-1,div=hl.children[li];
+    if(div)ta.scrollTop=Math.max(0,div.offsetTop-ta.clientHeight/3);
+    sync();
+  };
+  const jump=dir=>{
+    findAll();
+    if(!pos.length){refreshFind();if(fi.value)flash('찾을 수 없습니다');return false}
+    cur=cur<0?(dir>0?0:pos.length-1):(cur+dir+pos.length)%pos.length;
+    ta.setSelectionRange(pos[cur],pos[cur]+fi.value.length);
+    reveal(pos[cur]);refreshFind();return true;
+  };
+  const replaceOne=()=>{
+    if(!fi.value)return;
+    const s=ta.selectionStart,e=ta.selectionEnd;
+    if(e>s&&norm(ta.value.slice(s,e))===norm(fi.value)){put(ri.value);cur=cur-1}
+    fi.focus();jump(1);
+  };
+  const replaceAll=()=>{
+    if(!fi.value)return;
+    findAll();if(!pos.length){flash('찾을 수 없습니다');return}
+    const n=pos.length,q=fi.value.length,v=ta.value;
+    let out='',last=0;pos.forEach(p=>{out+=v.slice(last,p)+ri.value;last=p+q});out+=v.slice(last);
+    ta.focus();ta.setSelectionRange(0,v.length);document.execCommand('insertText',false,out);
+    cur=-1;fi.focus();refreshFind();flash(n+'개를 바꿨습니다');
+  };
+  const openFind=()=>{
+    fbar.hidden=false;
+    const s=ta.value.slice(ta.selectionStart,ta.selectionEnd);
+    if(s&&!s.includes('\n'))fi.value=s;
+    cur=-1;fi.focus();fi.select();refreshFind();
+  };
+  const closeFind=()=>{fbar.hidden=true;paint();ta.focus()};
+  fi.oninput=()=>{cur=-1;refreshFind()};cs.onchange=()=>{cur=-1;refreshFind()};
+  fbar.onkeydown=e=>{
+    e.stopPropagation();
+    if(e.key==='Escape'){e.preventDefault();closeFind()}
+    else if(e.key==='Enter'){e.preventDefault();if(e.target===ri)replaceOne();else jump(e.shiftKey?-1:1)}
+    else if(e.key==='F3'){e.preventDefault();jump(e.shiftKey?-1:1)}
+  };
+  fbar.onclick=e=>{
+    const f=e.target.closest('[data-f]');if(!f)return;
+    ({prev:()=>jump(-1),next:()=>jump(1),rep:replaceOne,all:replaceAll,x:closeFind})[f.dataset.f]();
+  };
+
+  // ---- 도구 막대 ----
+  const setLang=v=>{t.lang=v;lang=curLang();repaint();upd();saveSoon();if(view)view.update(true,true)};
+  bar.addEventListener('change',e=>{
+    const c=e.target.dataset.c;if(!c)return;
+    if(c==='sample'){
+      const k=e.target.value;e.target.value='';
+      if(CODE_SAMPLES[k]){ta.focus();ta.select();document.execCommand('insertText',false,CODE_SAMPLES[k]);ta.setSelectionRange(0,0);ta.scrollTop=0;sync();if(view)view.update(true,true);flash('예제를 넣었습니다. 오른쪽 미리보기를 확인해 보세요')}
+      return;
+    }
+    if(c==='lang')setLang(e.target.value);
+    else if(c==='tab'){t.tab=+e.target.value;applyOpts();upd();saveSoon()}
+    else if(c==='eol'){t.eol=e.target.value;upd();saveSoon()}
+    ta.focus();
+  });
+  bar.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-c]');if(!b)return;
+    const c=b.dataset.c;
+    if(c==='open')actions.openCode();
+    else if(c==='save')saveCode(t);
+    else if(c==='copy')actions.copyCode();
+    else if(c==='paste')actions.paste();
+    else if(c==='find')openFind();
+    else if(c==='view'){t.view=!t.view;applyOpts();saveSoon();if(t.view&&view)setTimeout(()=>{view.resize();view.update(true,true)},30)}
+    else if(c==='wrap'){t.wrap=!t.wrap;applyOpts();saveSoon()}
+    else if(c==='fsm'||c==='fsp'){t.fs=Math.min(28,Math.max(10,t.fs+(c==='fsp'?1:-1)));applyOpts();saveSoon();flash('글자 크기 '+t.fs+'px')}
+    if(c!=='open')ta.focus();
+  });
+  // 파일을 끌어 오면 놓을 자리를 보여 준다
+  const dz=host.querySelector('.cdrop');let dn=0;
+  const dhas=e=>e.dataTransfer&&[...(e.dataTransfer.types||[])].includes('Files');
+  ed.addEventListener('dragenter',e=>{if(dhas(e)){dn++;dz.hidden=false}});
+  ed.addEventListener('dragleave',e=>{if(dhas(e)&&--dn<=0){dn=0;dz.hidden=true}});
+  ed.addEventListener('drop',()=>{dn=0;dz.hidden=true});
+
+  rt[t.id]=Object.assign(ex,{ta,openFind,findNext:()=>jump(1),setCode:s=>{ta.value=s;t.code=s;lang=curLang();hint.hidden=s!=='';paintNow();upd();save();if(view)view.update(true,true)}});
+  hint.hidden=t.code!=='';
+  const gotoPos=(p,len)=>{ta.focus();ta.setSelectionRange(p,p+len);reveal(p)};
+  const jv=codeView(t,host,ta,gotoPos);
+  view=codePreview(t,host,ta,()=>lang,jv,v=>{setLang(v);sel('lang').value=v},gotoPos);
+  // 편집기와 다이어그램 사이의 칸막이를 끌어서 너비를 바꾼다
+  const sp=host.querySelector('.csplitter'),split=host.querySelector('.csplit');
+  sp.addEventListener('pointerdown',e=>{
+    sp.setPointerCapture(e.pointerId);
+    const mv=ev=>{const r=split.getBoundingClientRect();t.vw=Math.round(Math.min(75,Math.max(25,(r.right-ev.clientX)/r.width*100)));wrap.style.setProperty('--vw',t.vw+'%');sync();view.resize()};
+    const up=()=>{sp.removeEventListener('pointermove',mv);sp.removeEventListener('pointerup',up);saveSoon()};
+    sp.addEventListener('pointermove',mv);sp.addEventListener('pointerup',up);
+  });
+  applyOpts();paintNow();upd();
+  setTimeout(()=>{view.resize();view.update(true,true)},0);
+  if(!matchMedia('(pointer:coarse)').matches)ta.focus();
+}
+function codeFileName(t){
+  const m=/\.[A-Za-z0-9]{1,8}$/.exec(t.title);
+  if(m)return safeName(t.title);
+  const k=t.lang==='auto'?guessLang(t.code):t.lang;
+  return safeName(t.title)+'.'+CL[k].e.split(' ')[0];
+}
+function saveCode(t){
+  const body=t.eol==='crlf'?t.code.replace(/\n/g,'\r\n'):t.code;
+  download(new Blob([body],{type:'text/plain;charset=utf-8'}),codeFileName(t));
+  flash('"'+codeFileName(t)+'" 파일로 저장했습니다');
+}
+const MAX_CODE_BYTES=2*1024*1024;
+// 코드 파일 한 개를 읽어 코드 탭으로 연다 (비어 있는 코드 탭이 열려 있으면 거기에 채운다)
+async function openCodeFile(file){
+  if(file.size>MAX_CODE_BYTES){flash('"'+file.name+'"은(는) 너무 큽니다 (코드 파일은 2MB 이하만 열 수 있습니다)');return false}
+  const buf=await file.arrayBuffer();
+  if(new Uint8Array(buf,0,Math.min(buf.byteLength,8000)).includes(0)){flash('"'+file.name+'"은(는) 글자 파일이 아닙니다');return false}
+  let text;
+  try{text=new TextDecoder('utf-8',{fatal:true}).decode(buf)}catch(e){text=new TextDecoder('euc-kr').decode(buf)}
+  text=text.replace(/^﻿/,'');
+  const eol=/\r\n/.test(text)?'crlf':'lf';
+  text=text.replace(/\r\n?/g,'\n');
+  const cur=active();
+  const reuse=cur.kind==='code'&&cur.code.trim()==='';
+  if(!reuse)newTab('code');
+  const t=active();
+  t.code=text;t.eol=eol;t.title=file.name;t.custom=true;
+  const ext=(/\.([A-Za-z0-9]+)$/.exec(file.name)||[])[1];
+  t.lang=ext&&CODE_EXT_LANG[ext.toLowerCase()]?CODE_EXT_LANG[ext.toLowerCase()]:'auto';
+  // 들여쓰기가 탭이면 탭, 공백이면 가장 작은 들여쓰기 폭을 따라간다
+  const nTab=(text.match(/^\t/gm)||[]).length,sp=text.match(/^ {2,8}\S/gm)||[];
+  if(nTab>sp.length&&nTab>2)t.tab=0;
+  else if(sp.length>2){const n=Math.min(...sp.map(x=>/^ */.exec(x)[0].length));if([2,4,8].includes(n))t.tab=n}
+  render();save();
+  return true;
+}
+actions.newCode=()=>newTab('code');
+actions.openCode=()=>{
+  const f=document.createElement('input');f.type='file';f.multiple=true;
+  f.onchange=async()=>{
+    const list=[...f.files];
+    for(const x of list)await openCodeFile(x);
+    if(list.length>1)flash(list.length+'개 파일을 탭으로 열었습니다');
+  };
+  f.click();
+};
+actions.copyCode=()=>{
+  const t=active();if(t.kind!=='code')return;
+  const done=()=>flash('코드 전체를 복사했습니다');
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t.code).then(done,()=>flash('복사하지 못했습니다'));
+  else{const ta=rt[t.id].ta;ta.focus();ta.select();document.execCommand('copy');done()}
+};
 
 // ---- actions & input ----
 actions.newText=()=>newTab('text');
@@ -1096,11 +3154,11 @@ function importProject(text){
 }
 actions.find=()=>{
   const t=active();
-  if(t.kind!=='text'){flash('텍스트 탭에서만 찾기/바꾸기를 쓸 수 있습니다');return}
+  if(t.kind!=='text'&&t.kind!=='code'){flash('텍스트, 코드 탭에서만 찾기/바꾸기를 쓸 수 있습니다');return}
   rt[t.id].openFind();
 };
-actions.copy=()=>{const t=active();if(t.kind==='text'){rt[t.id].ta.focus();document.execCommand('copy')}else copySel(false)};
-actions.cut=()=>{const t=active();if(t.kind==='text'){rt[t.id].ta.focus();document.execCommand('cut')}else copySel(true)};
+actions.copy=()=>{const t=active();if(t.kind==='text'||t.kind==='code'){rt[t.id].ta.focus();document.execCommand('copy')}else copySel(false)};
+actions.cut=()=>{const t=active();if(t.kind==='text'||t.kind==='code'){rt[t.id].ta.focus();document.execCommand('cut')}else copySel(true)};
 actions.paste=()=>{
   const t=active();
   if(t.kind==='draw'){pasteClip();return}
@@ -1108,16 +3166,16 @@ actions.paste=()=>{
     .catch(()=>flash('붙여넣기는 Ctrl+V를 사용하세요'));
 };
 actions.openPhoto=()=>pick('image/*');
-actions.save=()=>{const t=active();if(t.kind==='text')saveText(t);else run('exportPng')};
-actions.undo=()=>{const t=active();if(t.kind==='text'){rt[t.id].ta.focus();document.execCommand('undo')}};
-actions.redo=()=>{const t=active();if(t.kind==='text'){rt[t.id].ta.focus();document.execCommand('redo')}};
+actions.save=()=>{const t=active();if(t.kind==='text')saveText(t);else if(t.kind==='code')saveCode(t);else run('exportPng')};
+actions.undo=()=>{const t=active();if(t.kind==='text'||t.kind==='code'){rt[t.id].ta.focus();document.execCommand('undo')}};
+actions.redo=()=>{const t=active();if(t.kind==='text'||t.kind==='code'){rt[t.id].ta.focus();document.execCommand('redo')}};
 actions.rename=()=>renameTab(activeId);
 document.addEventListener('keydown',e=>{
   const dig=!e.metaKey&&!e.ctrlKey&&e.altKey&&/^Digit[1-4]$/.test(e.code)?+e.code.slice(5)-1:-1;
   if(dig>=0&&e.shiftKey){
     // Alt+Shift+1: 새 텍스트 탭, Alt+Shift+2: 새 그림 탭
     e.preventDefault();
-    if(dig===0)actions.newText();else if(dig===1)actions.newDraw();
+    if(dig===0)actions.newText();else if(dig===1)actions.newDraw();else if(dig===2)actions.newCode();
   }
   else if(dig>=0){
     // Alt+1~4: 그림 탭에서 선택, 펜, 텍스트, 지우개 도구로 바꾼다
@@ -1147,12 +3205,12 @@ document.addEventListener('click',e=>{
   if(top&&!wasOpen)top.parentElement.classList.add('open');
 });
 document.addEventListener('keydown',e=>{
-  if(e.key==='F3'&&active().kind==='text'){e.preventDefault();rt[active().id].findNext();return}
+  if(e.key==='F3'&&(active().kind==='text'||active().kind==='code')){e.preventDefault();rt[active().id].findNext();return}
   if(!e.ctrlKey||e.altKey)return;
   const k=e.key.toLowerCase();
   if(k==='s'){e.preventDefault();if(e.shiftKey)actions.saveProject();else actions.save()}
   else if(k==='o'){e.preventDefault();actions.open()}
-  else if((k==='f'||k==='h')&&active().kind==='text'){e.preventDefault();actions.find()}
+  else if((k==='f'||k==='h')&&(active().kind==='text'||active().kind==='code')){e.preventDefault();actions.find()}
 });
 
 window.__app={tabs:()=>tabs,active,actions,rt,closeTab,openFile,save,flash};
@@ -2166,6 +4224,10 @@ function pasteClip(){
     t.photos.push({id,src:d.src,x:d.x+off,y:d.y+off,w:d.w,h:d.h});np.push(id);
     const im=new Image();im.onload=()=>{r.imgs[id]=im;redrawBg(t);placePhotoBox(t)};im.src=d.src;
   });
+  // 붙인 도형이 캔버스 밖으로 나가면 캔버스를 키운다
+  let mx=t.w,my=t.h;
+  ns.forEach(i=>{const bx=strokeBox(t.strokes[i],true);mx=Math.max(mx,Math.ceil(bx.x+bx.w+20));my=Math.max(my,Math.ceil(bx.y+bx.h+20))});
+  if(mx>t.w||my>t.h)resizeCanvas(t,Math.min(4000,mx),Math.min(4000,my),0,0);
   const b=document.querySelector('[data-tool="select"]');
   if(tool.name!=='select'&&b)b.click();
   setSelection(t,ns,np);
@@ -2254,12 +4316,18 @@ document.addEventListener('dragover',e=>{if(hasFiles(e))e.preventDefault()});
 document.addEventListener('drop',e=>{
   if(!hasFiles(e))return;
   e.preventDefault();
-  const f=e.dataTransfer.files[0];
-  if(f)openFile(f);
+  const list=[...e.dataTransfer.files];
+  (async()=>{for(const f of list)await openFile(f);if(list.length>1)flash(list.length+'개 파일을 열었습니다')})();
 });
 document.addEventListener('paste',e=>{
   const items=[...((e.clipboardData&&e.clipboardData.items)||[])];
   const it=items.find(i=>i.kind==='file'&&i.type.startsWith('image/'));
+  // 코드 탭 다이어그램에서 복사한 이미지는 이미지가 아니라 고칠 수 있는 도형으로 붙인다
+  if(it&&clip&&clip.diagram&&clip.png&&it.getAsFile().size===clip.png&&!inField(e)){
+    e.preventDefault();
+    if(active().kind!=='draw')newTab('draw');
+    pasteClip();return;
+  }
   if(it&&!items.some(i=>i.kind==='string'&&i.type==='text/plain')){e.preventDefault();openFile(it.getAsFile());return}
   // 그림 탭에서는 복사해 둔 요소를 붙여넣는다 (입력 칸에서는 기본 붙여넣기)
   if(!inField(e)&&active().kind==='draw'&&clip){e.preventDefault();pasteClip()}

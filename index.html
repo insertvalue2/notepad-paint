@@ -300,7 +300,9 @@ function load(){
       return;
     }
   }catch(e){}
-  tabs=[];newTab('text');
+  // 처음 접속하면 메모장 탭과 그림 탭을 하나씩 열어 두고, 메모장 탭을 보여 준다
+  tabs=[];newTab('text');newTab('draw');
+  activeId=tabs[0].id;
 }
 function cleanTab(t){
   if(!t||typeof t!=='object'||!Number.isInteger(t.id)||t.id<1)return null;

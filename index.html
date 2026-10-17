@@ -189,7 +189,24 @@ button:focus-visible,input:focus-visible,.tab:focus-visible{outline:2px solid va
 .cvpick button{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border:1px solid #e6e6f0;border-radius:10px;background:#fff;color:#1b1b1f;cursor:pointer;font-weight:500}
 .cvpick button:hover{background:#f1f0ff;border-color:#6965db}
 .cvpick small{color:#6b6b7b;font-weight:400}
-.cvbar{border-bottom:1px solid var(--line)}
+.cvbar{border-bottom:1px solid var(--line);flex-wrap:wrap;overflow:visible;row-gap:2px}   /* 좁아도 잘리지 않고 다음 줄로 넘어간다 */
+.cvrel[hidden]{display:none}
+.cvmore{margin-left:auto}
+.cvmore>button{white-space:nowrap}
+.cvmore .dropdown{left:auto;right:0;min-width:210px}
+.cvmore .dropdown .item{place-items:center start;text-align:left}
+.cvmore .dropdown .rs{max-width:none;margin:4px 0 0;width:100%}
+.cvbar .rel{display:flex;align-items:center;gap:2px;padding:0 6px 0 2px}
+.cvbar .rel svg{width:24px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.cvbar .rel:not(.on){opacity:.55;text-decoration:line-through}
+.cvinfo .ci-off{opacity:.45}
+.cvinfo{position:absolute;right:8px;bottom:8px;max-width:min(440px,calc(100% - 16px));max-height:min(68%,340px);overflow:auto;background:rgba(255,255,255,.95);color:#222;border:1px solid var(--line);border-radius:10px;padding:5px 10px 6px;font-size:12px;line-height:1.4;box-shadow:var(--shadow)}
+.cvinfo[hidden]{display:none}
+.cvinfo .ci-h{margin:6px 0 2px;font-weight:700;color:#6965db}
+.cvinfo .ci-h:first-child{margin-top:2px}
+.cvinfo .ci-r{display:flex;align-items:center;gap:8px}
+.cvinfo .ci-v{flex:none;width:30px;text-align:center;font-weight:700;letter-spacing:1px}
+.cvinfo .ci-r svg{flex:none;width:30px;height:18px;fill:none;stroke:#222;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .cvbar [hidden]{display:none}
 .cvbar button[data-v="class"],.cvbar button[data-v="flow"]{font-weight:500}
 .cvbody{position:relative;flex:1;min-height:0;background:#fff}
@@ -250,18 +267,30 @@ button.sw.on{box-shadow:0 0 0 2px var(--accent)}
 .btn{display:block;width:100%;padding:8px 10px;border:1px solid var(--line);background:var(--surface);border-radius:10px;cursor:pointer;text-align:center}
 .btn:hover{background:var(--hover);border-color:var(--accent-soft)}
 #props .acts{display:flex;flex-direction:column;gap:8px}
-.dims{display:flex;align-items:center;gap:6px;margin-bottom:8px;color:var(--muted)}
-.dims input{width:100%;min-width:0;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-variant-numeric:tabular-nums}
-#stage{flex:1;min-width:0;overflow:auto;padding:var(--pad-t) var(--pad-r) var(--pad-b) var(--pad-l)}
-#board{position:relative;margin:0 auto;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12),0 10px 34px rgba(40,40,90,.14)}
-#board canvas{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:none}
+/* 끝없이 넓은 작업 영역: 화면 크기의 캔버스를 쓰고, 끌거나 휠을 돌려 화면만 옮긴다 */
+#stage{flex:1;min-width:0;position:relative;overflow:hidden;background:#fff;margin-left:228px}   /* 왼쪽 속성 카드 자리는 비워 두고, 캔버스는 그 오른쪽에서 시작한다 */
+#view{position:absolute;inset:0;overflow:hidden}
+#view canvas{position:absolute;left:0;top:0;touch-action:none}
+#board{position:absolute;left:0;top:0;width:0;height:0;overflow:visible}
+/* 자동 스크롤바: 그림이 화면 밖으로 넘어간 방향에만 나타난다 */
+.sb{position:absolute;z-index:4;background:rgba(60,60,90,.06);touch-action:none}
+.sb[hidden],.edge[hidden],#backbtn[hidden]{display:none}
+#sbv{right:0;top:0;bottom:0;width:14px}
+#sbh{left:0;right:0;bottom:0;height:14px}
+.sb i{position:absolute;border-radius:7px;background:rgba(70,70,100,.38)}
+.sb:hover i,.sb.on i{background:rgba(70,70,100,.62)}
+#sbv i{left:3px;right:3px}
+#sbh i{top:3px;bottom:3px}
+/* 화면 밖에 그림이 더 있을 때 그 방향 가장자리에 뜨는 이동 버튼 */
+.edge{position:absolute;z-index:4;width:36px;height:36px;padding:0;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--accent);box-shadow:var(--shadow);cursor:pointer}
+.edge:hover{background:var(--accent-soft)}
+.edge[data-e=l]{left:16px;top:50%;margin-top:-18px}
+.edge[data-e=r]{right:24px;top:50%;margin-top:-18px}
+.edge[data-e=u]{top:76px;left:50%;margin-left:-18px}
+.edge[data-e=d]{bottom:76px;left:50%;margin-left:-18px}
+#backbtn{position:absolute;z-index:4;left:50%;bottom:76px;transform:translateX(-50%);padding:10px 16px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--accent);box-shadow:var(--shadow);font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+#backbtn:hover{background:var(--accent-soft)}
 #drc{cursor:crosshair}
-.cgrip{position:absolute;width:12px;height:12px;margin:-6px 0 0 -6px;background:var(--surface);border:2px solid var(--accent);border-radius:3px;z-index:6;touch-action:none}
-.cgrip::after{content:"";position:absolute;inset:-8px}
-.cgrip[data-c=nw]{left:0;top:0;cursor:nwse-resize}
-.cgrip[data-c=ne]{left:100%;top:0;cursor:nesw-resize}
-.cgrip[data-c=se]{left:100%;top:100%;cursor:nwse-resize}
-.cgrip[data-c=sw]{left:0;top:100%;cursor:nesw-resize}
 #hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;pointer-events:none;color:#a9a9bd;font-size:15px;line-height:1.8;padding:24px}
 .textbox{position:absolute;margin:0;padding:0;border:0;outline:1px dashed var(--accent);background:transparent;resize:none;overflow:hidden;white-space:pre;z-index:5}
 #ecur{position:absolute;display:none;pointer-events:none;border:1px solid #000;box-shadow:0 0 0 1px #fff;border-radius:50%;transform:translate(-50%,-50%);z-index:4}
@@ -279,10 +308,10 @@ button.sw.on{box-shadow:0 0 0 2px var(--accent)}
 
 /* 격자, 정렬 안내선, 채우기 색, 라벨 입력 */
 #gridov{position:absolute;inset:0;display:none;pointer-events:none;background-image:linear-gradient(to right,rgba(60,60,120,.16) 1px,transparent 1px),linear-gradient(to bottom,rgba(60,60,120,.16) 1px,transparent 1px)}
-#board.grid #gridov{display:block}
+#view.grid #gridov{display:block}
 .guide{position:absolute;display:none;pointer-events:none;z-index:4}
-#gv{top:0;bottom:0;width:0;border-left:1px dashed #e0457b}
-#gh{left:0;right:0;height:0;border-top:1px dashed #e0457b}
+#gv{top:-50000px;height:100000px;width:0;border-left:1px dashed #e0457b}
+#gh{left:-50000px;width:100000px;height:0;border-top:1px dashed #e0457b}
 #fills{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 button.fl{width:24px;height:24px;padding:0;border-radius:6px;border:1px solid var(--line);cursor:pointer}
 button.fl.on{box-shadow:0 0 0 2px var(--accent)}
@@ -327,7 +356,7 @@ button.fl.none{background:linear-gradient(135deg,transparent 44%,var(--danger) 4
 #tablist .item small{color:var(--muted);font-weight:400}
 .dropdown{max-width:calc(100vw - 16px)}
 html{touch-action:manipulation}
-#board,#toolbar,#zoombar{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#view,#board,#toolbar,#zoombar{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 
 /* 터치 기기: 누르기 쉽게 크게 */
 @media (pointer:coarse){
@@ -337,10 +366,12 @@ html{touch-action:manipulation}
   #theme,#aboutbtn{width:40px;height:40px}
   #addtab{width:40px;height:40px}
   .tb{min-width:44px;height:44px}
+  #sbv{width:18px}#sbh{height:18px}
+  .sb i{border-radius:9px}
+  .edge{width:44px;height:44px;margin-top:0}
   button.sw{width:34px;height:34px}
   button.fl{width:30px;height:30px}
   .btn{padding:11px 10px}
-  .cgrip{width:18px;height:18px;margin:-9px 0 0 -9px}
   #pbox i{width:18px;height:18px;margin:-9px 0 0 -9px}
   #tsize{height:28px}
 }
@@ -371,12 +402,14 @@ html{touch-action:manipulation}
     background-color:var(--surface);background-repeat:no-repeat;background-size:28px 100%,28px 100%,10px 100%,10px 100%;
     background-attachment:local,local,scroll,scroll;
   }
-  #props .cvsec{display:flex;flex-direction:row;align-items:center;gap:8px}
-  #props .cvsec>label{display:none}
-  #props .cvsec .dims{margin:0}
-  #props .cvsec .dims input{width:76px}
   :root{--pad-l:12px;--pad-r:12px;--pad-t:148px;--pad-b:72px}
   #zoombar{left:8px;bottom:8px;max-width:calc(100% - 16px);overflow-x:auto}
+  #stage{margin-left:0}
+  .edge[data-e=l]{left:12px;top:50%;margin-top:-22px}
+  .edge[data-e=r]{right:24px;margin-top:-22px}
+  .edge[data-e=u]{top:156px;left:50%;margin-left:-22px}
+  .edge[data-e=d]{bottom:76px;left:50%;margin-left:-22px}
+  #backbtn{left:50%;bottom:84px}
   .paper{padding:8px}
   .editor{padding:16px;border-radius:12px;font-size:16px}
   .editor.empty::before{left:16px;top:16px}
@@ -394,9 +427,9 @@ html{touch-action:manipulation}
 <header id="header">
   <div id="menubar">
     <div class="menu"><button title="파일">파일</button><div class="dropdown">
-      <button class="item" data-act="newText">새 텍스트 탭</button>
-      <button class="item" data-act="newDraw">새 그림 탭</button>
-      <button class="item" data-act="newCode">새 코드 탭</button>
+      <button class="item" data-act="newText">새 메모장</button>
+      <button class="item" data-act="newDraw">새 그림판</button>
+      <button class="item" data-act="newCode">새 코드</button>
       <button class="item" data-act="open">열기… (Ctrl+O)</button>
       <button class="item" data-act="openCode">코드 파일 열기…</button>
       <button class="item" data-act="openPhoto">사진 열기…</button>
@@ -406,7 +439,7 @@ html{touch-action:manipulation}
       <button class="item" data-act="exportPng">PNG로 내보내기</button>
       <button class="item" data-act="copyPng">PNG를 클립보드로 복사</button>
       <button class="item" data-act="saveProject">프로젝트 저장 (Ctrl+Shift+S)</button>
-      <button class="item" data-act="rename">탭 이름 바꾸기 (F2)</button>
+      <button class="item" data-act="rename">이름 바꾸기 (F2)</button>
     </div></div>
     <div class="menu"><button title="편집">편집</button><div class="dropdown">
       <button class="item" data-act="undo">실행 취소 (Ctrl+Z)</button>
@@ -422,17 +455,16 @@ html{touch-action:manipulation}
       <button class="item" data-act="zoomOut">축소</button>
       <button class="item" data-act="zoomReset">100%</button>
       <button class="item" data-act="zoomFit">화면에 맞추기</button>
-      <button class="item" data-act="canvasSize">캔버스 크기…</button>
       <button class="item" data-act="toggleSnap">격자 맞춤 켜기/끄기</button>
     </div></div>
   </div>
-  <div class="menu" id="addmenu"><button id="addtab" title="새 탭" aria-label="새 탭">+</button><div class="dropdown">
-    <button class="item" data-act="newText">텍스트 탭</button>
-    <button class="item" data-act="newDraw">그림 탭</button>
-    <button class="item" data-act="newCode">코드 탭</button>
+  <div class="menu" id="addmenu"><button id="addtab" title="새로 만들기" aria-label="새로 만들기">+</button><div class="dropdown">
+    <button class="item" data-act="newText">메모장</button>
+    <button class="item" data-act="newDraw">그림판</button>
+    <button class="item" data-act="newCode">코드</button>
   </div></div>
   <div id="tabs" role="tablist"></div>
-  <div class="menu" id="tablist"><button id="tablistbtn" title="탭 목록" aria-label="탭 목록 열기">
+  <div class="menu" id="tablist"><button id="tablistbtn" title="열린 목록" aria-label="열린 목록 보기">
     <svg class="ico" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
   </button><div class="dropdown" id="tablistdd"></div></div>
   <button id="theme" title="라이트/다크 전환" aria-label="라이트/다크 전환">
@@ -489,15 +521,15 @@ function load(){
       return;
     }
   }catch(e){}
-  // 처음 접속하면 메모장 탭과 그림 탭을 하나씩 열어 두고, 메모장 탭을 보여 준다
-  tabs=[];newTab('text');newTab('draw');
+  // 처음 접속하면 메모장, 그림판, 코드를 하나씩 열어 두고, 메모장을 보여 준다
+  tabs=[];newTab('text');newTab('draw');newTab('code');
   activeId=tabs[0].id;
 }
 function cleanTab(t){
   if(!t||typeof t!=='object'||!Number.isInteger(t.id)||t.id<1)return null;
-  const title=typeof t.title==='string'?t.title:'탭 '+t.id;
+  const title=typeof t.title==='string'?t.title:'메모장 '+t.id;
   const def=typeof t.def==='string'?t.def:t.kind==='draw'?'그림 '+t.id:'제목 없음 '+t.id;
-  const custom=typeof t.custom==='boolean'?t.custom:!/^(제목 없음|그림|탭) \d+$/.test(title);
+  const custom=typeof t.custom==='boolean'?t.custom:!/^(메모장|그림판|코드|제목 없음|그림|탭) \d+$/.test(title);
   if(t.kind==='text'){
     const text=typeof t.text==='string'?t.text:'';
     // 서식 있는 내용은 허용 목록으로 걸러서 읽는다 (예전에 저장한 글자만 있는 메모는 문단으로 바꾼다)
@@ -512,7 +544,7 @@ function cleanTab(t){
     const fs=Number.isFinite(t.fs)&&t.fs>=10&&t.fs<=28?Math.round(t.fs):14;
     const vw=Number.isFinite(t.vw)&&t.vw>=25&&t.vw<=75?t.vw:48;
     return{id:t.id,kind:'code',title,def,custom,code,lang,tab,fs,wrap:t.wrap===true,eol:t.eol==='crlf'?'crlf':'lf',
-      view:t.view!==false,vw,vmode:t.vmode==='flow'?'flow':'class',pv:['tablet','mobile'].includes(t.pv)?t.pv:'full',pauto:t.pauto!==false,csample:['form','card'].includes(t.csample)?t.csample:'doc',entry:typeof t.entry==='string'?t.entry.slice(0,120):'',hideAcc:t.hideAcc===true,dep:t.dep!==false};
+      view:t.view!==false,vw,vmode:t.vmode==='flow'?'flow':'class',pv:['tablet','mobile'].includes(t.pv)?t.pv:'full',pauto:t.pauto!==false,csample:['form','card'].includes(t.csample)?t.csample:'doc',entry:typeof t.entry==='string'?t.entry.slice(0,120):'',hideAcc:t.hideAcc===true,dep:t.dep!==false,assoc:t.assoc!==false,agg:t.agg!==false,comp:t.comp!==false,legend:t.legend!==false,inh:t.inh!==false,impl:t.impl!==false,compact:t.compact===true,focus:t.focus===true};
   }
   if(t.kind==='draw'){
     const dim=v=>Number.isInteger(v)&&v>=1&&v<=4000;
@@ -534,7 +566,7 @@ function cleanTab(t){
       const q=okRect(t.photo)?t.photo:{x:0,y:0,w,h};
       photos=[{id:1,src:t.bg,x:q.x,y:q.y,w:q.w,h:q.h}];
     }
-    return{id:t.id,kind:'draw',title,def,custom,w,h,photos,strokes};
+    return{id:t.id,kind:'draw',title,def,custom,photos,strokes};
   }
   return null;
 }
@@ -555,28 +587,16 @@ function freeTitle(base){
   let n=1;while(used.has(n))n++;
   return base+' '+n;
 }
-function defaultCanvasSize(){
-  const m=$('#main'),cs=getComputedStyle(document.documentElement);
-  const px=n=>parseFloat(cs.getPropertyValue(n))||0;
-  const fit=(v,lo)=>Math.max(lo,Math.min(4000,Math.floor(v)));
-  return{w:fit(m.clientWidth-px('--pad-l')-px('--pad-r'),100),h:fit(m.clientHeight-px('--pad-t')-px('--pad-b'),100)};
-}
 function newTab(kind){
   if(!tabs.length)nextId=1;
   const id=nextId++;
-  const sz=kind==='draw'?defaultCanvasSize():null;
-  const def=freeTitle(kind==='draw'?'그림':kind==='code'?'코드':'제목 없음');
+  const def=freeTitle(kind==='draw'?'그림판':kind==='code'?'코드':'메모장');
   const t=kind==='draw'
-    ?{id,kind:'draw',title:def,def,custom:false,w:sz.w,h:sz.h,photos:[],strokes:[]}
+    ?{id,kind:'draw',title:def,def,custom:false,photos:[],strokes:[]}
     :kind==='code'
-    ?{id,kind:'code',title:def,def,custom:false,code:'',lang:'auto',tab:4,fs:14,wrap:false,eol:'lf',view:true,vw:48,vmode:'class',pv:'full',pauto:true,csample:'doc',entry:'',hideAcc:false,dep:true}
+    ?{id,kind:'code',title:def,def,custom:false,code:'',lang:'auto',tab:4,fs:14,wrap:false,eol:'lf',view:true,vw:48,vmode:'class',pv:'full',pauto:true,csample:'doc',entry:'',hideAcc:false,dep:true,assoc:true,agg:true,comp:true,legend:true,inh:true,impl:true,compact:false,focus:false}
     :{id,kind:'text',title:def,def,custom:false,text:'',html:'',zoom:1};
   tabs.push(t);activeId=id;render();
-  if(kind==='draw'){
-    // 새 탭이 생기면 탭 줄 높이가 달라질 수 있어서, 그린 뒤 한 번 더 재서 맞춘다
-    const s2=defaultCanvasSize();
-    if(s2.w!==t.w||s2.h!==t.h){t.w=s2.w;t.h=s2.h;rt[t.id].zoom=fitZoom(t);render()}
-  }
   save();
 }
 let dragTab=null;
@@ -609,7 +629,7 @@ function renameTab(id){
   const t=tabs.find(x=>x.id===id);if(!t)return;
   const el=$('#tabs [data-id="'+id+'"]');if(!el)return;
   const inp=document.createElement('input');
-  inp.type='text';inp.value=t.title;inp.maxLength=40;inp.setAttribute('aria-label','탭 이름');
+  inp.type='text';inp.value=t.title;inp.maxLength=40;inp.setAttribute('aria-label','이름');
   let done=false;
   const finish=ok=>{
     if(done)return;done=true;
@@ -644,10 +664,10 @@ function renderTabs(){
   for(const t of tabs){
     const el=document.createElement('div');el.className='tab'+(t.id===activeId?' active':'');el.dataset.id=t.id;
     const name=document.createElement('span');name.textContent=t.title;
-    const x=document.createElement('button');x.className='x';x.textContent='✕';x.title='탭 닫기';
+    const x=document.createElement('button');x.className='x';x.textContent='✕';x.title='닫기';
     x.onclick=e=>{
       e.stopPropagation();
-      if(hasContent(t)&&!confirm('"'+t.title+'" 탭에 내용이 있습니다.\n닫으면 내용이 사라집니다. 닫을까요?'))return;
+      if(hasContent(t)&&!confirm('"'+t.title+'"에 내용이 있습니다.\n닫으면 내용이 사라집니다. 닫을까요?'))return;
       closeTab(t.id);
     };
     // 끌어서 탭 순서 바꾸기
@@ -684,7 +704,7 @@ function renderTabs(){
     if(l-m<bar.scrollLeft)bar.scrollLeft=Math.max(0,l-m);
     else if(r+m>bar.scrollLeft+bar.clientWidth)bar.scrollLeft=r+m-bar.clientWidth;
   }
-  $('#tablistbtn').title='탭 목록 ('+tabs.length+'개)';
+  $('#tablistbtn').title='열린 목록 ('+tabs.length+'개)';
   updateTabsFade();
 }
 // 탭 줄이 좌우로 더 있으면 가장자리를 흐리게 해서 밀어 볼 수 있음을 알린다
@@ -818,7 +838,7 @@ function renderText(t,host){
     '<button data-c="strikeThrough" title="취소선 (Ctrl+Shift+X)" aria-label="취소선"><s>S</s></button>'+
     '<span class="rsep"></span>'+
     '<select class="rs" data-c="size" title="글자 크기 (Ctrl+] 크게, Ctrl+[ 작게)" aria-label="글자 크기">'+sizes.map(s=>'<option value="'+s+'"'+(s===15?' selected':'')+'>'+s+(s===15?' (기본)':'')+'</option>').join('')+'</select>'+
-    '<select class="rs" data-c="block" title="문단 스타일" aria-label="문단 스타일"><option value="p">본문 (Alt+1)</option><option value="h1">제목 1 (Alt+2)</option></select>'+
+    '<select class="rs" data-c="block" title="문단 스타일 (본문 Alt+1, 제목 1 Alt+2)" aria-label="문단 스타일"><option value="p" title="단축키 Alt+1">본문</option><option value="h1" title="단축키 Alt+2">제목 1</option></select>'+
     '<label class="rc" title="글자색">A<input type="color" data-c="foreColor" value="#d92d20" aria-label="글자색"></label>'+
     '<label class="rc" title="형광펜 (Ctrl+Shift+H는 켜기/끄기)">'+svg('<path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/>')+'<input type="color" data-c="hiliteColor" value="#fff176" aria-label="형광펜 색"></label>'+
     '<span class="rsep"></span>'+
@@ -831,7 +851,6 @@ function renderText(t,host){
     '<button data-c="justifyRight" title="오른쪽 정렬 (Ctrl+Shift+R)" aria-label="오른쪽 정렬">'+svg('<path d="M4 6h16M10 12h10M6 18h14"/>')+'</button>'+
     '<span class="rsep"></span>'+
     '<button data-c="hr" title="구분선 (Alt+H)" aria-label="구분선">'+svg('<path d="M3 12h18"/>')+'</button>'+
-    '<button data-c="clear" title="서식 지우기 (Ctrl+\)" aria-label="서식 지우기">'+svg('<path d="M4 7h16M9 7l-3 12h12L15 7M10 3h4"/><path d="m6 3 12 18"/>')+'</button>'+
     '<span class="rsep"></span>'+
     '<button data-c="md" title="마크다운(.md)으로 내보내기 (이미지가 있으면 zip)" aria-label="마크다운으로 내보내기">'+svg('<path d="M12 3v11M7.5 10 12 14.5 16.5 10"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/>')+'<span class="mdl">MD</span></button>'+
     '</div>'+
@@ -851,6 +870,9 @@ function renderText(t,host){
     const ls=toPlain(tmp,{prefix:false}).split('\n');
     return{line:ls.length,col:ls[ls.length-1].length+1};
   };
+  // 문단 스타일 선택 상자에 마우스를 올리면 지금 고른 스타일의 단축키가 나온다
+  const blkTip=()=>{const b=bar.querySelector('[data-c=block]');if(b)b.title=(b.value==='h1'?'제목 1 · 단축키 Alt+2':'본문 · 단축키 Alt+1')+' (목록을 열면 각 항목에 마우스를 올려도 볼 수 있어요)'};
+  blkTip();
   const upd=()=>{
     const c=caret();
     setStatus('줄 '+c.line+', 열 '+c.col,t.text.length+'자 · '+Math.round((t.zoom||1)*100)+'%');
@@ -905,6 +927,7 @@ function renderText(t,host){
     ss.value=String(px);
     const h=closestOf('h1,h2,h3');
     bar.querySelector('[data-c=block]').value=h&&h.tagName==='H1'?'h1':'p';
+    blkTip();
   };
 
   // ---- 서식 명령 ----
@@ -1010,8 +1033,7 @@ function renderText(t,host){
     ul:()=>listToggle('ul'),ol:()=>listToggle('ol'),todo:()=>listToggle('todo'),
     justifyLeft:()=>cmd('justifyLeft'),justifyCenter:()=>cmd('justifyCenter'),justifyRight:()=>cmd('justifyRight'),
     hr:()=>insertHr(),
-    md:()=>saveMd(t),
-    clear:()=>{restore();document.execCommand('removeFormat');document.execCommand('formatBlock',false,'p');after()}
+    md:()=>saveMd(t)
   };
   // 도구 막대를 눌러도 편집 칸의 포커스와 선택이 풀리지 않게 한다
   bar.addEventListener('pointerdown',e=>{if(!e.target.closest('select,input'))e.preventDefault()});
@@ -1020,7 +1042,7 @@ function renderText(t,host){
     if(b&&actionsMap[b.dataset.c])actionsMap[b.dataset.c]();
   });
   bar.querySelector('[data-c=size]').onchange=e=>setSize(+e.target.value);
-  bar.querySelector('[data-c=block]').onchange=e=>setBlock(e.target.value);
+  bar.querySelector('[data-c=block]').onchange=e=>{setBlock(e.target.value);blkTip()};
   const colorIn=(name)=>{
     const el=bar.querySelector('[data-c='+name+']');
     el.oninput=()=>cmdCss(name,el.value);
@@ -1134,7 +1156,6 @@ function renderText(t,host){
     if(mod&&!e.shiftKey&&!e.altKey){
       if(e.code==='BracketRight'){e.preventDefault();stepSize(1);return}
       if(e.code==='BracketLeft'){e.preventDefault();stepSize(-1);return}
-      if(e.code==='Backslash'){e.preventDefault();actionsMap.clear();return}
     }
     if(e.key==='Tab'&&!mod&&!e.altKey&&!e.shiftKey){e.preventDefault();document.execCommand('insertText',false,'\t')}
     if(curImg){
@@ -1686,7 +1707,7 @@ function umlParseC(raw){
       });
     }
     umlSplit(ctor).map(umlParam).filter(Boolean).forEach(q=>{
-      if((q.prop||kind==='record')&&q.name)c.attrs.push({vis:q.vis||(kind==='record'?'-':'+'),name:q.name,type:q.type});
+      if((q.prop||kind==='record')&&q.name)c.attrs.push({vis:q.vis||(kind==='record'?'-':'+'),name:q.name,type:q.type,inj:true});
     });
     let rest=body;
     if(kind==='enum'){
@@ -1698,11 +1719,11 @@ function umlParseC(raw){
       const q0=umlCMember(st.h,name);if(!q0)return;
       if(Array.isArray(q0)){c.attrs.push(...q0);return}
       const q=q0;
-      if(q.k==='f')c.attrs.push(q);
+      if(q.k==='f'){const im=/=(?!>)\s*([\s\S]+)$/.exec(st.h);if(im)q.init=im[1].trim();c.attrs.push(q)}
       else{
         q.body=st.b;
         c.meths.push(q);
-        if(q.name===name)q.params.forEach(pp=>{if(pp.prop)c.attrs.push({vis:pp.vis||'+',name:pp.name,type:pp.type})});
+        if(q.name===name)q.params.forEach(pp=>{if(pp.prop)c.attrs.push({vis:pp.vis||'+',name:pp.name,type:pp.type,inj:true})});
       }
     });
     out.push(c);
@@ -1776,7 +1797,6 @@ function umlModel(code,opts){
   const py=/^[ \t]*def\s+\w+\s*\(/m.test(code)||/^[ \t]*class\s+\w+[^\n{]*:\s*(#.*)?$/m.test(code);
   const seen=new Set(),classes=[];
   (py?umlParsePy(code):umlParseC(code)).forEach(c=>{if(!seen.has(c.name)){seen.add(c.name);classes.push(c)}});
-  if(opts.hideAcc)classes.forEach(c=>{c.meths=c.meths.filter(q=>!(/^(get|set|is|has)[A-Z_]/.test(q.name)&&q.params.length<=1))});
   const byName=new Map(classes.map((c,i)=>[c.name,i]));
   const rels=[],pair=new Map();
   const key=(a,b)=>a<b?a+'-'+b:b+'-'+a;
@@ -1784,38 +1804,78 @@ function umlModel(code,opts){
     c.parents.forEach(pn=>{
       const b=byName.get(pn);if(b===undefined||b===a||pair.has(key(a,b)))return;
       const iface=classes[b].kind==='interface'&&c.kind!=='interface';
-      pair.set(key(a,b),1);rels.push({a,b,tool:iface?'dashClosed':'arrowClosed',label:'',inh:true});
+      pair.set(key(a,b),1);   // 꺼 두어도 같은 쌍이 다른 관계선으로 나타나지 않게 한다
+      if(iface?opts.impl!==false:opts.inh!==false)rels.push({a,b,tool:iface?'dashClosed':'arrowClosed',label:'',inh:true,kind:iface?'impl':'inh'});
     });
   });
   const COL=/\[\]|\b(List|Set|Collection|Array|ArrayList|LinkedList|Iterable|Queue|Deque|Stream|MutableList|MutableSet|Vector|HashSet|IEnumerable|ICollection|IList|Sequence|Flux|list|set|tuple|Sequence)\b/;
+  const MAPT=/\b(Map|Dictionary|HashMap|MutableMap|dict|Dict)\b/;
   const refs=(ty,self)=>[...new Set((ty.match(/[A-Za-z_$][\w$]*/g)||[]).filter(w=>byName.has(w)&&w!==self))];
-  const assoc=new Map();
+  // 필드가 다른 클래스를 어떻게 갖는지 코드에서 추정한다
+  //  합성: 그 클래스가 직접 new 로 만든다 / 집합: 밖에서 받거나(생성자, setter) 목록으로 가진다 / 연관: 그냥 알고 있다
+  const holdKind=(c,f,w)=>{
+    const nm=reEsc(f.name),newW=new RegExp('\\bnew\\s+'+reEsc(w)+'\\b'),isId=/^[A-Za-z_$][\w$]*$/;
+    if(f.init&&newW.test(f.init))return'comp';
+    let inj=!!f.inj;
+    const asg=new RegExp('(?:\\bthis\\s*\\.\\s*)?\\b'+nm+'\\s*=(?!=)\\s*([^;]+);','g');
+    const add=new RegExp('\\b'+nm+'\\s*\\.\\s*(?:add|put|push|append|addLast|offer)\\w*\\s*\\(([^;]*)\\)','g');
+    for(const q of c.meths){
+      const body=q.body||'';if(!body)continue;
+      const ps=new Set(q.params.map(x=>x.name));
+      let m;
+      asg.lastIndex=0;while((m=asg.exec(body))){const v=m[1].trim();if(newW.test(v))return'comp';if(isId.test(v)&&ps.has(v))inj=true}
+      add.lastIndex=0;while((m=add.exec(body))){const v=m[1].trim();if(newW.test(v))return'comp';if(isId.test(v)&&ps.has(v))inj=true}
+    }
+    return inj||COL.test(f.type||'')||MAPT.test(f.type||'')?'agg':'assoc';
+  };
+  const rank={assoc:0,agg:1,comp:2},items=new Map();
   classes.forEach((c,a)=>{
     c.attrs.forEach(f=>{
       refs(f.type||'',c.name).forEach(w=>{
-        const b=byName.get(w),k=key(a,b);
-        const lab=f.name+(COL.test(f.type)||/\b(Map|Dictionary|HashMap|MutableMap|dict|Dict)\b/.test(f.type)?' 0..*':'');
-        const rv=assoc.get(b+'>'+a);
-        // 서로 가리키는 양방향 관계는 화살표 없는 선 하나에 양쪽 이름을 함께 적는다
-        if(rv&&!assoc.has(a+'>'+b)){rv.tool='line';rv.label+=' / '+lab;return}
-        if(pair.has(k)&&!assoc.has(a+'>'+b))return;
-        const ex=assoc.get(a+'>'+b);
-        if(ex)ex.label+=', '+lab;
-        else{const r={a,b,tool:'arrowOpen',label:lab};assoc.set(a+'>'+b,r);pair.set(k,1);rels.push(r)}
+        const b=byName.get(w),kind=holdKind(c,f,w);
+        const lab=f.name+(COL.test(f.type)||MAPT.test(f.type)?' 0..*':'');
+        const ex=items.get(a+'>'+b);
+        if(!ex)items.set(a+'>'+b,{a,b,kind,lab});
+        else{if(rank[kind]>rank[ex.kind])ex.kind=kind;ex.lab+=', '+lab}
       });
     });
+  });
+  const on={assoc:opts.assoc!==false,agg:opts.agg!==false,comp:opts.comp!==false},assocRel=new Map();
+  [...items.values()].sort((x,y)=>rank[y.kind]-rank[x.kind]).forEach(m=>{
+    const{a,b,kind,lab}=m,k=key(a,b);
+    if(kind!=='assoc'){
+      // 마름모는 전체(a) 쪽에 붙으므로 선은 부분(b)에서 전체(a)로 향한다
+      if(pair.has(k))return;
+      pair.set(k,1);   // 꺼 두어도 같은 쌍이 연관선으로 다시 나타나지 않게 한다
+      if(on[kind])rels.push({a:b,b:a,tool:kind==='comp'?'composition':'aggregation',label:lab,kind,rev:true});
+      return;
+    }
+    const rv=assocRel.get(b+'>'+a);
+    // 서로 가리키는 양방향 관계는 화살표 없는 선 하나에 양쪽 이름을 함께 적는다
+    if(rv&&!assocRel.has(a+'>'+b)){rv.tool='line';rv.kind='bi';rv.label+=' / '+lab;return}
+    if(pair.has(k))return;
+    pair.set(k,1);
+    const r={a,b,tool:'arrowOpen',label:lab,kind:'assoc'};
+    assocRel.set(a+'>'+b,r);
+    if(on.assoc)rels.push(r);
   });
   if(opts.dep){
     classes.forEach((c,a)=>{
       c.meths.forEach(q=>{
-        refs([q.ret,...q.params.map(p=>p.type)].join(' '),c.name).forEach(w=>{
+        refs([q.ret,...q.params.map(x=>x.type)].join(' '),c.name).forEach(w=>{
           const b=byName.get(w),k=key(a,b);
           if(pair.has(k))return;
-          pair.set(k,1);rels.push({a,b,tool:'dashOpen',label:''});
+          pair.set(k,1);rels.push({a,b,tool:'dashOpen',label:'',kind:'dep'});
         });
       });
     });
   }
+  // getter 숨김: 관계를 모두 구한 뒤에 화면에서만 뺀다 (숨겨도 관계선이 달라지면 안 된다)
+  //  getter = get/is/has + 대문자 이름, 파라미터 없음, 반환형이 void가 아님 / setter = set + 대문자 이름, 파라미터 하나
+  if(opts.hideAcc)classes.forEach(c=>{
+    c.meths=c.meths.filter(q=>!((/^(get|is|has)[A-Z_][\w$]*$/.test(q.name)&&q.params.length===0&&q.ret!=='void')||(/^set[A-Z_][\w$]*$/.test(q.name)&&q.params.length===1)));
+  });
+  if(opts.compact)classes.forEach(c=>{c.attrs=[];c.meths=[];c.consts=[]});   // 이름만 보기: 관계는 위에서 이미 구했다
   return{classes,rels,py};
 }
 // 계층 배치: 부모는 위, 자식은 아래. 같은 줄에서는 연결된 상자끼리 가깝게
@@ -1826,7 +1886,7 @@ function umlLayout(classes,rels){
     c.w=Math.ceil(L.w);c.h=Math.ceil(L.h);
   });
   const inInh=new Set();rels.forEach(r=>{if(r.inh){inInh.add(r.a);inInh.add(r.b)}});
-  const edges=rels.filter(r=>r.inh||!inInh.has(r.b)).map(r=>r.inh?[r.b,r.a]:[r.a,r.b]);
+  const edges=rels.filter(r=>r.inh||!inInh.has(r.b)).map(r=>r.inh||r.rev?[r.b,r.a]:[r.a,r.b]);
   const lay=new Array(n).fill(0);
   for(let it=0;it<n;it++){
     let ch=false;
@@ -2271,9 +2331,17 @@ function umlClassScene(model,opts){
   const res=umlStrokes(model);
   res.strokes.forEach(s=>shiftStroke(s,30,30));
   model.classes.forEach(c=>{c.x+=30;c.y+=30});
-  return{W:res.W+60,H:res.H+60,mode:'class',strokes:res.strokes,classes:model.classes,
+  return{W:res.W+60,H:res.H+60,mode:'class',strokes:res.strokes,classes:model.classes,rels:model.rels,
     draw(ctx,sel){
-      this.strokes.forEach(s=>paintStroke(ctx,s));
+      // 클래스를 고르면 그 클래스에 이어진 관계선은 보라색으로 굵게, 나머지는 흐리게 보여 준다
+      const ci=sel?this.classes.findIndex(x=>x.name===sel):-1,nr=this.rels.length;
+      this.strokes.forEach((s,i)=>{
+        if(ci>=0&&i<nr){
+          const r=this.rels[i];
+          if(r.a===ci||r.b===ci)paintStroke(ctx,{...s,color:'#6965db',size:3.5});
+          else{ctx.save();ctx.globalAlpha=0.18;paintStroke(ctx,s);ctx.restore()}
+        }else paintStroke(ctx,s);
+      });
       const c=sel&&this.classes.find(x=>x.name===sel);
       if(c){ctx.save();ctx.strokeStyle='#6965db';ctx.lineWidth=3;ctx.setLineDash([]);ctx.strokeRect(c.x-4,c.y-4,c.w+8,c.h+8);ctx.restore()}
     },
@@ -2365,26 +2433,58 @@ function umlSeqScene(model,seq){
 // 코드 탭의 다이어그램 패널: 코드가 바뀌면 잠시 뒤 자동으로 다시 그린다
 function codeView(t,host,ta,goto){
   const jp=host.querySelector('.cvpane[data-p="java"]');
-  const box=jp.querySelector('.cvbody'),cv=jp.querySelector('.cvc'),empty=jp.querySelector('.cvempty'),vbar=jp.querySelector('.cvbar');
+  const box=jp.querySelector('.cvbody'),cv=jp.querySelector('.cvc'),empty=jp.querySelector('.cvempty'),vbar=jp.querySelector('.cvmain'),vrel=jp.querySelector('.cvrel'),info=jp.querySelector('.cvinfo');
   const ctx=cv.getContext('2d'),entrySel=vbar.querySelector('[data-v="entry"]');
-  let model=null,calls=null,scene=null,z=1,px=0,py=0,moved=false,sel='',tm=0,cands=[],selRect=null,pick=false;
+  let model=null,calls=null,scene=null,z=1,px=0,py=0,moved=false,sel='',tm=0,cands=[],selRect=null,pick=false,infoKey='',sceneSeq=0;
   cv.tabIndex=0;
   const sizeOf=()=>({w:box.clientWidth,h:box.clientHeight});
   const draw=()=>{
     const d=devicePixelRatio||1;
     ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
-    if(!scene)return;
+    if(!scene){infoUpdate();return}
     ctx.setTransform(d*z,0,0,d*z,d*px,d*py);scene.draw(ctx,sel);
+    infoUpdate();
     if(selRect){
       ctx.save();ctx.fillStyle='rgba(105,101,219,.12)';ctx.strokeStyle='#6965db';ctx.lineWidth=1.5/z;ctx.setLineDash([6/z,4/z]);
       ctx.fillRect(selRect.x,selRect.y,selRect.w,selRect.h);ctx.strokeRect(selRect.x,selRect.y,selRect.w,selRect.h);ctx.restore();
     }
   };
+  // 선택한 클래스의 관계와 범례를 다이어그램 아래쪽에 글로 풀어 준다 (학습용)
+  const REL_INFO={inh:['상속','자식이 부모의 기능을 물려받아요 (extends)','arrowClosed'],impl:['구현','클래스가 인터페이스의 약속을 지켜요 (implements)','dashClosed'],assoc:['연관','필드로 다른 클래스를 알고 있어요','arrowOpen'],bi:['양방향 연관','서로를 필드로 가지고 있어요','line'],agg:['집합','전체가 부분을 가지지만 부분은 따로도 존재해요 (밖에서 받아요)','aggregation'],comp:['합성','전체가 부분을 직접 만들어요. 전체가 사라지면 부분도 사라져요','composition'],dep:['의존','메소드가 파라미터, 반환형으로 잠깐 쓰기만 해요','dashOpen']};
+  const relIcon=k=>'<svg viewBox="0 0 24 24">'+ICONS[REL_INFO[k][2]]+'</svg>';
+  const infoUpdate=()=>{
+    const cls=scene&&scene.mode==='class'&&model;
+    const key=cls?sel+'|'+t.legend+'|'+scene.rid:'x';
+    if(key===infoKey)return;
+    infoKey=key;
+    if(!cls){info.hidden=true;return}
+    const cl=scene.classes,ci=sel?cl.findIndex(c=>c.name===sel):-1;
+    let h='';
+    if(ci>=0){
+      const mine=scene.rels.filter(r=>r.a===ci||r.b===ci);
+      h+='<div class="ci-h">'+esc(sel)+(mine.length?'의 관계':' · 이어진 관계가 없어요')+'</div>';
+      mine.forEach(r=>{
+        const A=cl[r.a].name,B=cl[r.b].name,lb=r.label?' · '+r.label:'';
+        const txt=r.kind==='comp'?B+' ◆ '+A:r.kind==='agg'?B+' ◇ '+A:r.kind==='bi'?A+' ↔ '+B:A+' → '+B;
+        h+='<div class="ci-r">'+relIcon(r.kind)+'<span><b>'+REL_INFO[r.kind][0]+'</b> '+esc(txt+lb)+'</span></div>';
+      });
+    }
+    if(t.legend!==false){
+      // 상속, 구현을 포함해 관계 기호를 항상 모두 보여 주고, 지금 그림에 없는 것은 흐리게 한다 (양방향 연관은 있을 때만)
+      const used=k=>scene.rels.some(r=>r.kind===k);
+      const all=['inh','impl','assoc','agg','comp','dep'];
+      if(used('bi'))all.splice(3,0,'bi');
+      h+='<div class="ci-h">범례</div>'+all.map(k=>'<div class="ci-r'+(used(k)?'':' ci-off')+'">'+relIcon(k)+'<span><b>'+REL_INFO[k][0]+'</b> '+REL_INFO[k][1]+'</span></div>').join('');
+      if(!t.compact)h+='<div class="ci-r"><span class="ci-v">+ - # ~</span><span><b>공개 범위</b> public, private, protected, 같은 패키지</span></div>';
+      if(t.focus&&!sel)h+='<div class="ci-r"><span><b>집중 보기</b> 클래스를 누르면 그 클래스와 이어진 클래스만 보여요</span></div>';
+    }
+    info.innerHTML=h;info.hidden=!h;
+  };
   const resize=()=>{
     const d=devicePixelRatio||1,{w,h}=sizeOf();
     if(!w||!h)return;
     cv.width=Math.round(w*d);cv.height=Math.round(h*d);cv.style.width=w+'px';cv.style.height=h+'px';
-    if(!moved)fit(false);else draw();
+    if(!moved)fit();else draw();
   };
   const fit=redraw=>{
     moved=false;
@@ -2407,13 +2507,14 @@ function codeView(t,host,ta,goto){
   const build=()=>{
     const mode=t.vmode;
     vbar.querySelectorAll('[data-v="class"],[data-v="flow"]').forEach(b=>b.classList.toggle('on',b.dataset.v===mode));
-    vbar.querySelector('[data-v="acc"]').classList.toggle('on',t.hideAcc);
-    vbar.querySelector('[data-v="dep"]').classList.toggle('on',t.dep);
+    vrel.hidden=mode!=='class';
+    [['acc',t.hideAcc],['dep',t.dep],['assoc',t.assoc],['agg',t.agg],['comp',t.comp],['inh',t.inh],['impl',t.impl],['compact',t.compact],['focus',t.focus],['legend',t.legend]].forEach(([k,v])=>vrel.querySelector('[data-v="'+k+'"]').classList.toggle('on',v!==false&&!!v));
+    infoKey='';
     entrySel.hidden=mode!=='flow';
     scene=null;selRect=null;empty.textContent='';
     const code=ta.value;
     if(!code.trim()){empty.textContent='코드를 입력하거나 붙여 넣으면 클래스 구조와 실행 흐름이 여기에 그려집니다. 위쪽 [예제 코드…]로 먼저 살펴보세요.';draw();return}
-    try{model=umlModel(code,{hideAcc:t.hideAcc,dep:t.dep})}catch(e){model=null}
+    try{model=umlModel(code,{hideAcc:t.hideAcc,dep:t.dep,assoc:t.assoc,agg:t.agg,comp:t.comp,inh:t.inh,impl:t.impl,compact:t.compact&&mode==='class'})}catch(e){model=null}
     if(!model||!model.classes.length){empty.textContent='클래스를 찾지 못했어요. class, interface 선언이 들어 있는지 확인해 주세요. (Java, C#, TypeScript, Kotlin, Python 지원)';draw();return}
     try{calls=umlCalls(model)}catch(e){calls=new Map()}
     cands=[];
@@ -2425,7 +2526,21 @@ function codeView(t,host,ta,goto){
     if(mode==='flow'){
       if(!entry){empty.textContent='메소드가 다른 클래스의 메소드를 부르는 코드가 아직 없어요. 메소드 안에서 다른 객체의 메소드를 호출해 보세요.';draw();return}
       scene=umlSeqScene(model,umlSeq(model,calls,entry));
-    }else scene=umlClassScene(model);
+    }else{
+      // 집중 보기: 고른 클래스와 그 클래스에 이어진 클래스만 그린다
+      let fm=model;
+      const ci=t.focus&&sel?model.classes.findIndex(c=>c.name===sel):-1;
+      if(ci>=0){
+        const keep=new Set([ci]);
+        model.rels.forEach(r=>{if(r.a===ci)keep.add(r.b);if(r.b===ci)keep.add(r.a)});
+        const idx=new Map(),classes=[];
+        model.classes.forEach((c,i)=>{if(keep.has(i)){idx.set(i,classes.length);classes.push(c)}});
+        const rels=model.rels.filter(r=>keep.has(r.a)&&keep.has(r.b)).map(r=>({...r,a:idx.get(r.a),b:idx.get(r.b)}));
+        fm={...model,classes,rels};
+      }
+      scene=umlClassScene(fm);
+    }
+    if(scene)scene.rid=++sceneSeq;
   };
   const update=(refit,now)=>{
     clearTimeout(tm);
@@ -2445,7 +2560,7 @@ function codeView(t,host,ta,goto){
       const m=new RegExp('\\b(?:class|interface|enum|record|struct|trait|object)\\s+'+reEsc(c.name)+'\\b').exec(code);
       if(m&&m.index<=off&&m.index>bp){bp=m.index;best=c.name}
     });
-    if(best!==sel){sel=best;draw()}
+    if(best!==sel){sel=best;if(t.focus&&t.vmode==='class')update(true,false);else draw()}
   };
   const declPos=name=>{
     const m=new RegExp('\\b(?:class|interface|enum|record|struct|trait|object)\\s+'+reEsc(name)+'\\b').exec(ta.value);
@@ -2481,7 +2596,7 @@ function codeView(t,host,ta,goto){
     if(d.moved||!scene)return;
     if(selRect){selRect=null;draw()}
     const r=cv.getBoundingClientRect(),name=scene.hit((e.clientX-r.left-px)/z,(e.clientY-r.top-py)/z);
-    if(name){const p=declPos(name);if(p){sel=name;draw();goto(p.i,p.len)}}
+    if(name){const p=declPos(name);if(p){sel=name;if(t.focus&&t.vmode==='class')update(true,true);else draw();goto(p.i,p.len)}}
   };
   cv.addEventListener('pointerup',endDrag);
   cv.addEventListener('pointercancel',()=>{drag=null});
@@ -2506,7 +2621,7 @@ function codeView(t,host,ta,goto){
     list.forEach(s=>{const b=strokeBox(s,true);x0=Math.min(x0,b.x);y0=Math.min(y0,b.y)});
     list.forEach(s=>{shiftStroke(s,30-x0,30-y0);delete s.grp});
     clip={strokes:list,photos:[],n:0,diagram:true,png:0};
-    let msg=list.length+'개 요소를 복사했습니다. 그림 탭에서 Ctrl+V로 붙여넣으면 고칠 수 있는 도형으로 붙습니다';
+    let msg=list.length+'개 요소를 복사했습니다. 그림판에서 Ctrl+V로 붙여넣으면 고칠 수 있는 도형으로 붙습니다';
     flash(msg);
     try{
       const r=selRect||{x:0,y:0,w:scene.W,h:scene.H},k=2,c=document.createElement('canvas');
@@ -2542,17 +2657,18 @@ function codeView(t,host,ta,goto){
       const r=javaToJson(ta.value,v==='*'?'':v);
       if(!r){flash('JSON으로 만들 클래스가 없어요 (필드가 있는 클래스가 필요해요)');return}
       openCodeTab(r.text+'\n','json',r.name+'.json');
-      flash(r.name+' 클래스의 샘플 JSON을 새 탭에 만들었습니다');
+      flash(r.name+' 클래스의 샘플 JSON을 새 코드에 만들었습니다');
       return;
     }
     if(e.target.dataset.v==='entry'){t.entry=e.target.value;saveSoon();update(true,true)}
   });
-  vbar.addEventListener('click',e=>{
+  const barClick=e=>{
     const b=e.target.closest('button[data-v]');if(!b)return;
     const v=b.dataset.v;
     if(v==='class'||v==='flow'){t.vmode=v;saveSoon();update(true,true)}
-    else if(v==='acc'){t.hideAcc=!t.hideAcc;saveSoon();update(true,true)}
-    else if(v==='dep'){t.dep=!t.dep;saveSoon();update(true,true)}
+    else if(v==='acc'){t.hideAcc=!t.hideAcc;saveSoon();update(false,true)}
+    else if(v==='dep'||v==='assoc'||v==='agg'||v==='comp'||v==='inh'||v==='impl'||v==='compact'||v==='focus'){t[v]=!t[v];saveSoon();update(v==='focus',true)}
+    else if(v==='legend'){t.legend=!t.legend;saveSoon();infoKey='';build2()}
     else if(v==='fit'){fit()}
     else if(v==='zin'||v==='zout'){const{w,h}=sizeOf();zoomAt(v==='zin'?1.25:0.8,w/2,h/2)}
     else if(v==='png'){
@@ -2568,7 +2684,12 @@ function codeView(t,host,ta,goto){
       if(!scene){flash('그릴 다이어그램이 없습니다');return}
       sendToDraw(scene.toStrokes(),scene.W,scene.H,t.title.replace(/\.[^.]+$/,'')+(scene.mode==='class'?' 클래스 구조':' 실행 흐름'));
     }
-  });
+  };
+  vbar.addEventListener('click',barClick);
+  vrel.addEventListener('click',barClick);
+  const build2=()=>{vrel.querySelector('[data-v="legend"]').classList.toggle('on',t.legend!==false);infoUpdate()};
+  // 더보기 안의 JSON 선택 상자를 눌러도 메뉴가 닫히지 않게 한다
+  vbar.querySelector('[data-v="jcls"]').addEventListener('click',e=>e.stopPropagation());
   return{update,caret,fit,resize,draw};
 }
 // ---- 언어별 미리보기: HTML 화면, CSS 적용, JavaScript 실행 결과, JSON 트리, Java 클래스 다이어그램 ----
@@ -2904,7 +3025,7 @@ function codePreview(t,host,ta,getLang,jv,setLang,goto){
     worker.terminate();worker=null;clearTimeout(wtimer);
     if(msg)line('sys',msg);
   };
-  const hint=txt=>{if(/(document|window|alert|prompt|localStorage|navigator|location) is not defined/.test(txt))line('sys','힌트: 여기에는 화면(document, window)이 없어요. 화면을 다루는 코드는 HTML 탭에서 <script>로 확인해 보세요.')};
+  const hint=txt=>{if(/(document|window|alert|prompt|localStorage|navigator|location) is not defined/.test(txt))line('sys','힌트: 여기에는 화면(document, window)이 없어요. 화면을 다루는 코드는 이 실행기에서 쓸 수 없어요.')};
   const run=()=>{
     stop();out.textContent='';
     const code=ta.value;
@@ -3026,23 +3147,24 @@ function codePreview(t,host,ta,getLang,jv,setLang,goto){
       const res=jsonToJava(r.v,panes.json.querySelector('[data-j="root"]').value.trim()||'Root',panes.json.querySelector('[data-j="style"]').value);
       if(!res){flash('맨 위가 객체(또는 객체 배열)인 JSON만 클래스로 만들 수 있어요');return}
       openCodeTab(res.text,'java',res.name+'.java');
-      flash('Java 클래스 '+res.count+'개를 새 탭에 만들었습니다');
+      flash('Java 클래스 '+res.count+'개를 새 코드에 만들었습니다');
     }
   });
   return{update,primary,caret:s=>{if(cur==='java')jv.caret(s)},resize:()=>jv.resize(),stop};
 }
-// 클래스 구조를 새 그림 탭으로 보내서 상자와 선을 자유롭게 고칠 수 있게 한다
+// 클래스 구조를 새 그림판으로 보내서 상자와 선을 자유롭게 고칠 수 있게 한다
 function sendToDraw(strokes,W,H,title){
   newTab('draw');
   const d=active();
-  d.w=Math.min(4000,Math.max(d.w,Math.ceil(W)));d.h=Math.min(4000,Math.max(d.h,Math.ceil(H)));
   const g=Date.now();
   strokes.forEach(s=>{s.grp=g;d.strokes.push(s)});
   d.title=title;d.custom=true;
-  if(rt[d.id])rt[d.id].zoom=fitZoom(d);
+  if(rt[d.id])fitView(d);
   render();save();
-  flash('새 그림 탭으로 보냈습니다. 선택 모드에서 끌어 옮기거나 더블클릭해 고칠 수 있어요');
+  flash('새 그림판으로 보냈습니다. 선택 모드에서 끌어 옮기거나 더블클릭해 고칠 수 있어요');
 }
+// 관계 표시 버튼: [키, 이름, 설명, 아이콘]
+const REL_BTNS=[['inh','상속','상속: 자식이 부모 클래스를 extends 해요 (실선, 빈 삼각형)','arrowClosed'],['impl','구현','구현: 클래스가 인터페이스를 implements 해요 (점선, 빈 삼각형)','dashClosed'],['assoc','연관','연관: 필드로 다른 클래스를 알고 있어요 (실선 화살표)','arrowOpen'],['agg','집합','집합: 전체가 부분을 가지지만 부분은 따로도 존재해요. 밖에서 받거나 목록으로 가진 필드 (빈 마름모)','aggregation'],['comp','합성','합성: 전체가 부분을 직접 new 로 만들어요. 전체가 사라지면 부분도 사라져요 (채운 마름모)','composition'],['dep','의존','의존: 메소드가 파라미터나 반환형으로 잠깐 쓰는 관계 (점선 화살표)','dashOpen']];
 function renderCode(t,host){
   const ex=rt[t.id]||{};
   host.innerHTML=
@@ -3073,23 +3195,29 @@ function renderCode(t,host){
     '<div class="csplitter" role="separator" aria-orientation="vertical" title="끌어서 너비 조절"></div>'+
     '<section class="cview" aria-label="미리보기">'+
     '<div class="cvpane" data-p="java">'+
-    '<div class="rtbar cvbar">'+
+    '<div class="rtbar cvbar cvmain">'+
       '<button data-v="class" title="클래스 구조 (UML 클래스 다이어그램)">클래스 구조</button>'+
       '<button data-v="flow" title="메소드 호출 순서 (시퀀스 다이어그램)">실행 흐름</button>'+
       '<select class="rs" data-v="entry" aria-label="시작 메소드" title="흐름을 시작할 메소드"></select>'+
       '<span class="rsep"></span>'+
       '<button data-v="zout" title="축소">−</button><button data-v="fit" title="화면에 맞추기">맞춤</button><button data-v="zin" title="확대">+</button>'+
+      '<div class="menu cvmore"><button data-v="more" title="복사, 그림판으로 보내기, 이미지 저장 같은 기능" aria-label="더보기">더보기 ▾</button><div class="dropdown">'+
+        '<button class="item" data-v="pick" title="켜고 끌어서 영역 선택 (Shift+끌기도 가능). 놓으면 그 영역이 복사됩니다">영역 선택해서 복사</button>'+
+        '<button class="item" data-v="copy" title="다이어그램 전체를 복사. 그림판에서 Ctrl+V로 붙여넣으면 고칠 수 있는 도형으로 붙습니다">전체 복사</button>'+
+        '<button class="item" data-v="draw" title="지금 보이는 다이어그램을 새 그림판으로 보내 자유롭게 고치기">그림판으로 보내기</button>'+
+        '<button class="item" data-v="png" title="PNG 이미지로 저장">PNG로 저장</button>'+
+        '<select class="rs" data-v="jcls" aria-label="클래스로 JSON 만들기" title="고른 클래스 모양의 샘플 JSON을 새 코드에 만듦"><option value="">JSON 만들기…</option></select>'+
+      '</div></div>'+
+    '</div>'+
+    '<div class="rtbar cvbar cvrel">'+
+      REL_BTNS.map(b=>'<button class="rel" data-v="'+b[0]+'" title="'+b[2]+'"><svg class="ico" viewBox="0 0 24 24">'+ICONS[b[3]]+'</svg>'+b[1]+'</button>').join('')+
       '<span class="rsep"></span>'+
       '<button data-v="acc" title="getXxx, setXxx 메소드 숨기기">getter 숨김</button>'+
-      '<button data-v="dep" title="메소드가 쓰는 클래스를 점선으로 잇기">의존 관계</button>'+
-      '<span class="rsep"></span>'+
-      '<button data-v="pick" title="켜고 끌어서 영역 선택 (Shift+끌기도 가능). 선택한 영역만 복사됩니다">영역 선택</button>'+
-      '<button data-v="copy" title="선택한 영역(없으면 전체)을 복사. 그림 탭에서 Ctrl+V로 붙여넣으면 고칠 수 있는 도형으로 붙습니다">복사</button>'+
-      '<button data-v="draw" title="지금 보이는 다이어그램 전체를 새 그림 탭으로 보내 자유롭게 고치기">그림 탭으로</button>'+
-      '<button data-v="png" title="PNG 이미지로 저장">PNG</button>'+
-      '<select class="rs" data-v="jcls" aria-label="클래스로 JSON 만들기" title="고른 클래스 모양의 샘플 JSON을 새 코드 탭에 만듦"><option value="">JSON 만들기…</option></select>'+
+      '<button data-v="compact" title="속성과 메소드를 감추고 클래스 이름과 관계만 보기">이름만</button>'+
+      '<button data-v="focus" title="고른 클래스와 이어진 클래스만 보기 (다른 클래스를 누르면 그 클래스로 바뀌어요)">집중 보기</button>'+
+      '<button data-v="legend" title="관계 기호의 뜻을 아래에 보여 주기">범례</button>'+
     '</div>'+
-    '<div class="cvbody"><canvas class="cvc"></canvas><div class="cvempty"></div></div>'+
+    '<div class="cvbody"><canvas class="cvc"></canvas><div class="cvempty"></div><div class="cvinfo" hidden></div></div>'+
     '</div>'+
     // HTML: 실행 결과 미리보기
     '<div class="cvpane" data-p="html" hidden>'+
@@ -3119,7 +3247,7 @@ function renderCode(t,host){
       '<div class="jstat" role="status" aria-live="polite"></div>'+
       '<div class="rtbar cvbar jconv"><span class="cvtitle">Java로</span><input class="jroot" data-j="root" value="Root" maxlength="40" spellcheck="false" aria-label="맨 위 클래스 이름" title="맨 위 클래스 이름">'+
       '<select class="rs" data-j="style" aria-label="클래스 모양"><option value="pojo">getter/setter</option><option value="lombok">Lombok @Data</option><option value="record">record</option></select>'+
-      '<button data-p-act="tojava" title="이 JSON에 맞는 Java 클래스를 새 코드 탭에 만듦">클래스 만들기</button></div>'+
+      '<button data-p-act="tojava" title="이 JSON에 맞는 Java 클래스를 새 코드에 만듦">클래스 만들기</button></div>'+
       '<div class="cvbody cvtree"></div>'+
     '</div>'+
     // 그 밖의 형식
@@ -3430,7 +3558,7 @@ actions.openCode=()=>{
   f.onchange=async()=>{
     const list=[...f.files];
     for(const x of list)await openCodeFile(x);
-    if(list.length>1)flash(list.length+'개 파일을 탭으로 열었습니다');
+    if(list.length>1)flash(list.length+'개 파일을 열었습니다');
   };
   f.click();
 };
@@ -3444,27 +3572,27 @@ actions.copyCode=()=>{
 // ---- actions & input ----
 actions.newText=()=>newTab('text');
 actions.open=()=>pick('.txt,.log,.ini,.md,.json,.csv,.ps1,.html,.htm,.npaint,text/*,image/*');
-actions.saveMd=()=>{const t=active();if(t.kind==='text')saveMd(t);else flash('메모 탭에서만 마크다운으로 내보낼 수 있습니다')};
-actions.saveHtml=()=>{const t=active();if(t.kind==='text')saveHtml(t);else flash('텍스트 탭에서만 서식 포함 저장을 쓸 수 있습니다')};
+actions.saveMd=()=>{const t=active();if(t.kind==='text')saveMd(t);else flash('메모장에서만 마크다운으로 내보낼 수 있습니다')};
+actions.saveHtml=()=>{const t=active();if(t.kind==='text')saveHtml(t);else flash('메모장에서만 서식 포함 저장을 쓸 수 있습니다')};
 // 프로젝트 파일(.npaint): 모든 탭을 사진과 획 그대로 저장하고 다시 불러온다
 actions.saveProject=()=>{
   const data={format:'notepad-paint',version:1,tabs,activeId};
   download(new Blob([JSON.stringify(data)],{type:'application/json'}),'메모장그림-프로젝트.npaint');
-  flash('프로젝트 파일로 저장했습니다 ('+tabs.length+'개 탭)');
+  flash('프로젝트 파일로 저장했습니다 ('+tabs.length+'개)');
 };
 function importProject(text){
   let d;try{d=JSON.parse(text)}catch(e){flash('프로젝트 파일을 읽을 수 없습니다');return false}
   if(!d||d.format!=='notepad-paint'||!Array.isArray(d.tabs)){flash('메모장 그림 프로젝트 파일이 아닙니다');return false}
   const list=d.tabs.map(cleanTab).filter(Boolean);
-  if(!list.length){flash('불러올 탭이 없습니다');return false}
+  if(!list.length){flash('불러올 항목이 없습니다');return false}
   for(const t of list){t.id=nextId++;tabs.push(t)}
   activeId=list[0].id;render();save();
-  flash(list.length+'개 탭을 불러왔습니다');
+  flash(list.length+'개를 불러왔습니다');
   return true;
 }
 actions.find=()=>{
   const t=active();
-  if(t.kind!=='text'&&t.kind!=='code'){flash('텍스트, 코드 탭에서만 찾기/바꾸기를 쓸 수 있습니다');return}
+  if(t.kind!=='text'&&t.kind!=='code'){flash('메모장, 코드에서만 찾기/바꾸기를 쓸 수 있습니다');return}
   rt[t.id].openFind();
 };
 actions.copy=()=>{const t=active();if(t.kind==='text'||t.kind==='code'){rt[t.id].ta.focus();document.execCommand('copy')}else copySel(false)};
@@ -3498,17 +3626,17 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='F2'){e.preventDefault();actions.rename()}
   else if(e.key==='Escape')document.querySelectorAll('.menu.open').forEach(m=>m.classList.remove('open'));
 });
-const KEYS_COMMON=[['Ctrl+S','저장'],['Ctrl+Z','실행 취소'],['Ctrl+F','찾기 (메모, 코드)'],['Alt+Shift+1/2/3','새 메모/그림/코드 탭']];
+const KEYS_COMMON=[['Ctrl+S','저장'],['Ctrl+Z','실행 취소'],['Ctrl+F','찾기 (메모, 코드)'],['Alt+Shift+1/2/3','새 메모장/그림판/코드']];
 const KEYS_BY_TAB={
-  text:{n:'메모 탭',k:[['Alt+1','본문'],['Alt+2','제목'],['Alt+L','글머리 목록'],['Alt+N','번호 목록'],['Alt+T','체크리스트'],['Alt+H','구분선'],['Ctrl+B','굵게']]},
-  draw:{n:'그림 탭',k:[['Alt+1 ~ 4','선택 / 펜 / 텍스트 / 지우개'],['Ctrl+C / V','복사 / 붙여넣기'],['Ctrl+D','복제'],['Delete','삭제']]},
-  code:{n:'코드 탭',k:[['Tab','들여쓰기'],['Ctrl+/','주석 켜기/끄기'],['Ctrl+D','줄 복제'],['Ctrl+Enter','미리보기 실행']]}
+  text:{n:'메모장',k:[['Alt+1','본문'],['Alt+2','제목'],['Alt+L','글머리 목록'],['Alt+N','번호 목록'],['Alt+T','체크리스트'],['Alt+H','구분선'],['Ctrl+B','굵게']]},
+  draw:{n:'그림판',k:[['Alt+1 ~ 4','선택 / 펜 / 텍스트 / 지우개'],['Ctrl+C / V','복사 / 붙여넣기'],['Ctrl+D','복제'],['Delete','삭제']]},
+  code:{n:'코드',k:[['Tab','들여쓰기'],['Ctrl+/','주석 켜기/끄기'],['Ctrl+D','줄 복제'],['Ctrl+Enter','미리보기 실행']]}
 };
 function fillKeys(){
   const box=document.querySelector('.keyspop');if(!box)return;
   const t=active(),g=KEYS_BY_TAB[t&&t.kind];
   const rows=l=>'<dl class="keys">'+l.map(r=>'<dt>'+r[0].split(/\s+/).map(x=>/^[/~]$/.test(x)?x:'<kbd>'+esc(x)+'</kbd>').join(' ')+'</dt><dd>'+esc(r[1])+'</dd>').join('')+'</dl>';
-  box.innerHTML=(g?'<h3 class="kt">'+g.n+'</h3>'+rows(g.k):'')+'<h3 class="kt">모든 탭</h3>'+rows(KEYS_COMMON)+'<p class="kmore">같은 키라도 탭마다 하는 일이 달라요. 도구 막대 버튼에 마우스를 올리면 단축키가 나와요.</p>';
+  box.innerHTML=(g?'<h3 class="kt">'+g.n+'</h3>'+rows(g.k):'')+'<h3 class="kt">공통</h3>'+rows(KEYS_COMMON)+'<p class="kmore">같은 키라도 메모장, 그림판, 코드마다 하는 일이 달라요. 도구 막대 버튼에 마우스를 올리면 단축키가 나와요.</p>';
 }
 document.getElementById('keysbtn').addEventListener('click',fillKeys);
 document.addEventListener('click',e=>{
@@ -3721,12 +3849,21 @@ function paintStroke(ctx,s){
   if(s.tool==='line')paintLabel(ctx,s);
   ctx.restore();
 }
+// 보이는 획을 모두 그린다 (hide: 지금 고치는 중이라 잠시 숨길 획의 번호)
+function paintAll(ctx,t,hide){
+  const del=deletedSet(t);let n=0;
+  t.strokes.forEach((s,i)=>{if(s.tool!=='del'&&s.tool!=='photoDel'&&!del.has(i)&&i!==hide){paintStroke(ctx,s);n++}});
+  return n;
+}
+// 화면 위치(cx, cy)와 배율을 그리기 변환으로 건다. 이후에는 모두 '작업 공간 좌표'로 그린다
+function viewCtx(r,ctx){const k=r.dpr*r.zoom;ctx.setTransform(k,0,0,k,-r.cx*k,-r.cy*k)}
 function redraw(t){
-  const r=rt[t.id],del=deletedSet(t);let n=0;
-  r.dctx.clearRect(0,0,t.w,t.h);
-  t.strokes.forEach((s,i)=>{if(s.tool!=='del'&&s.tool!=='photoDel'&&!del.has(i)&&i!==r.hide){paintStroke(r.dctx,s);n++}});
+  const r=rt[t.id],c=r.drc;
+  r.dctx.setTransform(1,0,0,1,0,0);r.dctx.clearRect(0,0,c.width,c.height);viewCtx(r,r.dctx);
+  const n=paintAll(r.dctx,t,r.hide);
   const hint=$('#hint');
   if(hint)hint.style.display=n||visiblePhotos(t).length?'none':'flex';
+  updateNav(t);
 }
 const imgW=im=>im.naturalWidth||im.width,imgH=im=>im.naturalHeight||im.height;
 function visiblePhotos(t){
@@ -3739,7 +3876,8 @@ function visiblePhotos(t){
 }
 function selPhoto(t){const id=rt[t.id].selPhoto;return visiblePhotos(t).find(p=>p.id===id)||null}
 function redrawBg(t){
-  const r=rt[t.id];r.bctx.fillStyle='#fff';r.bctx.fillRect(0,0,t.w,t.h);
+  const r=rt[t.id],c=r.bgc,x=r.bctx;
+  x.setTransform(1,0,0,1,0,0);x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);viewCtx(r,x);
   visiblePhotos(t).forEach(p=>{const im=r.imgs[p.id];if(im)r.bctx.drawImage(im,p.x,p.y,p.w,p.h)});
 }
 function refresh(t){const r=rt[t.id];r.selStroke=-1;r.multi=null;redraw(t);redrawBg(t);placePhotoBox(t)}
@@ -3857,7 +3995,6 @@ function resizeRect(p,H,dx,dy,cw,ch){
     if(H==='s')h=Math.max(MIN,p.h+dy);
     if(H==='n'){h=Math.max(MIN,p.h-dy);y=p.y+p.h-h}
   }
-  x=Math.min(cw-MIN,Math.max(MIN-w,x));y=Math.min(ch-MIN,Math.max(MIN-h,y));
   return{x,y,w,h};
 }
 // 캔버스 크기 변경. 왼쪽/위쪽 모서리를 끌면 반대쪽 모서리가 고정되도록 내용(획, 사진)을 함께 옮긴다
@@ -3865,35 +4002,100 @@ function shiftStroke(s,dx,dy){
   if(s.pts)s.pts=s.pts.map(q=>[q[0]+dx,q[1]+dy]);
   else if(s.tool==='text'){s.x+=dx;s.y+=dy}
 }
-function shiftContent(t,dx,dy){
-  const mv=s=>shiftStroke(s,dx,dy);
-  t.strokes.forEach(mv);rt[t.id].redo.forEach(mv);
-  t.photos.forEach(p=>{p.x+=dx;p.y+=dy});
+// ---- 화면(보이는 영역) 관리: 작업 공간은 끝이 없고, 캔버스는 화면 크기만 쓴다 ----
+function sizeView(t){
+  const r=rt[t.id],st=$('#stage');
+  if(!st||!r.drc)return false;
+  const W=st.clientWidth,H=st.clientHeight;
+  if(!W||!H)return false;
+  r.dpr=Math.min(2,window.devicePixelRatio||1);
+  for(const c of [r.bgc,r.drc]){
+    const pw=Math.round(W*r.dpr),ph=Math.round(H*r.dpr);
+    if(c.width!==pw)c.width=pw;
+    if(c.height!==ph)c.height=ph;
+    c.style.width=W+'px';c.style.height=H+'px';
+  }
+  r.vw=W;r.vh=H;
+  return true;
 }
-function resizeCanvas(t,w,h,sx,sy){
-  const r=rt[t.id];
-  if(sx||sy)shiftContent(t,sx,sy);
-  t.w=w;t.h=h;
-  for(const c of [r.bgc,r.drc]){c.width=w;c.height=h}
-  redrawBg(t);redraw(t);applyZoom(t);
-  $('#cw').value=w;$('#ch').value=h;
+// 도구 모음, 속성 카드에 가리지 않는 영역의 왼쪽/위쪽 여백 (화면 픽셀)
+function viewMargin(){const n=matchMedia('(max-width:720px)').matches;return{L:12,T:n?150:76}}
+// 작업 공간의 왼쪽 위는 고정이다: 원점이 이 여백 자리에 올 때까지만 왼쪽/위로 갈 수 있고, 오른쪽/아래로만 넓어진다
+function viewFloor(t,cb){
+  const r=rt[t.id],m=viewMargin(),z=r.zoom;
+  cb=cb===undefined?contentBounds(t):cb;
+  return{x:Math.min(-(m.L+20)/z,cb?cb.x:0),y:Math.min(-(m.T+20)/z,cb?cb.y:0)};
 }
+// 화면 위치나 배율이 바뀌었을 때 다시 그리고 겹친 표시들의 위치도 맞춘다
 function applyZoom(t){
   const r=rt[t.id],b=$('#board');
-  b.style.width=t.w*r.zoom+'px';b.style.height=t.h*r.zoom+'px';
-  setStatus(t.w+' × '+t.h+' px',Math.round(r.zoom*100)+'%');
+  if(!b||!sizeView(t))return;
+  const fl=viewFloor(t);r.cx=Math.max(r.cx,fl.x);r.cy=Math.max(r.cy,fl.y);
+  b.style.transform='translate('+(-r.cx*r.zoom)+'px,'+(-r.cy*r.zoom)+'px)';
+  const g=$('#gridov');
+  if(g){let st=GRID*r.zoom;while(st<8)st*=2;g.style.backgroundSize=st+'px '+st+'px';g.style.backgroundPosition=(-r.cx*r.zoom)+'px '+(-r.cy*r.zoom)+'px'}
+  setStatus('끝없는 캔버스',Math.round(r.zoom*100)+'%');
   const zp=$('#zoompct');if(zp)zp.textContent=Math.round(r.zoom*100)+'%';
-  const g=$('#gridov');if(g){let st=GRID*r.zoom;while(st<8)st*=2;g.style.backgroundSize=st+'px '+st+'px'}
-  placePhotoBox(t);
+  redrawBg(t);redraw(t);placePhotoBox(t);
+}
+// 스크롤바, 가장자리 이동 버튼, '돌아가기' 버튼. 그림이 화면 밖으로 넘어간 때만 보인다
+function updateNav(t){
+  const r=rt[t.id],sv=$('#sbv');
+  if(!sv||!r.vw||r.drc!==$('#drc'))return;
+  const sh=$('#sbh'),z=r.zoom,V={x:r.cx,y:r.cy,w:r.vw/z,h:r.vh/z},cb=contentBounds(t);
+  let E;
+  if(r.sbDrag)E=r.sbDrag.E;
+  else{
+    const fl=viewFloor(t,cb),x1=Math.max(V.x+V.w,cb?cb.x+cb.w:0),y1=Math.max(V.y+V.h,cb?cb.y+cb.h:0);
+    E={x:fl.x,y:fl.y,w:x1-fl.x,h:y1-fl.y};
+  }
+  r.ext=E;
+  const needV=E.h>V.h+1,needH=E.w>V.w+1;
+  sv.hidden=!needV;sh.hidden=!needH;
+  const gap=sv.offsetWidth||14;
+  sv.style.bottom=needH?(sh.offsetHeight||14)+'px':'0';sh.style.right=needV?gap+'px':'0';
+  const frac=(v,lo,range)=>range>0?Math.min(1,Math.max(0,(v-lo)/range)):0;
+  if(needV){
+    const len=r.vh-(needH?(sh.offsetHeight||14):0),th=Math.min(len,Math.max(32,len*V.h/E.h)),i=sv.firstElementChild;
+    i.style.height=th+'px';i.style.top=(len-th)*frac(V.y,E.y,E.h-V.h)+'px';
+  }
+  if(needH){
+    const len=r.vw-(needV?gap:0),th=Math.min(len,Math.max(32,len*V.w/E.w)),i=sh.firstElementChild;
+    i.style.width=th+'px';i.style.left=(len-th)*frac(V.x,E.x,E.w-V.w)+'px';
+  }
+  const away=!!cb&&(cb.x>V.x+V.w||cb.x+cb.w<V.x||cb.y>V.y+V.h||cb.y+cb.h<V.y);
+  $('#backbtn').hidden=!away;
+  const more={l:!!cb&&cb.x<V.x-2,r:!!cb&&cb.x+cb.w>V.x+V.w+2,u:!!cb&&cb.y<V.y-2,d:!!cb&&cb.y+cb.h>V.y+V.h+2};
+  document.querySelectorAll('.edge').forEach(b=>{b.hidden=away||!more[b.dataset.e]});
 }
 // 마우스 위치를 기준으로 확대/축소 (Ctrl+휠)
 function zoomAt(t,f,cx,cy){
-  const r=rt[t.id],d=$('#drc'),st=$('#stage');if(!d||!st)return;
+  const r=rt[t.id],st=$('#stage');if(!st)return;
   const nz=Math.min(8,Math.max(0.1,r.zoom*f));if(nz===r.zoom)return;
-  const b=d.getBoundingClientRect(),px=(cx-b.left)/r.zoom,py=(cy-b.top)/r.zoom;
-  r.zoom=nz;applyZoom(t);
-  const b2=d.getBoundingClientRect();
-  st.scrollLeft+=b2.left+px*nz-cx;st.scrollTop+=b2.top+py*nz-cy;
+  const b=st.getBoundingClientRect(),ox=cx-b.left,oy=cy-b.top;
+  const wx=r.cx+ox/r.zoom,wy=r.cy+oy/r.zoom;
+  r.zoom=nz;r.cx=wx-ox/nz;r.cy=wy-oy/nz;
+  applyZoom(t);
+}
+// 지워지지 않고 남아 있는 그림과 사진 전체를 감싸는 사각형 (없으면 null)
+function contentBounds(t){
+  let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+  const add=b=>{x0=Math.min(x0,b.x);y0=Math.min(y0,b.y);x1=Math.max(x1,b.x+b.w);y1=Math.max(y1,b.y+b.h)};
+  const del=deletedSet(t);
+  t.strokes.forEach((s,i)=>{if(s.tool==='del'||s.tool==='photoDel'||s.tool==='eraser'||del.has(i))return;add(strokeBox(s,false))});
+  visiblePhotos(t).forEach(add);
+  return x0===Infinity?null:{x:x0,y:y0,w:x1-x0,h:y1-y0};
+}
+// 그림 전체가 떠 있는 도구 모음에 가리지 않고 보이게 화면을 맞춘다 (왼쪽 위부터 시작)
+function fitView(t){
+  const r=rt[t.id];if(!r||!sizeView(t))return;
+  const {L,T}=viewMargin(),B=72,R=16;
+  const aw=Math.max(80,r.vw-L-R),ah=Math.max(80,r.vh-T-B);
+  const b=contentBounds(t)||{x:0,y:0,w:0,h:0};
+  const z=Math.max(0.1,Math.min(1,Math.floor(Math.min((aw-40)/Math.max(1,b.w),(ah-40)/Math.max(1,b.h))*20)/20));
+  r.zoom=z;
+  // 그림의 왼쪽 위가 도구 모음에 가리지 않는 영역의 왼쪽 위에 오도록 맞춘다 (그림이 없으면 원점이 그 자리)
+  r.cx=b.x-(L+20)/z;r.cy=b.y-(T+20)/z;
 }
 const ICONS={
   pen:'<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>',
@@ -3914,13 +4116,6 @@ const ICONS={
   note:'<path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4"/>',
   select:'<path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z"/>'
 };
-function fitZoom(t){
-  const s=$('#stage');if(!s)return 1;
-  const cs=getComputedStyle(s),padX=parseFloat(cs.paddingLeft)+parseFloat(cs.paddingRight),padY=parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom);
-  if(s.clientWidth<=padX||s.clientHeight<=padY)return 1;
-  const z=Math.min(1,(s.clientWidth-padX)/t.w,(s.clientHeight-padY)/t.h);
-  return Math.max(0.1,Math.floor(z*20+1e-6)/20);
-}
 function renderDraw(t,host){
   const tbtn=([k,label])=>'<button class="tb" data-tool="'+k+'" title="'+label+'" aria-label="'+label+'"><svg class="ico" viewBox="0 0 24 24">'+ICONS[k]+'</svg></button>';
   const act=(a,label,inner)=>'<button class="tb" data-act="'+a+'" title="'+label+'" aria-label="'+label+'"><svg class="ico" viewBox="0 0 24 24">'+inner+'</svg></button>';
@@ -3944,32 +4139,32 @@ function renderDraw(t,host){
     '<div class="sec" id="sizesec"><label><span id="tsizel"></span> <span id="tsizev"></span></label><input type="range" id="tsize" min="1" max="40"></div>'+
     '<div class="sec" id="labsec"><label>선 라벨</label><input class="txt" id="rlabel" list="rlabels" maxlength="30" placeholder="예: &lt;&lt;use&gt;&gt;" aria-label="선 라벨">'+
     '<datalist id="rlabels">'+['use','include','extend','import','create','call'].map(w=>'<option value="&lt;&lt;'+w+'&gt;&gt;">').join('')+'<option value="1"><option value="0..*"><option value="1..*"></datalist></div>'+
-    '<div id="photoctl"><span id="photoinfo"></span><button class="btn photoonly" data-act="photoFit">사진 맞추기</button><button class="btn photoonly" data-act="photoFill">캔버스 채우기</button><button class="btn" id="seldel" data-act="selDelete">선택 삭제 (Delete)</button></div>'+
-    '<div class="sec cvsec"><label>캔버스 크기 (px)</label><div class="dims"><input type="number" id="cw" min="100" max="4000" step="10" aria-label="캔버스 가로"><span>×</span><input type="number" id="ch" min="100" max="4000" step="10" aria-label="캔버스 세로"></div><button class="btn" data-act="canvasApply">크기 적용</button></div>'+
+    '<div id="photoctl"><span id="photoinfo"></span><button class="btn" id="seldel" data-act="selDelete">선택 삭제 (Delete)</button></div>'+
     '<div class="acts"><button class="btn" data-act="openPhoto">사진 열기</button><button class="btn" data-act="clearAll">전체 지우기</button></div>'+
     '</aside>'+
     '<div id="zoombar">'+
     act('zoomOut','축소','<path d="M5 12h14"/>')+
     '<button class="tb" id="zoompct" data-act="zoomReset" title="100%로 되돌리기" aria-label="100%로 되돌리기">100%</button>'+
-    act('zoomIn','확대','<path d="M12 5v14M5 12h14"/>')+sep+
+    act('zoomIn','확대','<path d="M12 5v14M5 12h14"/>')+
+    act('zoomFit','그림 전체 보기','<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>')+sep+
     act('undo','실행 취소 (Ctrl+Z)','<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>')+
     act('redo','다시 실행 (Ctrl+Y)','<path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/>')+sep+
     act('toggleSnap','격자 맞춤 켜기/끄기','<path d="M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18"/>')+
     act('copyPng','PNG를 클립보드로 복사','<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>')+
     '</div>'+
-    '<div id="stage"><div id="board"><canvas id="bgc"></canvas><canvas id="drc"></canvas><div id="gridov"></div><div id="hint">도구를 골라 그려 보세요<br>사진은 끌어다 놓아도 됩니다</div><div id="ecur"></div><div id="sbox"></div><div id="msel"></div><div id="mbox"></div><div class="guide" id="gv"></div><div class="guide" id="gh"></div>'+
-    '<div id="pbox">'+['nw','n','ne','e','se','s','sw','w'].map(h=>'<i data-h="'+h+'"></i>').join('')+'</div>'+
-    ['nw','ne','se','sw'].map(c=>'<i class="cgrip" data-c="'+c+'" title="끌어서 캔버스 크기 조절"></i>').join('')+'</div></div>';
+    '<div id="stage"><div id="view"><canvas id="bgc"></canvas><canvas id="drc"></canvas><div id="gridov"></div><div id="hint">도구를 골라 그려 보세요<br>사진은 끌어다 놓아도 됩니다</div></div><div id="board"><div id="ecur"></div><div id="sbox"></div><div id="msel"></div><div id="mbox"></div><div class="guide" id="gv"></div><div class="guide" id="gh"></div>'+
+    '<div id="pbox">'+['nw','n','ne','e','se','s','sw','w'].map(h=>'<i data-h="'+h+'"></i>').join('')+'</div></div>'+
+    '<div class="sb" id="sbv" hidden aria-hidden="true"><i></i></div><div class="sb" id="sbh" hidden aria-hidden="true"><i></i></div>'+
+    [['l','왼쪽','<path d="m15 6-6 6 6 6"/>'],['r','오른쪽','<path d="m9 6 6 6-6 6"/>'],['u','위쪽','<path d="m6 15 6-6 6 6"/>'],['d','아래쪽','<path d="m6 9 6 6 6-6"/>']]
+      .map(a=>'<button class="edge" data-e="'+a[0]+'" hidden title="'+a[1]+'에 그림이 더 있어요 (누르면 이동)" aria-label="'+a[1]+'으로 이동"><svg class="ico" viewBox="0 0 24 24">'+a[2]+'</svg></button>').join('')+
+    '<button id="backbtn" hidden title="그림 전체가 보이게 돌아갑니다 (Home)">그림이 화면 밖에 있어요 · 돌아가기</button></div>';
   const fresh=!rt[t.id];
-  const r=rt[t.id]=rt[t.id]||{redo:[],zoom:1,selPhoto:null,selStroke:-1,multi:null};
-  if(fresh)r.zoom=fitZoom(t);
+  const r=rt[t.id]=rt[t.id]||{redo:[],zoom:1,cx:0,cy:0,dpr:1,selPhoto:null,selStroke:-1,multi:null};
   r.drawing=false;r.hide=-1;
-  $('#cw').value=t.w;$('#ch').value=t.h;
-  [$('#cw'),$('#ch')].forEach(i=>{i.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();actions.canvasApply()}}});
   r.bgc=$('#bgc');r.drc=$('#drc');
-  for(const c of [r.bgc,r.drc]){c.width=t.w;c.height=t.h}
   r.bctx=r.bgc.getContext('2d');r.dctx=r.drc.getContext('2d');
-  r.imgs={};redrawBg(t);redraw(t);
+  r.imgs={};
+  if(fresh)fitView(t);
   t.photos.forEach(p=>{
     if(!p.src)return;
     const im=new Image();
@@ -3979,7 +4174,7 @@ function renderDraw(t,host){
   applyZoom(t);
 
   const dr=r.drc,board=$('#board'),ecur=$('#ecur');let cur=null,delPushed=false,ed=null,sdrag=null;
-  board.classList.toggle('grid',snapOn);
+  $('#view').classList.toggle('grid',snapOn);
   host.querySelectorAll('[data-act="toggleSnap"]').forEach(b=>b.classList.toggle('on',snapOn));
   const sync=()=>{
     host.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('on',b.dataset.tool===tool.name));
@@ -4024,12 +4219,12 @@ function renderDraw(t,host){
   $('#tsize').onchange=()=>{if(ed)ed.el.focus()};
   sync();
 
-  const pos=e=>{const b=dr.getBoundingClientRect();return[(e.clientX-b.left)*t.w/b.width,(e.clientY-b.top)*t.h/b.height]};
+  const pos=e=>{const b=dr.getBoundingClientRect();return[r.cx+(e.clientX-b.left)/r.zoom,r.cy+(e.clientY-b.top)/r.zoom]};
   const updateCursor=e=>{
     if(tool.name!=='eraser'&&tool.name!=='strokeEraser'){ecur.style.display='none';return}
     const b=dr.getBoundingClientRect(),d=SIZES[tool.name]*r.zoom;
     ecur.style.display='block';ecur.style.width=d+'px';ecur.style.height=d+'px';
-    ecur.style.left=(e.clientX-b.left)+'px';ecur.style.top=(e.clientY-b.top)+'px';
+    ecur.style.left=(e.clientX-b.left+r.cx*r.zoom)+'px';ecur.style.top=(e.clientY-b.top+r.cy*r.zoom)+'px';
   };
   // 글 상자를 열어 둔 채 크기 슬라이더를 움직이면 글자 크기가 바로 바뀐다
   const applyEdSize=()=>{
@@ -4123,6 +4318,8 @@ function renderDraw(t,host){
     const b=sdrag.box;
     let dx=q[0]-sdrag.x,dy=q[1]-sdrag.y;
     if(snapOn){dx=snapV(b.x+dx)-b.x;dy=snapV(b.y+dy)-b.y}
+    const f0=viewMargin();   // 왼쪽/위쪽 한계 밖으로는 끌어 옮기지 못한다
+    dx=Math.max(dx,Math.min(0,-(f0.L+20)/r.zoom-b.x));dy=Math.max(dy,Math.min(0,-(f0.T+20)/r.zoom-b.y));
     const th=6/r.zoom;
     const near=(vals,cs)=>{
       let best=null;
@@ -4180,38 +4377,12 @@ function renderDraw(t,host){
     if(!pdrag)return;
     const sp=t.photos.find(q=>q.id===pdrag.id);
     if(!sp)return;
-    Object.assign(sp,resizeRect(pdrag.p,pdrag.H,(e.clientX-pdrag.x)/r.zoom,(e.clientY-pdrag.y)/r.zoom,t.w,t.h));
+    Object.assign(sp,resizeRect(pdrag.p,pdrag.H,(e.clientX-pdrag.x)/r.zoom,(e.clientY-pdrag.y)/r.zoom));
+    {const f0=viewMargin();sp.x=Math.max(sp.x,Math.min(-(f0.L+20)/r.zoom,pdrag.p.x));sp.y=Math.max(sp.y,Math.min(-(f0.T+20)/r.zoom,pdrag.p.y))}
     redrawBg(t);placePhotoBox(t);
   };
   const pend=()=>{if(!pdrag)return;pdrag=null;save()};
   pbox.onpointerup=pend;pbox.onpointercancel=pend;
-  // 캔버스 모서리 4곳을 끌어 크기 조절
-  let gdrag=null;
-  host.querySelectorAll('.cgrip').forEach(g=>{
-    g.onpointerdown=e=>{
-      if(e.button!==0)return;
-      e.preventDefault();e.stopPropagation();
-      commitText();
-      try{g.setPointerCapture(e.pointerId)}catch(err){}
-      gdrag={c:g.dataset.c,x:e.clientX,y:e.clientY,fw:t.w,fh:t.h};
-      r.drawing=true;
-    };
-    g.onpointermove=e=>{
-      if(!gdrag)return;
-      const west=gdrag.c.includes('w'),north=gdrag.c[0]==='n';
-      // 보드가 가운데 정렬이면 가로로 양쪽이 함께 늘어나므로 손잡이가 마우스를 따라가도록 2배로 보정
-      const kx=parseFloat(getComputedStyle(board).marginLeft)>1?2:1;
-      const dx=(e.clientX-gdrag.x)*kx/r.zoom,dy=(e.clientY-gdrag.y)/r.zoom;
-      gdrag.x=e.clientX;gdrag.y=e.clientY;
-      gdrag.fw=Math.min(4000,Math.max(100,gdrag.fw+(west?-dx:dx)));
-      gdrag.fh=Math.min(4000,Math.max(100,gdrag.fh+(north?-dy:dy)));
-      const w=Math.round(gdrag.fw),h=Math.round(gdrag.fh);
-      if(w===t.w&&h===t.h)return;
-      resizeCanvas(t,w,h,west?w-t.w:0,north?h-t.h:0);
-    };
-    const gend=()=>{if(!gdrag)return;gdrag=null;r.drawing=false;save()};
-    g.onpointerup=gend;g.onpointercancel=gend;
-  });
   // 클래스 상자/메모 편집 창. 입력하는 대로 바로 그려지고, 확인으로 닫는다 (Esc는 편집 전 상태로 되돌림)
   let dlg=null;
   const closeDlg=keep=>{
@@ -4234,15 +4405,23 @@ function renderDraw(t,host){
        '<datalist id="stereos">'+['interface','abstract','enumeration','service','entity','controller','repository'].map(w=>'<option value="&lt;&lt;'+w+'&gt;&gt;">').join('')+'</datalist>')+
       '<label>글자 크기<input type="number" data-f="fs" min="8" max="48"></label>'+
       '<div class="row"><button class="btn" data-d="ok">확인 (Ctrl+Enter)</button><button class="btn" data-d="cancel">취소 (Esc)</button></div>';
+    let dirty=false;   // 창 안에서 직접 고친 적이 있는지
     el.querySelectorAll('[data-f]').forEach(f=>{
       f.value=f.dataset.f==='fs'?(s.fs||16):(s[f.dataset.f]||'');
       f.oninput=()=>{
+        dirty=true;
         if(f.dataset.f==='fs'){const n=+f.value;if(Number.isFinite(n)&&n>=8&&n<=48)s.fs=n}
         else s[f.dataset.f]=f.value;
         redraw(t);placePhotoBox(t);saveSoon();
       };
     });
     el.onkeydown=ev=>{
+      const k=ev.key.toLowerCase(),mod=ev.ctrlKey||ev.metaKey;
+      // 창을 고치지 않은 채 Ctrl+Z / Ctrl+Y 를 누르면 창을 닫고 그림 전체의 실행 취소 / 다시 실행으로 넘긴다
+      if(mod&&!ev.altKey&&(k==='z'||k==='y')&&!dirty){ev.preventDefault();ev.stopPropagation();closeDlg(true);if(k==='y'||ev.shiftKey)actions.redo();else actions.undo();return}
+      // Alt+1~4 도구 바꾸기, Alt+Shift 새 탭, Ctrl+S 저장 같은 전체 단축키는 그대로 통과시킨다
+      if(ev.altKey&&!mod){if(/^Digit[1-4]$/.test(ev.code)&&!ev.shiftKey)closeDlg(true);return}
+      if(mod&&k==='s')return;
       ev.stopPropagation();
       if(ev.key==='Escape'){ev.preventDefault();closeDlg(false)}
       else if(ev.key==='Enter'&&(ev.ctrlKey||ev.target.tagName==='INPUT')){ev.preventDefault();closeDlg(true)}
@@ -4263,17 +4442,61 @@ function renderDraw(t,host){
     if(si>=0&&BOXED.has(t.strokes[si].tool))openDlg(si);
   };
   const stage=$('#stage');let pan=null;
-  // 좁은 화면에서는 속성 카드 높이에 맞춰 캔버스 영역 위쪽 여백을 조절한다
+  // 스크롤바: 막대를 끌거나, 빈 곳을 누르면 한 화면씩 이동
+  [['sbv',true],['sbh',false]].forEach(([id,vert])=>{
+    const bar=$('#'+id),thumb=bar.firstElementChild;
+    bar.onpointerdown=e=>{
+      if(e.button!==0)return;
+      e.preventDefault();e.stopPropagation();
+      commitText();
+      if(e.target===thumb){
+        r.sbDrag={E:r.ext,vert,p0:vert?e.clientY:e.clientX,v0:vert?r.cy:r.cx,len:vert?bar.clientHeight:bar.clientWidth,th:vert?thumb.offsetHeight:thumb.offsetWidth};
+        bar.classList.add('on');
+        try{bar.setPointerCapture(e.pointerId)}catch(err){}
+      }else{
+        const br=thumb.getBoundingClientRect(),before=vert?e.clientY<br.top:e.clientX<br.left;
+        const step=(vert?r.vh:r.vw)/r.zoom*0.9*(before?-1:1);
+        if(vert)r.cy+=step;else r.cx+=step;
+        applyZoom(t);
+      }
+    };
+    bar.onpointermove=e=>{
+      const d=r.sbDrag;if(!d||d.vert!==vert)return;
+      const span=d.len-d.th,range=vert?d.E.h-r.vh/r.zoom:d.E.w-r.vw/r.zoom;
+      if(span<=0||range<=0)return;
+      const lo=vert?d.E.y:d.E.x;
+      const v=Math.min(lo+range,Math.max(lo,d.v0+((vert?e.clientY:e.clientX)-d.p0)/span*range));
+      if(vert)r.cy=v;else r.cx=v;
+      applyZoom(t);
+    };
+    const end=()=>{if(!r.sbDrag)return;r.sbDrag=null;bar.classList.remove('on');applyZoom(t)};
+    bar.onpointerup=end;bar.onpointercancel=end;
+  });
+  // 그림이 있는 쪽 가장자리 버튼: 누르면 그 방향으로 그림이 보이게 이동
+  host.querySelectorAll('.edge').forEach(b=>{
+    b.onclick=()=>{
+      const cb=contentBounds(t);if(!cb)return;
+      const z=r.zoom,Vw=r.vw/z,Vh=r.vh/z,m=40/z,d=b.dataset.e;
+      if(d==='l')r.cx-=Math.min(Vw*0.8,r.cx-cb.x+m);
+      else if(d==='r')r.cx+=Math.min(Vw*0.8,cb.x+cb.w-(r.cx+Vw)+m);
+      else if(d==='u')r.cy-=Math.min(Vh*0.8,r.cy-cb.y+m);
+      else r.cy+=Math.min(Vh*0.8,cb.y+cb.h-(r.cy+Vh)+m);
+      applyZoom(t);
+    };
+  });
+  $('#backbtn').onclick=()=>{fitView(t);applyZoom(t)};
+  // 화면 크기가 바뀌면 캔버스를 새 크기로 다시 맞춘다
   if(window.ResizeObserver){
-    const pr=$('#props');
-    new ResizeObserver(()=>{
-      stage.style.paddingTop=matchMedia('(max-width:720px)').matches?(pr.offsetTop+pr.offsetHeight+8)+'px':'';
-    }).observe(pr);
+    new ResizeObserver(()=>{if(rt[t.id]!==r||!stage.isConnected)return;applyZoom(t)}).observe(stage);
   }
+  // 휠: 화면 이동 (Shift+휠은 가로), Ctrl+휠: 확대/축소
   stage.addEventListener('wheel',e=>{
-    if(!e.ctrlKey)return;
     e.preventDefault();
-    zoomAt(t,e.deltaY<0?1.1:1/1.1,e.clientX,e.clientY);
+    if(e.ctrlKey){zoomAt(t,e.deltaY<0?1.1:1/1.1,e.clientX,e.clientY);return}
+    let dx=e.deltaX,dy=e.deltaY;
+    if(e.deltaMode===1){dx*=16;dy*=16}
+    if(e.shiftKey&&!dx){dx=dy;dy=0}
+    r.cx+=dx/r.zoom;r.cy+=dy/r.zoom;applyZoom(t);
   },{passive:false});
   // 터치: 손가락 두 개로 확대/축소와 화면 이동 (그리던 획은 취소)
   const touches=new Map();let pinch=null;
@@ -4304,7 +4527,7 @@ function renderDraw(t,host){
     if(e.button===1||(e.button===0&&spaceDown)){
       // 휠 클릭 또는 Space를 누른 채 끌면 화면 이동
       e.preventDefault();
-      pan={x:e.clientX,y:e.clientY,l:stage.scrollLeft,t:stage.scrollTop};
+      pan={x:e.clientX,y:e.clientY,cx:r.cx,cy:r.cy};
       try{dr.setPointerCapture(e.pointerId)}catch(err){}
       dr.style.cursor='grabbing';
       return;
@@ -4361,14 +4584,14 @@ function renderDraw(t,host){
         if(touches.size>=2){
           const [a,b]=[...touches.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]),mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2;
           if(pinch.d>0&&d>0)zoomAt(t,d/pinch.d,mx,my);
-          stage.scrollLeft-=mx-pinch.mx;stage.scrollTop-=my-pinch.my;
+          r.cx-=(mx-pinch.mx)/r.zoom;r.cy-=(my-pinch.my)/r.zoom;applyZoom(t);
           pinch.d=d;pinch.mx=mx;pinch.my=my;
         }
         return;
       }
     }
     updateCursor(e);
-    if(pan){stage.scrollLeft=pan.l-(e.clientX-pan.x);stage.scrollTop=pan.t-(e.clientY-pan.y);return}
+    if(pan){r.cx=pan.cx-(e.clientX-pan.x)/r.zoom;r.cy=pan.cy-(e.clientY-pan.y)/r.zoom;applyZoom(t);return}
     if(sdrag){moveStroke(pos(e));redraw(t);if(sdrag.hasPhoto)redrawBg(t);placePhotoBox(t);return}
     if(mq){moveMarquee(pos(e));return}
     if(!cur)return;
@@ -4412,12 +4635,13 @@ actions.redo=()=>{
 };
 function zoomBy(f){
   const t=active();
-  if(t.kind!=='draw'){flash('그림 탭에서만 확대/축소할 수 있습니다');return}
-  const r=rt[t.id];r.zoom=f===0?1:Math.min(8,Math.max(0.1,r.zoom*f));applyZoom(t);
+  if(t.kind!=='draw'){flash('그림판에서만 확대/축소할 수 있습니다');return}
+  const r=rt[t.id],b=$('#stage').getBoundingClientRect();
+  zoomAt(t,f===0?1/r.zoom:f,b.left+b.width/2,b.top+b.height/2);
 }
 actions.clearAll=()=>{
   const t=active();
-  if(t.kind!=='draw'){flash('그림 탭에서만 전체 지우기를 쓸 수 있습니다');return}
+  if(t.kind!=='draw'){flash('그림판에서만 전체 지우기를 쓸 수 있습니다');return}
   const r=rt[t.id];
   if(r.drawing)return;
   const del=deletedSet(t),refs=[];
@@ -4427,21 +4651,6 @@ actions.clearAll=()=>{
   flash('그림을 모두 지웠습니다 (Ctrl+Z로 되돌릴 수 있습니다)');
 };
 function setPhoto(t,sp,rect){Object.assign(sp,rect);redrawBg(t);placePhotoBox(t);save()}
-actions.photoFit=()=>{
-  const t=active();
-  if(t.kind!=='draw')return;
-  const sp=selPhoto(t),im=sp&&rt[t.id].imgs[sp.id];
-  if(!sp||!im){flash('사진을 먼저 선택하세요');return}
-  const s=Math.min(t.w/imgW(im),t.h/imgH(im)),w=imgW(im)*s,h=imgH(im)*s;
-  setPhoto(t,sp,{x:(t.w-w)/2,y:(t.h-h)/2,w,h});
-};
-actions.photoFill=()=>{
-  const t=active();
-  if(t.kind!=='draw')return;
-  const sp=selPhoto(t);
-  if(!sp){flash('사진을 먼저 선택하세요');return}
-  setPhoto(t,sp,{x:0,y:0,w:t.w,h:t.h});
-};
 actions.photoDelete=()=>{
   const t=active();
   if(t.kind!=='draw')return;
@@ -4480,26 +4689,8 @@ actions.zoomOut=()=>zoomBy(0.8);
 actions.zoomReset=()=>zoomBy(0);
 actions.zoomFit=()=>{
   const t=active();
-  if(t.kind!=='draw'){flash('그림 탭에서만 화면 맞춤을 쓸 수 있습니다');return}
-  rt[t.id].zoom=fitZoom(t);applyZoom(t);
-};
-actions.canvasSize=()=>{
-  const t=active();
-  if(t.kind!=='draw'){flash('그림 탭에서만 캔버스 크기를 바꿀 수 있습니다');return}
-  const i=$('#cw');i.focus();i.select();
-};
-actions.canvasApply=()=>{
-  const t=active();
-  if(t.kind!=='draw'){flash('그림 탭에서만 캔버스 크기를 바꿀 수 있습니다');return}
-  const r=rt[t.id];
-  if(r.drawing)return;
-  const w=Number($('#cw').value),h=Number($('#ch').value);
-  const ok=v=>Number.isInteger(v)&&v>=100&&v<=4000;
-  if(!ok(w)||!ok(h)){flash('가로와 세로는 100~4000 사이의 정수로 입력하세요');$('#cw').value=t.w;$('#ch').value=t.h;return}
-  if(w===t.w&&h===t.h)return;
-  t.w=w;t.h=h;r.zoom=fitZoom(t);
-  render();save();
-  flash('캔버스를 '+w+'×'+h+'로 바꿨습니다');
+  if(t.kind!=='draw'){flash('그림판에서만 화면 맞춤을 쓸 수 있습니다');return}
+  fitView(t);applyZoom(t);
 };
 document.addEventListener('keydown',e=>{
   if(!e.ctrlKey||active().kind!=='draw'||/^(TEXTAREA|INPUT)$/.test(e.target.tagName))return;
@@ -4547,10 +4738,6 @@ function pasteClip(){
     t.photos.push({id,src:d.src,x:d.x+off,y:d.y+off,w:d.w,h:d.h});np.push(id);
     const im=new Image();im.onload=()=>{r.imgs[id]=im;redrawBg(t);placePhotoBox(t)};im.src=d.src;
   });
-  // 붙인 도형이 캔버스 밖으로 나가면 캔버스를 키운다
-  let mx=t.w,my=t.h;
-  ns.forEach(i=>{const bx=strokeBox(t.strokes[i],true);mx=Math.max(mx,Math.ceil(bx.x+bx.w+20));my=Math.max(my,Math.ceil(bx.y+bx.h+20))});
-  if(mx>t.w||my>t.h)resizeCanvas(t,Math.min(4000,mx),Math.min(4000,my),0,0);
   const b=document.querySelector('[data-tool="select"]');
   if(tool.name!=='select'&&b)b.click();
   setSelection(t,ns,np);
@@ -4568,6 +4755,7 @@ document.addEventListener('keydown',e=>{
     const d=$('#drc');if(d)d.style.cursor='grab';
     return;
   }
+  if(e.key==='Home'&&e.target.tagName!=='BUTTON'){e.preventDefault();fitView(t);applyZoom(t);return}
   if(tool.name!=='select')return;
   const r=rt[t.id];if(r.drawing)return;
   if(e.key==='Enter'&&e.target.tagName!=='BUTTON'){
@@ -4579,7 +4767,11 @@ document.addEventListener('keydown',e=>{
   const dir={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
   if(!dir)return;
   const k=e.shiftKey?10:1,sel=curSel(t);
-  if(!sel.s.length&&!sel.p.length)return;
+  if(!sel.s.length&&!sel.p.length){
+    // 고른 요소가 없으면 방향키로 화면을 옮긴다 (Shift: 크게)
+    const st=(e.shiftKey?300:80)/r.zoom;
+    r.cx+=dir[0]*st;r.cy+=dir[1]*st;applyZoom(t);e.preventDefault();return;
+  }
   sel.s.forEach(i=>shiftStroke(t.strokes[i],dir[0]*k,dir[1]*k));
   sel.p.forEach(id=>{const p=t.photos.find(q=>q.id===id);if(p){p.x+=dir[0]*k;p.y+=dir[1]*k}});
   redraw(t);if(sel.p.length)redrawBg(t);
@@ -4596,7 +4788,7 @@ window.addEventListener('blur',()=>{spaceDown=false});
 actions.toggleSnap=()=>{
   snapOn=!snapOn;
   try{localStorage.setItem('notepad-paint-snap',snapOn?'1':'0')}catch(e){}
-  document.querySelectorAll('#board').forEach(b=>b.classList.toggle('grid',snapOn));
+  document.querySelectorAll('#view').forEach(b=>b.classList.toggle('grid',snapOn));
   document.querySelectorAll('[data-act="toggleSnap"].tb').forEach(b=>b.classList.toggle('on',snapOn));
   flash(snapOn?'격자 맞춤을 켰습니다 (10px 단위)':'격자 맞춤을 껐습니다');
 };
@@ -4620,10 +4812,13 @@ actions.openImageFile=file=>{
     x.fillStyle='#fff';x.fillRect(0,0,iw,ih);
     x.drawImage(img,0,0,iw,ih);
     let rect;
-    if(first){t.w=iw;t.h=ih;rect={x:0,y:0,w:iw,h:ih};if(rt[t.id])rt[t.id].zoom=fitZoom(t)}
+    const R=rt[t.id];
+    if(first)rect={x:0,y:0,w:iw,h:ih};
     else{
-      const k=Math.min(1,t.w*0.8/iw,t.h*0.8/ih),w=iw*k,h=ih*k;
-      rect={x:(t.w-w)/2,y:(t.h-h)/2,w,h};
+      // 지금 보고 있는 화면 가운데에 놓는다
+      const vz=R?R.zoom:1,vw=(R&&R.vw||800)/vz,vh=(R&&R.vh||600)/vz;
+      const k=Math.min(1,vw*0.6/iw,vh*0.6/ih),w=iw*k,h=ih*k;
+      rect={x:(R?R.cx:0)+vw/2-w/2,y:(R?R.cy:0)+vh/2-h/2,w,h};
     }
     const id=Math.max(0,...t.photos.map(p=>p.id))+1;
     t.photos.push({id,src:c.toDataURL('image/jpeg',0.85),...rect});
@@ -4631,6 +4826,7 @@ actions.openImageFile=file=>{
     if(r){r.redo=[];r.selPhoto=id;r.selStroke=-1;r.multi=null}
     tool.name='select';
     render();save();
+    if(first&&rt[t.id]){fitView(t);applyZoom(t)}
   };
   img.src=url;
 };
@@ -4658,20 +4854,31 @@ document.addEventListener('paste',e=>{
 });
 
 // ---- export ----
+// 그림 전체(사진 포함)를 여백을 두고 한 장의 이미지로 만든다. 그림이 없으면 빈 흰 종이
 function composeCanvas(t){
-  const r=rt[t.id],c=document.createElement('canvas');c.width=t.w;c.height=t.h;
-  const x=c.getContext('2d');
-  x.drawImage(r.bgc,0,0);x.drawImage(r.drc,0,0);
-  return c;
+  const bb=contentBounds(t)||{x:0,y:0,w:400,h:300},m=20;
+  const bx=Math.floor(bb.x-m),by=Math.floor(bb.y-m),w=Math.ceil(bb.w+2*m),h=Math.ceil(bb.h+2*m);
+  const k=Math.min(1,4000/Math.max(w,h));
+  const mk=()=>{
+    const c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*k));c.height=Math.max(1,Math.round(h*k));
+    const g=c.getContext('2d');g.setTransform(k,0,0,k,-bx*k,-by*k);return{c,g};
+  };
+  const r=rt[t.id],bgl=mk(),drl=mk();
+  bgl.g.fillStyle='#fff';bgl.g.fillRect(bx,by,w,h);
+  visiblePhotos(t).forEach(p=>{const im=r.imgs[p.id];if(im)bgl.g.drawImage(im,p.x,p.y,p.w,p.h)});
+  paintAll(drl.g,t,-1);
+  const out=document.createElement('canvas');out.width=bgl.c.width;out.height=bgl.c.height;
+  const x=out.getContext('2d');x.drawImage(bgl.c,0,0);x.drawImage(drl.c,0,0);
+  return out;
 }
 actions.exportPng=()=>{
   const t=active();
-  if(t.kind!=='draw'){flash('그림 탭에서만 PNG로 내보낼 수 있습니다');return}
+  if(t.kind!=='draw'){flash('그림판에서만 PNG로 내보낼 수 있습니다');return}
   composeCanvas(t).toBlob(b=>download(b,safeName(t.title)+'.png'),'image/png');
 };
 actions.copyPng=async()=>{
   const t=active();
-  if(t.kind!=='draw'){flash('그림 탭에서만 복사할 수 있습니다');return}
+  if(t.kind!=='draw'){flash('그림판에서만 복사할 수 있습니다');return}
   try{
     const blob=await new Promise((ok,no)=>composeCanvas(t).toBlob(b=>b?ok(b):no(new Error('blob')),'image/png'));
     await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);

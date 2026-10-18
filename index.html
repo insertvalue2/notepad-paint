@@ -124,6 +124,7 @@ button:focus-visible,input:focus-visible,.tab:focus-visible{outline:2px solid va
 .editor h3{font-size:1.15em;margin:.3em 0;line-height:1.3}
 .editor ul,.editor ol{margin:.2em 0;padding-left:1.6em}
 .editor img{max-width:100%;height:auto;vertical-align:bottom;border-radius:6px;cursor:pointer}
+.editor li img{vertical-align:top}
 .imgov{position:fixed;z-index:25;pointer-events:none;border:2px solid var(--accent);border-radius:6px;box-sizing:border-box}
 .imgov[hidden]{display:none}
 .imgtb{position:absolute;left:-2px;bottom:calc(100% + 6px);display:flex;gap:2px;padding:3px;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.2);pointer-events:auto;white-space:nowrap}
@@ -1296,6 +1297,14 @@ function renderText(t,host){
     if(!fixFonts(px))pendingPx=px;   // 커서만 있을 때는 글자를 입력하는 순간 적용한다
     after();
   };
+  const wrapLooseImg=()=>{   // 목록을 풀면 이미지가 편집기 바로 아래에 맨몸으로 남을 수 있어 문단으로 감싼다
+    const im=ed.querySelector(':scope>img');
+    if(!im)return null;
+    const p=document.createElement('p');im.before(p);
+    for(let n=im;n&&!(n.nodeType===1&&BLOCK_TAGS.has(n.tagName));){const nx=n.nextSibling;p.append(n);n=nx}
+    if(p.lastChild&&p.lastChild.tagName==='BR'&&p.childNodes.length>1)p.lastChild.remove();
+    return im;
+  };
   const listToggle=kind=>{   // kind: 'ul' | 'ol' | 'todo'
     restore();
     if(noFmtInCode())return;
@@ -1316,6 +1325,7 @@ function renderText(t,host){
     }else{
       document.execCommand('insertOrderedList');
     }
+    wrapLooseImg();
     after();
   };
   const setZoom=z=>{
@@ -1482,9 +1492,25 @@ function renderText(t,host){
       if(e.code==='BracketLeft'){e.preventDefault();stepSize(-1);return}
     }
     if(e.key==='Tab'&&!mod&&!e.altKey&&!e.shiftKey){e.preventDefault();document.execCommand('insertText',false,'\t')}
+    // 이미지가 든 목록 항목 맨 앞에서 Backspace: 앞 줄과 합쳐지지 않고 글머리만 없앤다
+    if(e.key==='Backspace'&&!mod&&!e.altKey&&!e.shiftKey&&!curImg){
+      const sl=getSelection(),li=sl.rangeCount&&sl.isCollapsed?closestOf('li'):null;
+      if(li&&li.querySelector('img')){
+        const r=sl.getRangeAt(0),hd=document.createRange();hd.setStart(li,0);hd.setEnd(r.endContainer,r.endOffset);
+        if(hd.toString()===''&&!hd.cloneContents().querySelector('img')){
+          e.preventDefault();
+          document.execCommand(li.parentElement.tagName==='OL'?'insertOrderedList':'insertUnorderedList');
+          // 목록을 풀면 이미지가 편집기 바로 아래에 맨몸으로 남으므로 문단으로 감싼다
+          const im=wrapLooseImg();
+          if(im){const rr=document.createRange();rr.setStartBefore(im);rr.collapse(true);sl.removeAllRanges();sl.addRange(rr)}
+          after();return;
+        }
+      }
+    }
     if(curImg){
       if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();removeImg();return}
       if(e.key==='Escape'){dropImg();return}
+      if(/^(Arrow(Left|Right|Up|Down)|Home|End)$/.test(e.key))dropImg();   // 방향키로 이미지 선택을 풀면 Backspace가 이미지를 지우지 않는다
     }
     // 빈 줄에서 백틱을 세 번 치면 바로 코드 블록으로 바꾼다 (Alt+C와 같은 기능)
     if((e.key==='`'||e.code==='Backquote')&&!mod&&!e.altKey&&!e.shiftKey){
@@ -1546,7 +1572,7 @@ function renderText(t,host){
 
   // ---- 이미지: 끌어 놓기/붙여넣기, 크기 조절, 이동(끌기), 삭제 ----
   const ov=document.createElement('div');ov.className='imgov';ov.hidden=true;
-  ov.innerHTML='<div class="imgtb" role="toolbar" aria-label="이미지 도구"><button data-i="25" title="편집 칸 너비의 25%">25%</button><button data-i="50" title="편집 칸 너비의 50%">50%</button><button data-i="100" title="편집 칸 너비에 꽉 차게">꽉 차게</button><button data-i="del" title="삭제 (Delete)" aria-label="이미지 삭제">삭제</button></div><div class="imgh" title="끌어서 크기 조절" aria-label="크기 조절"></div>';
+  ov.innerHTML='<div class="imgtb" role="toolbar" aria-label="이미지 도구"><button data-i="25" title="편집 칸 너비의 25%">25%</button><button data-i="50" title="편집 칸 너비의 50%">50%</button><button data-i="100" title="편집 칸 너비에 꽉 차게">꽉 차게</button><button data-i="save" title="이미지를 파일로 저장">저장</button><button data-i="del" title="삭제 (Delete)" aria-label="이미지 삭제">삭제</button></div><div class="imgh" title="끌어서 크기 조절" aria-label="크기 조절"></div>';
   wrap.append(ov);
   let curImg=null;
   const innerW=()=>{const cs=getComputedStyle(ed);return ed.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight)};
@@ -1581,6 +1607,15 @@ function renderText(t,host){
   ov.addEventListener('click',e=>{
     const b=e.target.closest('button[data-i]');if(!b||!curImg)return;
     if(b.dataset.i==='del'){removeImg();return}
+    if(b.dataset.i==='save'){
+      const m=/^data:image\/(png|jpe?g|gif|webp);base64,(.*)$/.exec(curImg.getAttribute('src')||'');
+      if(!m){flash('저장할 수 없는 이미지입니다');return}
+      const bin=atob(m[2]),u=new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+      const ext=m[1]==='jpeg'?'jpg':m[1],d=new Date(),z=n=>String(n).padStart(2,'0');
+      download(new Blob([u],{type:'image/'+m[1]}),'image-'+d.getFullYear()+z(d.getMonth()+1)+z(d.getDate())+'-'+z(d.getHours())+z(d.getMinutes())+z(d.getSeconds())+'.'+ext);
+      flash('이미지를 저장했습니다');return;
+    }
     curImg.style.width=Math.max(30,Math.round(innerW()*(+b.dataset.i)/100))+'px';
     placeImg();sync();
   });

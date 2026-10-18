@@ -133,6 +133,20 @@ button:focus-visible,input:focus-visible,.tab:focus-visible{outline:2px solid va
 .imgtb button[data-i=del]{color:#c42b1c}
 .imgh{position:absolute;right:-8px;bottom:-8px;width:16px;height:16px;border-radius:4px;background:var(--accent);border:2px solid var(--surface);cursor:nwse-resize;pointer-events:auto;touch-action:none}
 .editor hr{border:0;border-top:1px solid var(--line);margin:.8em 0}
+.editor pre.cb{position:relative;margin:.5em 0;padding:26px 14px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font:13.5px/1.55 var(--mono);white-space:pre;overflow-x:auto;overflow-wrap:normal;tab-size:4;-moz-tab-size:4}
+.editor pre.cb::before{content:'코드';position:absolute;left:12px;top:5px;font:600 10.5px/1 var(--ui);letter-spacing:.06em;color:var(--muted);text-transform:uppercase;user-select:none;pointer-events:none}
+.editor pre.cb[data-lang=java]::before{content:'JAVA'}
+.editor pre.cb[data-lang=json]::before{content:'JSON'}
+.cbdel{position:fixed;z-index:24;display:flex;align-items:center;gap:4px;height:26px;padding:0 8px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--muted);font:12px/1 var(--ui);cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,.12)}
+.cbdel[hidden]{display:none}
+.cbdel:hover{color:var(--danger);border-color:var(--danger)}
+.cbdel .ico{width:14px;height:14px}
+::highlight(cb-c){color:#6a737d;color:light-dark(#6a737d,#8b949e)}
+::highlight(cb-s){color:#0a7a3b;color:light-dark(#0a7a3b,#7ee787)}
+::highlight(cb-n){color:#b35900;color:light-dark(#b35900,#ffa657)}
+::highlight(cb-k){color:#7a3ec8;color:light-dark(#7a3ec8,#d2a8ff)}
+::highlight(cb-t){color:#0b6bcb;color:light-dark(#0b6bcb,#79c0ff)}
+::highlight(cb-f){color:#a03a00;color:light-dark(#a03a00,#ffc799)}
 .editor.empty::before{content:attr(data-ph);position:absolute;left:32px;top:28px;color:var(--muted);pointer-events:none}
 .editor ul.todo{list-style:none;padding-left:1.7em}
 .editor ul.todo>li{position:relative}
@@ -736,7 +750,29 @@ function textToHtml(text){
 // 붙여넣기/불러오기 HTML을 허용 목록으로 걸러 새로 만든다 (스크립트, 바깥 주소 이미지, 이벤트 속성 등은 모두 버린다)
 const OK_TAGS=new Set(['B','U','S','SPAN','P','DIV','BR','UL','OL','LI','H1','H2','H3','HR']);
 const TAG_ALIAS={STRONG:'B',EM:'I',STRIKE:'S',DEL:'S',INS:'U'};
-const BLOCK_TAGS=new Set(['P','DIV','LI','H1','H2','H3','UL','OL']);
+const BLOCK_TAGS=new Set(['P','DIV','LI','H1','H2','H3','UL','OL','PRE']);
+// 코드 블록(<pre>) 안의 글을 줄바꿈 포함 문자열로 읽는다. segs는 글 조각(노드)과 문자열 안의 시작 위치
+// 브라우저가 줄바꿈 자리에 넣는 <br>와 글 안의 \n 을 모두 한 줄 바꿈으로 본다 (맨 끝 <br>는 빈 줄 표시용이라 뺀다)
+function preMap(pre){
+  let s='';const segs=[];
+  const walk=n=>{
+    for(const c of n.childNodes){
+      if(c.nodeType===3){segs.push([c,s.length]);s+=c.nodeValue}
+      else if(c.nodeType===1){
+        if(c.tagName==='BR')s+='\n';
+        else{walk(c);if((c.tagName==='DIV'||c.tagName==='P')&&s&&!s.endsWith('\n'))s+='\n'}
+      }
+    }
+  };
+  walk(pre);
+  let l=pre;while(l.lastChild)l=l.lastChild;
+  if(l.tagName==='BR'&&s.endsWith('\n'))s=s.slice(0,-1);
+  return{s,segs};
+}
+const preText=pre=>preMap(pre).s;
+const CODE_LANGS=['java','json','generic'];
+const codeLangOf=(text,hint)=>CODE_LANGS.includes(hint)?hint:(g=>g==='java'||g==='json'?g:'generic')(guessLang(text));
+const codeBlockHtml=(text,lang)=>'<pre class="cb" data-lang="'+lang+'">'+(text===''?'<br>':esc(text))+'</pre>';
 const DROP_TAGS=new Set(['SCRIPT','STYLE','IFRAME','OBJECT','EMBED','TEMPLATE','NOSCRIPT','HEAD','TITLE','META','LINK','SVG','CANVAS','AUDIO','VIDEO','INPUT','BUTTON','SELECT','TEXTAREA','FORM']);
 const IMG_SRC=/^data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+\/=]+$/;
 const COLOR_RE=/^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\)|[a-z]{3,20})$/i;   // 16진수, rgb(), 영문 색 이름만 허용
@@ -764,6 +800,13 @@ function sanitizeHtml(html,keepColors=true){
         continue;
       }
       if(DROP_TAGS.has(n.tagName))continue;
+      if(n.tagName==='PRE'){
+        // 코드 블록은 글만 남기고 다시 만든다 (색 입힌 span 같은 안쪽 태그는 버린다)
+        const tx=preText(n).replace(/\r\n?/g,'\n').replace(/\n+$/,'');
+        const pr=document.createElement('pre');pr.className='cb';pr.dataset.lang=codeLangOf(tx,n.dataset.lang);
+        if(tx==='')pr.append(document.createElement('br'));else pr.textContent=tx;
+        dst.append(pr);continue;
+      }
       if(!OK_TAGS.has(tag)){walk(n,dst);continue}   // 모르는 태그는 벗기고 안쪽 내용만 남긴다
       if(tag==='BR'||tag==='HR'){dst.append(document.createElement(tag));continue}
       const el=document.createElement(tag),st=n.style;
@@ -801,6 +844,7 @@ function toPlain(root,opt){
       const tag=c.tagName;
       if(tag==='BR'){flush();continue}
       if(tag==='HR'){start();out.push('---');continue}
+      if(tag==='PRE'){start();preText(c).split('\n').forEach(l=>out.push(l));continue}
       if(tag==='UL'||tag==='OL'){
         start();
         walk(c,{type:tag,todo:c.classList.contains('todo'),n:0,depth:(ctx.depth||0)+1});
@@ -852,6 +896,7 @@ function renderText(t,host){
     '<button data-c="justifyRight" title="오른쪽 정렬 (Ctrl+Shift+R)" aria-label="오른쪽 정렬">'+svg('<path d="M4 6h16M10 12h10M6 18h14"/>')+'</button>'+
     '<span class="rsep"></span>'+
     '<button data-c="hr" title="구분선 (Alt+H)" aria-label="구분선">'+svg('<path d="M3 12h18"/>')+'</button>'+
+    '<button data-c="code" title="코드 블록 (Alt+C)" aria-label="코드 블록">'+svg('<path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 5l-4 14"/>')+'</button>'+
     '<span class="rsep"></span>'+
     '<button data-c="md" title="마크다운(.md) 파일로 내보내기 (이미지 포함, 압축 없음)" aria-label="마크다운으로 내보내기">'+svg('<path d="M12 3v11M7.5 10 12 14.5 16.5 10"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/>')+'<span class="mdl">MD</span></button>'+
     '<button data-c="pdf" title="PDF 파일로 내보내기 (A4, 압축 없이 바로 .pdf)" aria-label="PDF로 내보내기">'+svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>')+'<span class="mdl">PDF</span></button>'+
@@ -878,10 +923,10 @@ function renderText(t,host){
   const upd=()=>{
     const c=caret();
     setStatus('줄 '+c.line+', 열 '+c.col,t.text.length+'자 · '+Math.round((t.zoom||1)*100)+'%');
-    ed.classList.toggle('empty',t.text.trim()===''&&!ed.querySelector('ul,ol,hr,img'));
+    ed.classList.toggle('empty',t.text.trim()===''&&!ed.querySelector('ul,ol,hr,img,pre'));
     bar.querySelector('.zp').textContent=Math.round((t.zoom||1)*100)+'%';
   };
-  const sync=()=>{t.html=ed.innerHTML;t.text=toPlain(ed);refreshTitle(t);saveSoon();upd()};
+  const sync=()=>{fixCode();t.html=ed.innerHTML;t.text=toPlain(ed);refreshTitle(t);saveSoon();upd();hlSoon();delSync()};
 
   // ---- 선택 영역 기억: 도구 막대를 눌러도 편집 위치를 잃지 않는다 ----
   let saved=null,pendingPx=null,plainNext=false;
@@ -889,7 +934,7 @@ function renderText(t,host){
     if(!ed.isConnected){document.removeEventListener('selectionchange',onSel);return}
     const s=getSelection();
     if(s.rangeCount&&ed.contains(s.anchorNode))saved=s.getRangeAt(0).cloneRange();
-    ui();upd();
+    ui();upd();delSync();
   };
   document.addEventListener('selectionchange',onSel);
   // 선택이 이미 편집 칸 안에 있으면 그대로 두고, 포커스가 다른 칸(글자 크기 목록 등)으로 갔을 때만 기억해 둔 선택을 되살린다
@@ -915,6 +960,7 @@ function renderText(t,host){
       else if(c==='ul'){const l=closestOf('ul,ol');on=!!l&&l.tagName==='UL'&&!l.classList.contains('todo')}
       else if(c==='ol'){const l=closestOf('ul,ol');on=!!l&&l.tagName==='OL'}
       else if(c==='todo'){const l=closestOf('ul,ol');on=!!l&&l.classList.contains('todo')}
+      else if(c==='code')on=!!closestOf('pre');
       b.classList.toggle('on',on);
     });
     // 글자 크기: 가장 가까운 span의 font-size, 없으면 기본 15
@@ -932,12 +978,254 @@ function renderText(t,host){
     blkTip();
   };
 
+  // ---- 코드 블록 (붙여넣은 코드, 도구 막대 버튼, ``` + Enter) ----
+  const noFmtInCode=()=>{if(closestOf('pre')){flash('코드 블록 안에서는 서식을 바꿀 수 없어요');return true}return false};
+  const caretTo=(node,off)=>{const r=document.createRange();r.setStart(node,off);r.collapse(true);const s=getSelection();s.removeAllRanges();s.addRange(r);saved=r.cloneRange()};
+  const caretEnd=el=>{const l=el.lastChild;if(l&&l.nodeType===3)caretTo(l,l.nodeValue.length);else caretTo(el,el.childNodes.length-(l&&l.tagName==='BR'?1:0))};
+  const strOf=frag=>{const d=document.createElement('div');d.append(frag);d.querySelectorAll('br').forEach(b=>b.replaceWith('\n'));return d.textContent};
+  // 구조 정리: 코드 블록 뒤에는 이어 쓸 빈 문단을 두고, 블록 안의 서식 태그는 벗긴다
+  const fixCode=()=>{
+    ed.querySelectorAll('pre').forEach(pre=>{
+      if(!pre.classList.contains('cb'))pre.className='cb';
+      if(!CODE_LANGS.includes(pre.dataset.lang))pre.dataset.lang=codeLangOf(preText(pre));
+      pre.querySelectorAll('*:not(br)').forEach(x=>x.replaceWith(...x.childNodes));
+      if(!pre.firstChild)pre.append(document.createElement('br'));
+      const nx=pre.nextSibling;
+      if(pre.parentNode===ed&&(!nx||nx.tagName==='PRE')){const p=document.createElement('p');p.innerHTML='<br>';pre.after(p)}
+    });
+  };
+  // 글자 색 입히기: 글을 건드리지 않고 브라우저의 Highlight 기능으로 색만 얹는다 (지원하지 않는 브라우저에서는 색 없이 보인다)
+  const CB_KINDS=['c','s','n','k','t','f'];
+  const canHl=!!(window.CSS&&CSS.highlights&&typeof Highlight==='function');
+  let hlTimer=0;
+  const hl=()=>{
+    if(!canHl||!ed.isConnected)return;
+    const sets={};CB_KINDS.forEach(k=>{sets[k]=[]});
+    ed.querySelectorAll('pre.cb').forEach(pre=>{
+      const{s,segs}=preMap(pre);
+      if(!s||!segs.length)return;
+      let j=0;
+      for(const[k,a,b]of codeTokens(s,codeLangOf(s,pre.dataset.lang))){
+        while(j<segs.length&&segs[j][1]+segs[j][0].nodeValue.length<=a)j++;
+        for(let q=j;q<segs.length&&segs[q][1]<b;q++){
+          const nd=segs[q][0],st=segs[q][1];
+          const o1=Math.max(a,st)-st,o2=Math.min(b,st+nd.nodeValue.length)-st;
+          if(o2>o1){const r=new Range();r.setStart(nd,o1);r.setEnd(nd,o2);sets[k].push(r)}
+        }
+      }
+    });
+    CB_KINDS.forEach(k=>CSS.highlights.set('cb-'+k,new Highlight(...sets[k])));
+  };
+  const hlSoon=()=>{clearTimeout(hlTimer);hlTimer=setTimeout(hl,80)};
+  // 코드 블록 안에서 커서 앞/뒤 글 (줄바꿈 포함). 블록 안에 커서만 있을 때(선택 없음)만 값이 나온다
+  const preCtx=()=>{
+    const sl=getSelection(),pre=closestOf('pre');
+    if(!pre||!sl.rangeCount||!sl.isCollapsed)return null;
+    const r=sl.getRangeAt(0);
+    const hr=document.createRange();hr.selectNodeContents(pre);hr.setEnd(r.endContainer,r.endOffset);
+    const tr=document.createRange();tr.selectNodeContents(pre);tr.setStart(r.endContainer,r.endOffset);
+    const head=strOf(hr.cloneContents()),tail=strOf(tr.cloneContents());
+    return{pre,head,line:head.slice(head.lastIndexOf('\n')+1),atEnd:tail===''||tail==='\n'};   // 맨 끝의 \n 하나는 빈 줄 표시용 <br>
+  };
+  // 코드 블록 안의 Enter: 앞 줄의 들여쓰기를 이어 주고, 끝의 빈 줄에서 한 번 더 누르면 블록을 빠져나간다. 처리했으면 true
+  const codeEnter=e=>{
+    const c=preCtx();
+    if(!c)return false;
+    const{pre,head,line,atEnd}=c;
+    e.preventDefault();
+    if(atEnd&&preMap(pre).s===''){codeToggle();return true}   // 빈 코드 블록에서 Enter: 일반 문단으로 되돌린다
+    if(head===''&&!pre.previousSibling){   // 문서 맨 앞 블록의 맨 앞에서 Enter: 위에 빈 줄을 만든다
+      const p=document.createElement('p');p.innerHTML='<br>';pre.before(p);after();return true;
+    }
+    if(atEnd&&head.includes('\n')&&/^[ \t]*$/.test(line)){   // 끝의 빈 줄에서 Enter: 그 줄(들여쓰기 포함)을 지우고 블록 밖으로
+      for(let i=line.length+1;i>0;i--)document.execCommand('delete');
+      fixCode();
+      const nx=pre.nextSibling;
+      if(nx)caretTo(nx,0);
+      return true;
+    }
+    let ind=/^[ \t]*/.exec(line)[0];
+    if(/[{[(]$/.test(line))ind+=ind.includes('\t')?'\t':'    ';
+    document.execCommand('insertLineBreak');
+    if(ind)document.execCommand('insertText',false,ind);
+    return true;
+  };
+  // Tab은 다음 4칸 위치까지 공백으로 채우고 (선택이 있으면 아무것도 하지 않는다), } ] 를 줄 맨 앞에 치면 들여쓰기를 한 단계 줄인다
+  const codeTab=e=>{
+    if(!closestOf('pre'))return false;
+    e.preventDefault();
+    const c=preCtx();
+    if(c)document.execCommand('insertText',false,' '.repeat(4-c.line.length%4));
+    return true;
+  };
+  // 코드 블록 경계에서의 Backspace/Delete: 브라우저가 블록과 문단을 합치며 서식을 덧붙이지 않게 직접 처리한다. 처리했으면 true
+  const emptyP=el=>el&&el.tagName==='P'&&el.textContent===''&&!el.querySelector('img');
+  // 코드 블록 통째로 지우기: 커서는 위 글 끝(없으면 아래 빈 줄)으로 두고, 빈 줄이 따로 남지 않게 한다
+  // ---- 블록 작업 되돌리기: 브라우저의 Ctrl+Z는 직접 고친 DOM을 기억하지 못하므로, 블록 작업 직전/직후의 문서를 따로 보관한다 ----
+  // 작업 직후 상태 그대로일 때만 Ctrl+Z / Ctrl+Y 가 이 보관본을 쓰고, 그 사이에 글을 고쳤다면 브라우저 기능을 그대로 따른다
+  const pathOf=n=>{const p=[];while(n&&n!==ed){p.unshift([...n.parentNode.childNodes].indexOf(n));n=n.parentNode}return n===ed?p:null};
+  const nodeAt=p=>{let n=ed;for(const i of p){n=n.childNodes[i];if(!n)return null}return n};
+  const snap=()=>{
+    const s=getSelection();let at=null;
+    if(s.rangeCount&&s.isCollapsed&&ed.contains(s.anchorNode)){const p=pathOf(s.anchorNode);if(p)at={p,o:s.anchorOffset}}
+    return{html:ed.innerHTML,at};
+  };
+  const putSnap=sn=>{
+    ed.innerHTML=sn.html;
+    const n=sn.at&&nodeAt(sn.at.p);
+    if(n)caretTo(n,Math.min(sn.at.o,n.nodeType===3?n.nodeValue.length:n.childNodes.length));
+    else if(ed.lastChild)caretEnd(ed.lastChild);
+    after();hl();
+  };
+  const ustack=[],rstack=[];
+  const withUndo=fn=>{
+    const before=snap();fn();const after=snap();
+    if(before.html===after.html)return;
+    ustack.push({before,after});if(ustack.length>30)ustack.shift();
+    rstack.length=0;
+  };
+  const blkUndo=()=>{const top=ustack[ustack.length-1];if(!top||ed.innerHTML!==top.after.html)return false;putSnap(top.before);rstack.push(ustack.pop());return true};
+  const blkRedo=()=>{const top=rstack[rstack.length-1];if(!top||ed.innerHTML!==top.before.html)return false;putSnap(top.after);ustack.push(rstack.pop());return true};
+  // 브라우저는 되돌릴 기록이 없으면 beforeinput을 보내지 않으므로 키 입력도 직접 받는다
+  ed.addEventListener('beforeinput',e=>{
+    if((e.inputType==='historyUndo'&&blkUndo())||(e.inputType==='historyRedo'&&blkRedo()))e.preventDefault();
+  });
+  const codeToggle=()=>withUndo(codeToggleRaw);
+  const removeCodeBlock=pre=>withUndo(()=>removeCodeBlockRaw(pre));
+  const removeCodeBlockRaw=pre=>{
+    const up=pre.previousSibling,nx=pre.nextSibling;
+    pre.remove();
+    if(up&&/^(P|H1|H2|H3)$/.test(up.tagName)){if(emptyP(nx))nx.remove();caretEnd(up)}
+    else if(nx)caretTo(nx,0);
+    if(!ed.firstChild){ed.innerHTML='<p><br></p>';caretTo(ed.firstChild,0)}
+    after();
+  };
+  // 코드 블록 오른쪽 위의 삭제 버튼: 마우스를 올리거나 커서가 블록 안에 있을 때 나타난다
+  const delBtn=document.createElement('button');delBtn.className='cbdel';delBtn.hidden=true;delBtn.type='button';
+  const DEL_LABEL='<svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg><span>삭제</span>';
+  delBtn.innerHTML=DEL_LABEL;delBtn.title='코드 블록 삭제 (Ctrl+Z로 되돌릴 수 있어요)';delBtn.setAttribute('aria-label','코드 블록 삭제');
+  wrap.append(delBtn);
+  let delPre=null,hoverPre=null,delTimer=0;
+  const delReset=()=>{clearTimeout(delTimer);delBtn.classList.remove('warn');delBtn.querySelector('span').textContent='삭제'};
+  const delHide=()=>{delPre=null;delBtn.hidden=true;delReset()};
+  const delPlace=pre=>{
+    if(!pre||!pre.isConnected||!ed.isConnected){delHide();return}
+    if(pre!==delPre){delReset();delPre=pre}
+    const r=pre.getBoundingClientRect(),pr=paper.getBoundingClientRect();
+    const top=Math.max(r.top+4,pr.top+4);
+    if(top>r.bottom-30||r.top>innerHeight){delBtn.hidden=true;return}
+    delBtn.hidden=false;
+    delBtn.style.top=top+'px';delBtn.style.left=Math.max(r.left,r.right-delBtn.offsetWidth-8)+'px';
+  };
+  const delSync=()=>{const c=closestOf('pre');if(c)delPlace(c);else if(hoverPre)delPlace(hoverPre);else delHide()};
+  ed.addEventListener('mouseover',e=>{const p=e.target.closest&&e.target.closest('pre.cb');if(p&&ed.contains(p)){hoverPre=p;delPlace(p)}});
+  ed.addEventListener('mouseleave',e=>{if(e.relatedTarget===delBtn||delBtn.contains(e.relatedTarget))return;hoverPre=null;delSync()});
+  delBtn.addEventListener('mouseleave',e=>{if(e.relatedTarget&&ed.contains(e.relatedTarget))return;hoverPre=null;delSync()});
+  delBtn.addEventListener('pointerdown',e=>e.preventDefault());
+  delBtn.addEventListener('click',()=>{
+    if(!delPre)return;
+    const p=delPre;hoverPre=null;delHide();removeCodeBlock(p);flash('코드 블록을 삭제했습니다 (Ctrl+Z로 되돌릴 수 있어요)');
+  });
+  paper.addEventListener('scroll',()=>{if(delPre)delPlace(delPre)});
+  window.addEventListener('resize',()=>{if(ed.isConnected&&delPre)delPlace(delPre)});
+  const codeEdge=e=>{
+    const sl=getSelection();
+    if(!sl.rangeCount||!sl.isCollapsed)return false;
+    const c=preCtx();
+    if(e.key==='Backspace'){
+      if(c&&c.head===''){   // 블록 맨 앞: 앞이 빈 문단이면 그 줄을 지우고, 아니면 코드 블록을 일반 문단으로 되돌린다
+        e.preventDefault();
+        if(preMap(c.pre).s===''){removeCodeBlock(c.pre);return true}
+        const pv=c.pre.previousSibling;
+        if(emptyP(pv)){pv.remove();after()}else codeToggle();
+        return true;
+      }
+      return false;
+    }
+    // Delete: 코드 블록 바로 앞 문단의 끝
+    const b=closestOf('p');
+    if(!b||b.parentNode!==ed||!b.nextSibling||b.nextSibling.tagName!=='PRE')return false;
+    const r=sl.getRangeAt(0),tr=document.createRange();tr.setStart(r.endContainer,r.endOffset);tr.setEnd(b,b.childNodes.length);
+    if(tr.toString()!==''||tr.cloneContents().querySelector('img'))return false;
+    e.preventDefault();
+    if(emptyP(b)){const pre=b.nextSibling;b.remove();caretTo(pre,0);after()}
+    return true;
+  };
+  // 코드 블록 안에서 Ctrl+A: 먼저 그 블록의 글만 고르고, 이미 다 골라져 있으면 (한 번 더 누르면) 문서 전체를 고른다
+  const codeSelectAll=e=>{
+    const sl=getSelection(),pre=closestOf('pre');
+    if(!pre||!sl.rangeCount)return false;
+    const r=sl.getRangeAt(0);
+    if(!pre.contains(r.commonAncestorContainer))return false;
+    const all=document.createRange();all.selectNodeContents(pre);
+    if(r.compareBoundaryPoints(Range.START_TO_START,all)<=0&&r.compareBoundaryPoints(Range.END_TO_END,all)>=0)return false;
+    e.preventDefault();
+    sl.removeAllRanges();sl.addRange(all);saved=all.cloneRange();
+    return true;
+  };
+  const codeClose=()=>{
+    const c=preCtx();
+    if(!c||!/^[ \t]+$/.test(c.line))return;
+    const n=c.line.endsWith('\t')?1:Math.min(4,c.line.length);
+    for(let i=0;i<n;i++)document.execCommand('delete');
+  };
+  // 코드 블록을 넣기 전에 커서를 빈 문단 안에 둔다 (그냥 넣으면 브라우저가 첫 줄을 앞 문단에 합치고 서식을 덧붙인다)
+  const prepEmptyBlock=()=>{
+    const sl=getSelection();
+    if(!sl.rangeCount)return null;
+    if(!sl.isCollapsed)document.execCommand('delete');
+    const blk=()=>{const b=closestOf('p,div,h1,h2,h3');return b===ed?null:b};
+    const b=blk();if(!b)return null;
+    const r=sl.getRangeAt(0);
+    const none=rg=>rg.toString()===''&&!rg.cloneContents().querySelector('img');
+    const hr=document.createRange();hr.setStart(b,0);hr.setEnd(r.startContainer,r.startOffset);
+    const tr=document.createRange();tr.setStart(r.startContainer,r.startOffset);tr.setEnd(b,b.childNodes.length);
+    const headEmpty=none(hr),tailEmpty=none(tr);
+    if(headEmpty&&tailEmpty)return b;
+    document.execCommand('insertParagraph');
+    if(tailEmpty)return blk();
+    if(!headEmpty)document.execCommand('insertParagraph');
+    const pv=blk()&&blk().previousElementSibling;
+    if(pv)caretTo(pv,0);
+    return pv||null;
+  };
+  // 블록을 넣은 뒤 브라우저가 빈 문단을 하나 남겨 두었다면 치운다 (넣기 전에 비어 있던 문단 자리를 코드 블록이 차지해야 한다)
+  const emptyAnchor=eb=>eb&&eb.parentNode===ed?{pv:eb.previousSibling}:null;
+  const dropEmpty=a=>{
+    if(!a||(a.pv&&!a.pv.isConnected))return;
+    const n=a.pv?a.pv.nextSibling:ed.firstChild;
+    if(n&&n.tagName==='P'&&n.textContent===''&&!n.querySelector('img')&&n.nextSibling&&n.nextSibling.tagName==='PRE')n.remove();
+  };
+  const newPre=(text,lang)=>{const tmp=document.createElement('div');tmp.innerHTML=codeBlockHtml(text,lang);return tmp.firstChild};
+  // 코드 블록 만들기/풀기: 걸친 줄들을 한 블록으로 묶고, 이미 블록 안이면 줄마다 문단으로 되돌린다
+  const codeToggleRaw=()=>{
+    restore();
+    const sl=getSelection();if(!sl.rangeCount)return;
+    const cur=closestOf('pre');
+    if(cur){
+      const ps=preMap(cur).s.split('\n').map(l=>{const p=document.createElement('p');if(l)p.textContent=l;else p.innerHTML='<br>';return p});
+      cur.replaceWith(...ps);caretTo(ps[0],0);after();return;
+    }
+    if(closestOf('li')){flash('목록 안에서는 코드 블록을 만들 수 없어요');return}
+    const rg=sl.getRangeAt(0);
+    const bl=[...ed.children].filter(b=>/^(P|DIV|H1|H2|H3)$/.test(b.tagName)&&rg.intersectsNode(b));
+    if(bl.length>1&&!rg.collapsed){   // 줄 전체를 끌어 고르면 끝이 다음 줄 맨 앞에 걸리므로 그 줄은 뺀다
+      const h=document.createRange();h.setStart(bl[bl.length-1],0);h.setEnd(rg.endContainer,rg.endOffset);
+      if(h.toString()==='')bl.pop();
+    }
+    if(!bl.length){flash('여기서는 코드 블록을 만들 수 없어요');return}
+    const text=bl.map(b=>toPlain(b,{prefix:false})).join('\n').replace(/\u00a0/g,' ').replace(/\n+$/,'');
+    const np=newPre(text,codeLangOf(text));
+    bl[0].replaceWith(np);bl.slice(1).forEach(b=>b.remove());
+    after();caretEnd(np);
+  };
+
   // ---- 서식 명령 ----
   const after=()=>{
     if(!ed.firstChild)ed.innerHTML='<p><br></p>';
     sync();ui();
   };
-  const cmd=(name,val)=>{restore();document.execCommand(name,false,val);after()};
+  const cmd=(name,val)=>{restore();if(noFmtInCode())return;document.execCommand(name,false,val);after()};
   // 본문/제목 바꾸기. 이미 제목이면 다시 눌러도 그대로 두고, 제목 안에 남은 글자 크기 지정은 지운다
   const stripSize=root=>root.querySelectorAll('span[style]').forEach(sp=>{
     if(!sp.style.fontSize)return;
@@ -946,6 +1234,7 @@ function renderText(t,host){
   });
   const setBlock=tag=>{
     restore();
+    if(closestOf('pre')){if(tag==='p')codeToggle();else noFmtInCode();return}
     const here=closestOf('h1');
     if(tag==='h1'&&here){stripSize(here);after();return}
     document.execCommand('formatBlock',false,'<'+tag+'>');
@@ -956,7 +1245,8 @@ function renderText(t,host){
   };
   // 구분선 뒤에는 이어 쓸 수 있는 빈 문단을 꼭 만든다 (브라우저가 글을 줄 밖에 두는 것을 막는다)
   const insertHr=()=>{
-    restore();document.execCommand('insertHorizontalRule');
+    restore();if(noFmtInCode())return;
+    document.execCommand('insertHorizontalRule');
     let caretIn=null;
     ed.querySelectorAll('hr').forEach(h=>{
       const n=h.nextSibling;
@@ -970,6 +1260,7 @@ function renderText(t,host){
   };
   const cmdCss=(name,val)=>{
     restore();
+    if(noFmtInCode())return;
     document.execCommand('styleWithCSS',false,true);
     document.execCommand(name,false,val);
     document.execCommand('styleWithCSS',false,false);
@@ -999,6 +1290,7 @@ function renderText(t,host){
   };
   const setSize=px=>{
     restore();
+    if(noFmtInCode())return;
     document.execCommand('styleWithCSS',false,false);
     document.execCommand('fontSize',false,'7');
     if(!fixFonts(px))pendingPx=px;   // 커서만 있을 때는 글자를 입력하는 순간 적용한다
@@ -1006,6 +1298,7 @@ function renderText(t,host){
   };
   const listToggle=kind=>{   // kind: 'ul' | 'ol' | 'todo'
     restore();
+    if(noFmtInCode())return;
     const l=closestOf('ul,ol');
     if(kind==='todo'){
       if(l&&l.tagName==='UL'&&!l.classList.contains('todo'))l.classList.add('todo');
@@ -1034,7 +1327,7 @@ function renderText(t,host){
     bold:()=>cmd('bold'),underline:()=>cmd('underline'),strikeThrough:()=>cmd('strikeThrough'),
     ul:()=>listToggle('ul'),ol:()=>listToggle('ol'),todo:()=>listToggle('todo'),
     justifyLeft:()=>cmd('justifyLeft'),justifyCenter:()=>cmd('justifyCenter'),justifyRight:()=>cmd('justifyRight'),
-    hr:()=>insertHr(),
+    hr:()=>insertHr(),code:()=>codeToggle(),
     md:()=>saveMd(t),
     pdf:()=>savePdf(t)
   };
@@ -1078,7 +1371,7 @@ function renderText(t,host){
   };
   const placeTb=()=>{
     const s=getSelection();
-    if(!s.rangeCount||s.isCollapsed||!ed.contains(s.anchorNode)||!ed.contains(s.focusNode)){stb.hidden=true;return}
+    if(!s.rangeCount||s.isCollapsed||!ed.contains(s.anchorNode)||!ed.contains(s.focusNode)||closestOf('pre')){stb.hidden=true;return}
     if(s.toString()===''){stb.hidden=true;return}
     const rs=[...s.getRangeAt(0).getClientRects()].filter(r=>r.width>0);
     if(!rs.length){stb.hidden=true;return}
@@ -1134,13 +1427,40 @@ function renderText(t,host){
       return;
     }
     e.preventDefault();
-    if(html&&!plainNext)document.execCommand('insertHTML',false,sanitizeHtml(html,false));
+    // 코드 블록 안에서는 글만 그대로 넣고, 그 밖에서는 코드로 보이면 코드 블록으로 만든다 (Ctrl+Shift+V는 항상 일반 글)
+    const plain=text.replace(/\r\n?/g,'\n'),multi=/\n/.test(plain.trim());
+    if(closestOf('pre')){document.execCommand('insertText',false,plain);plainNext=false;return}
+    const vs=cd.getData('vscode-editor-data');let vmode='';try{vmode=String(JSON.parse(vs).mode||'')}catch(x){}
+    const asCode=!plainNext&&multi&&!closestOf('li,h1')&&(!!vs||/font-family:[^;"]*(monospace|consolas|courier|menlo|d2coding|mono)/i.test(html)||looksLikeCode(plain));
+    if(asCode){
+      const body=plain.replace(/\u00a0/g,' ').replace(/^\n+/,'').replace(/\s+$/,'');
+      const ea=emptyAnchor(prepEmptyBlock());
+      document.execCommand('insertHTML',false,codeBlockHtml(body,codeLangOf(body,vmode.toLowerCase())));
+      dropEmpty(ea);fixCode();
+      const pre=closestOf('pre');
+      if(pre&&pre.nextSibling)caretTo(pre.nextSibling,0);
+      sync();
+    }
+    else if(html&&!plainNext){
+      const sh=sanitizeHtml(html,false);
+      const ea=/^<pre\b/.test(sh)?emptyAnchor(prepEmptyBlock()):null;
+      document.execCommand('insertHTML',false,sh);
+      dropEmpty(ea);fixCode();sync();
+    }
     else document.execCommand('insertText',false,text);
     plainNext=false;
   });
   ed.addEventListener('keydown',e=>{
     const mod=e.ctrlKey||e.metaKey;
     if(mod&&e.code==='KeyI'){e.preventDefault();return}   // 기울임은 쓰지 않는다
+    if(e.key==='Enter'&&!mod&&!e.altKey&&!e.shiftKey&&codeEnter(e))return;
+    if(e.key==='Tab'&&!mod&&!e.altKey&&!e.shiftKey&&codeTab(e))return;
+    if(mod&&!e.altKey&&(e.code==='KeyZ'||e.code==='KeyY')){
+      if((e.code==='KeyZ'&&!e.shiftKey?blkUndo():blkRedo())){e.preventDefault();return}
+    }
+    if(mod&&e.code==='KeyA'&&!e.shiftKey&&!e.altKey&&codeSelectAll(e))return;
+    if((e.key==='Backspace'||e.key==='Delete')&&!mod&&!e.altKey&&!e.shiftKey&&codeEdge(e))return;
+    if((e.key==='}'||e.key===']')&&!mod&&!e.altKey)codeClose();
     if(mod&&e.shiftKey&&e.code==='KeyV')plainNext=true;
     if(mod&&e.shiftKey&&!e.altKey){
       const k={Digit8:'ul',Digit7:'ol',Digit9:'todo'}[e.code];
@@ -1153,6 +1473,7 @@ function renderText(t,host){
       const bk={Digit1:'p',Digit2:'h1'}[e.code];
       if(bk){e.preventDefault();setBlock(bk);return}
       if(e.code==='KeyH'){e.preventDefault();insertHr();return}
+      if(e.code==='KeyC'){e.preventDefault();codeToggle();return}
       const lk={KeyL:'ul',KeyN:'ol',KeyT:'todo'}[e.code];
       if(lk){e.preventDefault();listToggle(lk);return}
     }
@@ -1165,9 +1486,27 @@ function renderText(t,host){
       if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();removeImg();return}
       if(e.key==='Escape'){dropImg();return}
     }
-    // 빈 줄에 --- 만 쓰고 Enter를 치면 구분선으로 바꾼다
+    // 빈 줄에서 백틱을 세 번 치면 바로 코드 블록으로 바꾼다 (Alt+C와 같은 기능)
+    if((e.key==='`'||e.code==='Backquote')&&!mod&&!e.altKey&&!e.shiftKey){
+      const sl=getSelection(),b=sl.rangeCount&&sl.isCollapsed?closestOf('p,div'):null;
+      if(b&&b!==ed&&!closestOf('li')&&b.textContent==='``'){
+        const r=sl.getRangeAt(0),tl=document.createRange();tl.setStart(r.endContainer,r.endOffset);tl.setEnd(b,b.childNodes.length);
+        if(tl.toString()===''){
+          e.preventDefault();
+          const np=newPre('','generic');
+          withUndo(()=>{b.replaceWith(np);caretTo(np,0);after()});return;
+        }
+      }
+    }
+    // 빈 줄에 --- 만 쓰고 Enter를 치면 구분선으로, ``` 만 쓰면 코드 블록으로 바꾼다
     if(e.key==='Enter'&&!mod&&!e.altKey&&!e.shiftKey){
       const sl=getSelection(),b=sl.rangeCount&&sl.isCollapsed?closestOf('p,div'):null;
+      const fence=b&&b!==ed&&!closestOf('li')?/^```([\w#+-]{0,12})$/.exec(b.textContent.trim()):null;
+      if(fence){
+        e.preventDefault();
+        const w=fence[1].toLowerCase(),np=newPre('',CODE_LANGS.includes(w)?w:'generic');
+        withUndo(()=>{b.replaceWith(np);caretTo(np,0);after()});return;
+      }
       if(b&&b!==ed&&b.textContent==='---'&&!closestOf('li')){
         e.preventDefault();b.innerHTML='<br>';
         const rr=document.createRange();rr.setStart(b,0);rr.collapse(true);sl.removeAllRanges();sl.addRange(rr);
@@ -1408,6 +1747,7 @@ function renderText(t,host){
   };
 
   rt[t.id]=Object.assign(rt[t.id]||{},{ta:ed,openFind:open,findNext:()=>jump(1),addImage});
+  fixCode();hl();
   upd();
   if(!matchMedia('(pointer:coarse)').matches)ed.focus();
 }
@@ -1445,7 +1785,7 @@ function htmlToMd(html){
     }
     return out;
   };
-  const lines=[];
+  const lines=[],codes=[];   // 코드는 자리표시만 두었다가 마지막에 넣어, 빈 줄 정리에 코드 안의 줄이 줄지 않게 한다
   const para=(prefix,el)=>{
     let tx=inline(el).replace(/(  \n)+$/,'').replace(/^\s+|\s+$/g,'');
     if(!prefix)tx=tx.replace(/^(#{1,6}\s|[-+>]\s|\d+\.\s)/,'\\$1');
@@ -1479,10 +1819,15 @@ function htmlToMd(html){
       flush();
       const tg=c.tagName;
       if(tg==='HR'){lines.push('---','')}
+      else if(tg==='PRE'){
+        const tx=preText(c).replace(/\u00a0/g,' ').replace(/\n+$/,''),fence='\x60'.repeat(Math.max(3,...(tx.match(/\x60+/g)||[]).map(x=>x.length+1)));
+        const lg=c.dataset.lang;
+        codes.push(fence+(lg==='java'||lg==='json'?lg:'')+'\n'+tx+'\n'+fence);lines.push('\u0000'+(codes.length-1)+'\u0000','');
+      }
       else if(/^H[1-3]$/.test(tg)){para('#'.repeat(+tg[1])+' ',c);lines.push('')}
       else if(tg==='UL'||tg==='OL'){list(c,0);lines.push('')}
       else if(tg==='P'||tg==='DIV'){
-        if(c.querySelector('p,div,ul,ol,hr,h1,h2,h3'))blocks(c);
+        if(c.querySelector('p,div,ul,ol,hr,h1,h2,h3,pre'))blocks(c);
         else{para('',c);lines.push('')}
       }
       else{para('',c);lines.push('')}
@@ -1491,6 +1836,7 @@ function htmlToMd(html){
   };
   blocks(root);
   let md=lines.join('\n').replace(/\n{3,}/g,'\n\n').replace(/^\n+/,'').replace(/\n+$/,'')+'\n';
+  md=md.replace(/\u0000(\d+)\u0000/g,(_,i)=>codes[+i]);
   if(images.length)md+='\n'+images.map((u,i)=>'[image'+(i+1)+']: '+u).join('\n')+'\n';
   return{md,images};
 }
@@ -1507,6 +1853,7 @@ const PDF_CSS='.pdfdoc{font:15px/1.6 "Noto Sans KR","Malgun Gothic","Segoe UI",s
   '.pdfdoc p,.pdfdoc div{margin:0}.pdfdoc h1{font-size:1.7em;margin:.3em 0;line-height:1.3}.pdfdoc ul,.pdfdoc ol{margin:.2em 0;padding-left:1.6em}'+
   '.pdfdoc ul.todo{list-style:none;padding-left:1.7em}.pdfdoc ul.todo>li{position:relative}.pdfdoc ul.todo>li::before{content:"☐";position:absolute;left:-1.5em}'+
   '.pdfdoc ul.todo>li.done::before{content:"☑"}.pdfdoc ul.todo>li.done{color:#888;text-decoration:line-through}'+
+  '.pdfdoc pre{margin:.5em 0;padding:10px 12px;border:1px solid #ddd;border-radius:8px;background:#f5f5f8;font:13px/1.5 D2Coding,Consolas,"Malgun Gothic",monospace;white-space:pre-wrap;word-break:break-all}'+
   '.pdfdoc hr{border:0;border-top:1px solid #ccc;margin:.8em 0}.pdfdoc img{max-width:100%;height:auto;vertical-align:bottom}';
 function makePdf(pages,ptW,ptH){
   const enc=new TextEncoder(),parts=[],offs=[];let len=0;
@@ -1586,7 +1933,7 @@ function saveHtml(t){
   const doc='<!doctype html>\n<html lang="ko"><head><meta charset="utf-8"><title>'+esc(t.title)+'</title>'+
     '<style>body{font:15px/1.6 "Noto Sans KR","Malgun Gothic",sans-serif;max-width:860px;margin:2rem auto;padding:0 1rem;white-space:pre-wrap}'+
     'p,div{margin:0}ul.todo{list-style:none;padding-left:0}ul.todo>li::before{content:"☐ "}ul.todo>li.done::before{content:"☑ "}ul.todo>li.done{text-decoration:line-through;color:#888}'+
-    'hr{border:0;border-top:1px solid #ddd}img{max-width:100%;height:auto}</style></head><body>'+(t.html||textToHtml(t.text))+'</body></html>';
+    'hr{border:0;border-top:1px solid #ddd}img{max-width:100%;height:auto}pre{margin:.5em 0;padding:10px 12px;border:1px solid #ddd;border-radius:8px;background:#f5f5f8;font:13px/1.5 D2Coding,Consolas,monospace;white-space:pre-wrap}</style></head><body>'+(t.html||textToHtml(t.text))+'</body></html>';
   download(new Blob([doc],{type:'text/html;charset=utf-8'}),safeName(t.title)+'.html');
 }
 const TEXT_EXT=/\.(txt|log|ini|md|json|csv|ps1|psd1|psm1|inf|scp|wtx|html?)$/i;
@@ -2023,9 +2370,13 @@ Object.entries(CL).forEach(([k,v])=>v.e.split(' ').forEach(x=>{CODE_EXT_LANG[x]=
 const CODE_EXT_RE=/\.(js|jsx|ts|tsx|mjs|cjs|java|cs|kt|kts|py|pyw|c|h|cpp|cc|cxx|hpp|hh|go|rs|php|sql|sh|bash|zsh|css|scss|less|vue|yml|yaml|toml|xml|svg|gradle|bat|ps1|rb|swift|dart|lua|r|vb|pl)$/i;
 const reEsc=s=>s.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&');
 const CL_CACHE={};
+// 메모장 코드 블록 전용: 언어를 모를 때 쓰는 범용 색칠 규칙 (코드 탭 언어 목록에는 나오지 않는다)
+const CL_EXTRA={
+  generic:{n:'코드',e:'',lc:['//','#'],bc:1,q:'"\'`',kw:'if else elif for while do switch case default break continue return function def class new this self super import from export const let var async await try catch except finally throw throws raise with as in is not and or null nil None true false True False undefined void public private protected static final interface enum extends implements package namespace using struct lambda yield pass SELECT FROM WHERE INSERT INTO VALUES UPDATE SET DELETE CREATE TABLE JOIN ON GROUP BY ORDER'}
+};
 function clRegex(k){
   if(CL_CACHE[k])return CL_CACHE[k];
-  const L=CL[k],p=[];
+  const L=CL[k]||CL_EXTRA[k],p=[];
   if(L.ml){
     p.push(['c','<!--[\\s\\S]*?(?:-->|$)'],['k','<\\/?[A-Za-z][\\w:.-]*|\\/?>'],['s','"[^"]*"?|\'[^\']*\'?'],['t','[\\w:.-]+(?==)']);
   }else{
@@ -2075,6 +2426,45 @@ function codeHtml(text,k){
     if(pos<text.length)add('',text.slice(pos));
   }
   return lines.map(l=>'<div class="l">'+l+'</div>').join('');
+}
+// codeHtml 과 같은 규칙으로 글을 [색 종류, 시작, 끝] 목록으로 나눈다 (메모장 코드 블록 색칠용)
+function codeTokens(text,k){
+  const out=[];
+  if(k==='plain'||text.length>200000)return out;
+  const C=clRegex(k),re=C.re;re.lastIndex=0;
+  let m;
+  while((m=re.exec(text))){
+    if(m[0]===''){re.lastIndex++;continue}
+    let gi=1;while(gi<m.length&&m[gi]===undefined)gi++;
+    let c=C.cls[gi-1];
+    if(c==='i'){
+      if(C.kw.has(C.L.ci?m[0].toLowerCase():m[0]))c='k';
+      else if(/^[ \t]*\(/.test(text.slice(re.lastIndex,re.lastIndex+8)))c='f';
+      else if(/^[A-Z][A-Za-z0-9_$]*[a-z]/.test(m[0]))c='t';
+      else c='';
+    }else if(c==='s'&&C.L.key&&/^[ \t]*:/.test(text.slice(re.lastIndex,re.lastIndex+8)))c='t';
+    if(c)out.push([c,m.index,re.lastIndex]);
+  }
+  return out;
+}
+// 붙여넣은 여러 줄 글이 코드인지 어림해 본다 (일반 글이 코드로 바뀌지 않게 보수적으로)
+function looksLikeCode(s){
+  const ls=s.replace(/\r\n?/g,'\n').split('\n').filter(l=>l.trim());
+  const n=ls.length;
+  if(n<2||s.length>300000)return false;
+  const cnt=re=>ls.filter(l=>re.test(l)).length;
+  let sc=0;
+  const g=guessLang(s);if(g==='java'||g==='json')sc+=4;
+  sc+=cnt(/[;{}]\s*$/)/n*4;
+  sc+=cnt(/^(\t| {2,})\S/)/n*1.5;
+  sc+=cnt(/^\s*(import\s+[\w.{*]|from\s+\S+\s+import\b|def\s+\w+|class\s+\w+|function\s*\w*\s*\(|(const|let|var)\s+[\w{[]+\s*=|(public|private|protected)\s|package\s+[\w.]+|#include|#define|using\s+\w|@\w+|SELECT\s|INSERT\s+INTO|UPDATE\s+\w+\s+SET|CREATE\s+TABLE|return\b.*[;)]|\}?\s*else\b|(if|for|while|switch|catch)\s*\(|<\/?[a-z][\w-]*[\s>\/])/)/n*4;
+  sc+=cnt(/=>|===?|!==?|\+=|->|::|&&|\|\||\/\/|\/\*|\(\)|\);|\)\s*\{/)/n*2;
+  const flat=s.replace(/\s/g,'');
+  const dens=(flat.match(/[{}()[\];=<>]/g)||[]).length/(flat.length||1);
+  sc+=dens>0.1?2:dens>0.05?1:0;
+  sc-=cnt(/[가-힣]{2,}.*[.?!다요죠]\s*$/)/n*4;
+  sc-=cnt(/^[A-Z][a-z]+(\s+[A-Za-z']+){4,}[.?!]?\s*$/)/n*3;
+  return sc>=3.5;
 }
 function guessLang(s){
   const h=s.slice(0,4000);if(!h.trim())return'plain';
@@ -3683,7 +4073,7 @@ document.addEventListener('keydown',e=>{
 });
 const KEYS_COMMON=[['Ctrl+S','저장'],['Ctrl+Z','실행 취소'],['Ctrl+F','찾기 (메모, 코드)'],['Alt+Shift+1/2/3','새 메모장/그림판/코드']];
 const KEYS_BY_TAB={
-  text:{n:'메모장',k:[['Alt+1','본문'],['Alt+2','제목'],['Alt+L','글머리 목록'],['Alt+N','번호 목록'],['Alt+T','체크리스트'],['Alt+H','구분선'],['Ctrl+B','굵게']]},
+  text:{n:'메모장',k:[['Alt+1','본문'],['Alt+2','제목'],['Alt+L','글머리 목록'],['Alt+N','번호 목록'],['Alt+T','체크리스트'],['Alt+H','구분선'],['Alt+C','코드 블록 (붙여넣으면 자동)'],['Ctrl+B','굵게']]},
   draw:{n:'그림판',k:[['Alt+1 ~ 4','선택 / 펜 / 텍스트 / 지우개'],['Ctrl+C / V','복사 / 붙여넣기'],['Ctrl+D','복제'],['Delete','삭제']]},
   code:{n:'코드',k:[['Tab','들여쓰기'],['Ctrl+/','주석 켜기/끄기'],['Ctrl+D','줄 복제'],['Ctrl+Enter','미리보기 실행']]}
 };

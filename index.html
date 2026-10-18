@@ -1510,6 +1510,12 @@ function renderText(t,host){
     if(curImg){
       if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();removeImg();return}
       if(e.key==='Escape'){dropImg();return}
+      if(e.key==='Enter'&&!mod&&!e.altKey){   // 선택된 이미지를 지우지 않고 그 뒤에서 줄을 나눈다
+        e.preventDefault();
+        const img=curImg,rr=document.createRange();rr.setStartAfter(img);rr.collapse(true);
+        const sl=getSelection();sl.removeAllRanges();sl.addRange(rr);dropImg();
+        document.execCommand('insertParagraph');after();return;
+      }
       if(/^(Arrow(Left|Right|Up|Down)|Home|End)$/.test(e.key))dropImg();   // 방향키로 이미지 선택을 풀면 Backspace가 이미지를 지우지 않는다
     }
     // 빈 줄에서 백틱을 세 번 치면 바로 코드 블록으로 바꾼다 (Alt+C와 같은 기능)

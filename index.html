@@ -835,9 +835,9 @@ function sanitizeHtml(html,keepColors=true){
 // 서식 있는 문서를 글자만 남긴 줄 단위 문자열로 바꾼다 (목록은 •, 1., ☐ 머리를 붙인다)
 function toPlain(root,opt){
   const prefix=!opt||opt.prefix!==false;
-  const out=[];let cur='';
+  const out=[];let cur='',mark='';   // mark: 방금 붙인 목록 머리. 항목 안이 <h1> 같은 블록으로 시작해도 머리만 따로 줄이 되지 않게 한다
   const flush=()=>{out.push(cur);cur=''};
-  const start=()=>{if(cur!=='')flush()};
+  const start=()=>{if(cur!==''&&cur!==mark)flush()};
   const walk=(node,ctx)=>{
     for(const c of node.childNodes){
       if(c.nodeType===3){cur+=c.nodeValue;continue}
@@ -856,7 +856,7 @@ function toPlain(root,opt){
         ctx.n++;
         if(prefix){
           const ind='  '.repeat(Math.max(0,(ctx.depth||1)-1));
-          cur=ind+(ctx.type==='OL'?ctx.n+'. ':ctx.todo?(c.classList.contains('done')?'☑ ':'☐ '):'• ');
+          cur=mark=ind+(ctx.type==='OL'?ctx.n+'. ':ctx.todo?(c.classList.contains('done')?'☑ ':'☐ '):'• ');
         }
         walk(c,ctx);start();continue;
       }
@@ -1233,14 +1233,59 @@ function renderText(t,host){
     sp.style.removeProperty('font-size');
     if(!sp.getAttribute('style'))sp.replaceWith(...sp.childNodes);
   });
+  const isList=n=>n.nodeType===1&&/^(UL|OL)$/.test(n.tagName);
+  // 브라우저의 formatBlock은 목록 항목을 만나면 항목 글이 아니라 목록째로 <h1>이나 <p>로 감싸 버린다.
+  // 그렇게 감싸인 목록은 밖으로 빼내어 제목/본문 전환이 다시 되게 한다 (예전에 망가진 메모도 같이 고쳐진다)
+  const unwrapListWrap=()=>{
+    for(let i=0;i<200;i++){
+      const u=ed.querySelector(':scope :is(h1,h2,h3,p,div)>:is(ul,ol)');if(!u)break;   // :scope 뒤에 공백: 편집기 자신은 빼고 안쪽 요소만
+      const w=u.parentElement;w.after(u);
+      if(w.textContent.trim()===''&&!w.querySelector('img,pre'))w.remove();
+    }
+  };
+  // 목록 항목의 제목/본문: 항목 안의 글만 <li><h1>…</h1></li> 로 싸거나 다시 벗긴다 (안에 든 하위 목록은 그대로 둔다)
+  const liBlock=(items,tag)=>{
+    items.forEach(li=>{
+      const h=li.querySelector(':scope>h1');
+      if(tag!=='h1'){if(h)h.replaceWith(...h.childNodes);return}
+      if(h){stripSize(h);return}
+      const nh=document.createElement('h1');
+      nh.append(...[...li.childNodes].filter(n=>!isList(n)));
+      if(!nh.childNodes.length)nh.innerHTML='<br>';
+      li.prepend(nh);stripSize(nh);
+    });
+  };
   const setBlock=tag=>{
     restore();
     if(closestOf('pre')){if(tag==='p')codeToggle();else noFmtInCode();return}
+    unwrapListWrap();
+    let sl=getSelection(),rg=sl.rangeCount?sl.getRangeAt(0):null;
+    if(!rg)return;
+    // 선택에 걸친 목록 항목들 (하위 목록만 걸친 바깥 항목은 빼고, 항목 자체의 글이 걸친 것만)
+    const own=li=>rg.startContainer===li||rg.endContainer===li||[...li.childNodes].some(n=>!isList(n)&&rg.intersectsNode(n));
+    const items=[...ed.querySelectorAll('li')].filter(li=>rg.intersectsNode(li)&&own(li));
+    if(items.length){
+      // 글 노드를 <h1> 안팎으로 옮기면 선택 범위가 항목 자리로 밀려나므로, 옮긴 뒤 같은 노드·위치로 다시 잡는다
+      const pts=[rg.startContainer,rg.startOffset,rg.endContainer,rg.endOffset];
+      const anc=rg.commonAncestorContainer,top=(anc.nodeType===3?anc.parentElement:anc).closest('ul,ol');
+      liBlock(items,tag);
+      const fix=(n,o)=>{
+        if(n.nodeName==='LI'&&tag==='h1'&&n.firstChild&&n.firstChild.tagName==='H1')n=n.firstChild;
+        return[n,Math.min(o,n.nodeType===3?n.nodeValue.length:n.childNodes.length)];
+      };
+      try{
+        const nr=document.createRange(),[a,b]=fix(pts[0],pts[1]),[c,d]=fix(pts[2],pts[3]);
+        nr.setStart(a,b);nr.setEnd(c,d);sl.removeAllRanges();sl.addRange(nr);saved=nr.cloneRange();
+      }catch(e){}
+      if(top&&ed.contains(top)){after();return}   // 선택이 목록 안에만 있으면 여기서 끝
+      sl=getSelection();rg=sl.rangeCount?sl.getRangeAt(0):null;if(!rg)return;
+    }
     const here=closestOf('h1');
-    if(tag==='h1'&&here){stripSize(here);after();return}
+    if(tag==='h1'&&here&&!items.length){stripSize(here);after();return}
     document.execCommand('formatBlock',false,'<'+tag+'>');
+    unwrapListWrap();
     ed.querySelectorAll('h1 h1,h1 h2,h1 h3').forEach(x=>x.replaceWith(...x.childNodes));
-    const sl=getSelection(),rg=sl.rangeCount?sl.getRangeAt(0):null;
+    sl=getSelection();rg=sl.rangeCount?sl.getRangeAt(0):null;
     if(tag==='h1'&&rg)[...ed.querySelectorAll('h1')].filter(h=>rg.intersectsNode(h)).forEach(stripSize);
     after();
   };
@@ -1788,7 +1833,7 @@ function renderText(t,host){
   };
 
   rt[t.id]=Object.assign(rt[t.id]||{},{ta:ed,openFind:open,findNext:()=>jump(1),addImage});
-  fixCode();hl();
+  unwrapListWrap();fixCode();hl();
   upd();
   if(!matchMedia('(pointer:coarse)').matches)ed.focus();
 }
@@ -4149,6 +4194,24 @@ document.addEventListener('keydown',e=>{
   else if(k==='o'){e.preventDefault();actions.open()}
   else if((k==='f'||k==='h')&&(active().kind==='text'||active().kind==='code')){e.preventDefault();actions.find()}
 });
+// 메모·코드 탭에서 편집 칸 밖(페이지 옆 여백 등)을 눌러 포커스가 빠진 채 Ctrl+A를 누르면 메뉴와 탭까지 화면 전체가 골라진다.
+// 그때는 편집 칸으로 포커스를 되돌려 그 안의 내용만 고른다 (편집 칸 안에서는 브라우저 기본 동작과 코드 블록 처리를 그대로 둔다)
+document.addEventListener('keydown',e=>{
+  if(!(e.ctrlKey||e.metaKey)||e.altKey||e.shiftKey||e.code!=='KeyA'||e.defaultPrevented)return;
+  const t=active();if(t.kind!=='text'&&t.kind!=='code')return;
+  const r=rt[t.id],ta=r&&r.ta;
+  if(!ta||!ta.isConnected||inField(e))return;
+  if(ta.contains(e.target)){
+    if(ta.tagName==='TEXTAREA')return;
+    // 편집 칸에 포커스는 있어도 선택 범위가 밖(화면 전체 등)에 남아 있으면 브라우저가 문서 전체를 고르므로 그때만 직접 처리한다
+    const s0=getSelection();
+    if(s0.rangeCount&&ta.contains(s0.getRangeAt(0).commonAncestorContainer))return;
+  }
+  e.preventDefault();ta.focus();
+  if(ta.tagName==='TEXTAREA'){ta.select();return}
+  const rg=document.createRange();rg.selectNodeContents(ta);
+  const s=getSelection();s.removeAllRanges();s.addRange(rg);
+});
 
 window.__app={tabs:()=>tabs,active,actions,rt,closeTab,openFile,save,flash};
 
@@ -5186,9 +5249,10 @@ document.addEventListener('keydown',e=>{
   else if(k==='c'&&!e.shiftKey){if(copySel(false))e.preventDefault()}
   else if(k==='x'){if(copySel(true))e.preventDefault()}
   else if(k==='d'){e.preventDefault();if(copySel(false))pasteClip()}
-  else if(k==='a'&&tool.name==='select'){
-    // 전체 선택
+  else if(k==='a'&&!e.shiftKey&&!e.altKey){
+    // 전체 선택. 펜·지우개 같은 다른 도구일 때도 브라우저가 화면 전체(메뉴, 탭까지)를 고르게 두지 않고 선택 도구로 바꿔 도형을 고른다
     e.preventDefault();
+    if(tool.name!=='select'){const b=document.querySelector('[data-tool="select"]');if(b)b.click();else return}
     const t=active(),del=deletedSet(t),s=[];
     t.strokes.forEach((o,i)=>{if(!del.has(i)&&!['del','photoDel','eraser'].includes(o.tool))s.push(i)});
     setSelection(t,s,visiblePhotos(t).map(p=>p.id));

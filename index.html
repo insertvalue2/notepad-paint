@@ -95,14 +95,11 @@ button:focus-visible,input:focus-visible,.tab:focus-visible{outline:2px solid va
 .textwrap{flex:1;min-width:0;display:flex;flex-direction:column}
 .rtbar{flex:none;display:flex;align-items:center;gap:2px;padding:6px 10px;overflow-x:auto;background:var(--surface);border-bottom:1px solid var(--line);scrollbar-width:none}
 .rtbar::-webkit-scrollbar{display:none}
-.rtbar button,.rtbar .rc{flex:none;min-width:34px;height:34px;padding:0 8px;border:0;background:none;border-radius:8px;cursor:pointer;display:grid;place-items:center;color:var(--text);font:inherit}
-.rtbar button:hover,.rtbar .rc:hover{background:var(--hover)}
+.rtbar button{flex:none;min-width:34px;height:34px;padding:0 8px;border:0;background:none;border-radius:8px;cursor:pointer;display:grid;place-items:center;color:var(--text);font:inherit}
+.rtbar button:hover{background:var(--hover)}
 .rtbar button.on{background:var(--accent-soft);color:var(--accent)}
 .rtbar .zp{min-width:56px;font-size:13px;font-variant-numeric:tabular-nums}
 .rtbar .rs{flex:none;height:34px;max-width:104px;padding:0 6px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:13px;margin:0 2px}
-.rtbar .rc{position:relative;font-weight:700;align-content:center}
-.rtbar .rc input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
-.rtbar .rc i{display:block;width:16px;height:3px;border-radius:2px;margin-top:1px}
 .rtbar [data-c=md],.rtbar [data-c=pdf]{display:flex;align-items:center;gap:3px}
 .rtbar .mdl{font-size:11px;font-weight:700;letter-spacing:.02em}
 .rtbar .rsep{flex:none;width:1px;height:22px;background:var(--line);margin:0 4px}
@@ -111,12 +108,11 @@ button:focus-visible,input:focus-visible,.tab:focus-visible{outline:2px solid va
 .seltb button{flex:none;min-width:30px;height:30px;padding:0 6px;border:0;background:none;border-radius:6px;cursor:pointer;color:var(--text);font:inherit;font-size:13px}
 .seltb button:hover{background:var(--hover)}
 .seltb .sw{min-width:0;width:22px;height:22px;margin:0 2px;padding:0;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
-.seltb .sw.hl{border-radius:5px}
 .seltb .pal{position:relative;display:block;box-sizing:content-box;cursor:pointer;background:conic-gradient(#f03e3e,#fab005,#40c057,#228be6,#be4bdb,#f03e3e)}
 .seltb .pal input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .seltb .ssep{flex:none;width:1px;height:20px;background:var(--line);margin:0 3px}
 .paper{flex:1;min-height:0;overflow:auto;padding:16px;display:flex;flex-direction:column}
-.editor{position:relative;flex:1 0 auto;width:100%;max-width:960px;margin:0 auto;outline:0;background:var(--surface);color:var(--text);border-radius:14px;box-shadow:var(--shadow);padding:28px 32px;font:15px/1.6 var(--ui);white-space:pre-wrap;overflow-wrap:anywhere;caret-color:var(--accent)}
+.editor{position:relative;flex:1 0 auto;width:100%;max-width:960px;margin:0 auto;outline:0;background:var(--surface);color:var(--text);border-radius:14px;box-shadow:var(--shadow);padding:28px 32px;font:18px/1.6 var(--ui);white-space:pre-wrap;overflow-wrap:anywhere;caret-color:var(--accent)}
 .editor:focus-visible{outline:2px solid var(--accent-soft)}
 .editor p,.editor div{margin:0}
 .editor h1{font-size:1.7em;margin:.3em 0;line-height:1.3}
@@ -516,20 +512,47 @@ let msgTimer;
 function flash(text){const m=$('#msg');m.textContent=text;clearTimeout(msgTimer);msgTimer=setTimeout(()=>{m.textContent=''},4000)}
 function setStatus(l,r){$('#st-left').textContent=l;$('#st-right').textContent=r}
 function run(name,arg){const fn=actions[name];if(fn)fn(arg);else flash('아직 지원하지 않는 기능입니다')}
-function save(){
-  const build=full=>JSON.stringify({tabs:tabs.map(t=>full?t:t.kind==='draw'?{...t,photos:t.photos.map(p=>({...p,src:null}))}:t.kind==='text'?{...t,html:(t.html||'').replace(/<img[^>]*>/g,'')}:t),activeId,nextId});
-  try{localStorage.setItem(KEY,build(true))}
+// ---- 임시 저장: IndexedDB에 비동기로 쓴다. 사진이 든 큰 상태를 localStorage에 동기로 쓰면 타자를 멈출 때마다 화면이 멈칫하기 때문이다.
+// IndexedDB를 못 쓰면 전처럼 localStorage에 쓰고, 페이지를 떠날 때는 마지막 상태를 localStorage에도 한 번 적어 둔다 (열 때는 둘 중 새것을 읽는다)
+const DB_NAME='notepad-paint',DB_STORE='state';
+let dbOpen=null,idbOk=true;
+const idb=()=>dbOpen||(dbOpen=new Promise((res,rej)=>{
+  try{
+    const r=indexedDB.open(DB_NAME,1);
+    r.onupgradeneeded=()=>r.result.createObjectStore(DB_STORE);
+    r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);r.onblocked=()=>rej(new Error('blocked'));
+    setTimeout(()=>rej(new Error('timeout')),3000);
+  }catch(e){rej(e)}
+}));
+const idbPut=(k,v)=>idb().then(db=>new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)}));
+const idbGet=k=>idb().then(db=>new Promise((res,rej)=>{const q=db.transaction(DB_STORE,'readonly').objectStore(DB_STORE).get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)}));
+const buildState=full=>JSON.stringify({savedAt:Date.now(),tabs:tabs.map(t=>full?t:t.kind==='draw'?{...t,photos:t.photos.map(p=>({...p,src:null}))}:t.kind==='text'?{...t,html:(t.html||'').replace(/<img[^>]*>/g,'')}:t),activeId,nextId});
+// 탭들이 미뤄 둔 작업(저장용 HTML 만들기 등)을 지금 끝낸다. 저장·내보내기·탭 전환 전에 부른다
+function flushAll(){for(const k in rt){const f=rt[k]&&rt[k].flush;if(f)f()}}
+const saveLocal=()=>{   // localStorage에 동기로 저장 (페이지를 떠날 때, 또는 IndexedDB를 못 쓸 때)
+  try{localStorage.setItem(KEY,buildState(true));return true}
   catch(e){
-    try{localStorage.setItem(KEY,build(false));flash('저장 공간이 부족해 사진은 임시 저장에서 제외됩니다')}
+    try{localStorage.setItem(KEY,buildState(false));flash('저장 공간이 부족해 사진은 임시 저장에서 제외됩니다')}
     catch(e2){flash('저장 공간이 부족해 임시 저장을 건너뜁니다')}
+    return false;
   }
+};
+function save(){
+  flushAll();
+  if(!idbOk){saveLocal();return}
+  idbPut(KEY,buildState(true)).catch(()=>{idbOk=false;saveLocal()});
 }
 let saveTimer;
-function saveSoon(){clearTimeout(saveTimer);saveTimer=setTimeout(save,400)}
-window.addEventListener('pagehide',()=>{if(saveTimer){clearTimeout(saveTimer);save()}});
-function load(){
+function saveSoon(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{saveTimer=0;save()},400)}
+window.addEventListener('pagehide',()=>{clearTimeout(saveTimer);saveTimer=0;flushAll();saveLocal();if(idbOk)idbPut(KEY,buildState(true)).catch(()=>{})});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&saveTimer){clearTimeout(saveTimer);saveTimer=0;save()}});
+async function load(){
+  const parse=s=>{try{return JSON.parse(s||'null')}catch(e){return null}};
+  let a=null,b=null;
+  try{a=parse(localStorage.getItem(KEY))}catch(e){}
+  try{b=parse(await idbGet(KEY))}catch(e){idbOk=false}
+  const d=!a?b:!b?a:((b.savedAt||0)>(a.savedAt||0)?b:a);   // 둘 중 나중에 저장한 것
   try{
-    const d=JSON.parse(localStorage.getItem(KEY)||'null');
     const ok=d&&Array.isArray(d.tabs)?d.tabs.map(cleanTab).filter(Boolean):[];
     if(ok.length){
       tabs=ok;nextId=Math.max(1,...tabs.map(t=>t.id+1));
@@ -617,6 +640,7 @@ function newTab(kind){
 }
 let dragTab=null;
 function hasContent(t){
+  flushAll();
   if(t.kind==='text')return t.text.trim()!==''||/<img\b/.test(t.html||'');
   if(t.kind==='code')return t.code.trim()!=='';
   const d=deletedSet(t);
@@ -634,6 +658,13 @@ function autoTitle(t){
   const line=(t.text.split('\n').find(l=>l.trim())||'').trim();
   const clean=line.replace(/^(?:[•☐☑]|\d+\.)\s+/,'');
   return clean?(clean.length>20?clean.slice(0,20)+'…':clean):t.def;
+}
+// 탭에 보이는 이름: 한글 기준 8글자(영문·숫자·기호는 반 글자)까지만 보이고 그 뒤는 …로 줄인다. 전체 이름은 탭의 툴팁으로 보여 준다
+const WIDE_CH=/[ᄀ-ᇿ⺀-꓏가-힣豈-﫿︰-﹏＀-｠￠-￦]/;
+function tabLabel(s){
+  const cs=[...String(s)];let w=0,i=0;
+  for(;i<cs.length;i++){const cw=WIDE_CH.test(cs[i])?1:0.5;if(w+cw>8)break;w+=cw}
+  return i<cs.length?cs.slice(0,i).join('').replace(/\s+$/,'')+'…':String(s);
 }
 function refreshTitle(t){
   if(t.custom||t.kind!=='text')return;
@@ -670,6 +701,7 @@ function renameTab(id){
   inp.focus();inp.select();
 }
 function render(){
+  flushAll();   // 떠나는 탭이 미뤄 둔 저장용 HTML을 먼저 만든다
   renderTabs();
   const main=$('#main');main.innerHTML='';
   const t=active();
@@ -679,7 +711,7 @@ function renderTabs(){
   const bar=$('#tabs');bar.innerHTML='';
   for(const t of tabs){
     const el=document.createElement('div');el.className='tab'+(t.id===activeId?' active':'');el.dataset.id=t.id;
-    const name=document.createElement('span');name.textContent=t.title;
+    const name=document.createElement('span');name.textContent=tabLabel(t.title);
     const x=document.createElement('button');x.className='x';x.textContent='✕';x.title='닫기';
     x.onclick=e=>{
       e.stopPropagation();
@@ -703,7 +735,7 @@ function renderTabs(){
     el.onclick=()=>{if(t.id===activeId)return;activeId=t.id;render();save()};
     el.tabIndex=0;el.setAttribute('role','tab');el.setAttribute('aria-selected',t.id===activeId);
     el.onkeydown=e=>{if(e.target===el&&(e.key==='Enter'||e.key===' ')){e.preventDefault();el.click()}};
-    el.title='더블클릭하거나 F2를 눌러 이름 바꾸기';
+    el.title=(name.textContent!==t.title?t.title+'\n':'')+'더블클릭하거나 F2를 눌러 이름 바꾸기';   // 줄인 이름이면 전체 이름을 먼저 보여 준다
     el.append(name,x);bar.append(el);
   }
   // 탭 목록 메뉴(좁은 화면에서 보이는 버튼)
@@ -780,7 +812,6 @@ const COLOR_RE=/^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\)|[a-z]{3,20})$/i;   // 16진
 const STYLE_RULES={
   'font-size':v=>/^\d{1,3}(\.\d+)?px$/.test(v)&&parseFloat(v)>=8&&parseFloat(v)<=200,
   'color':v=>COLOR_RE.test(v),
-  'background-color':v=>COLOR_RE.test(v),
   'text-align':v=>/^(left|right|center|justify)$/.test(v)
 };
 function sanitizeHtml(html,keepColors=true){
@@ -812,11 +843,12 @@ function sanitizeHtml(html,keepColors=true){
       if(tag==='BR'||tag==='HR'){dst.append(document.createElement(tag));continue}
       const el=document.createElement(tag),st=n.style;
       for(const p in STYLE_RULES){
-        if(!keepColors&&(p==='color'||p==='background-color'))continue;
+        if(!keepColors&&p==='color')continue;
         const v=(st.getPropertyValue(p)||'').trim();
         if(v&&STYLE_RULES[p](v))el.style.setProperty(p,v);
       }
       if(tag==='UL'&&n.classList.contains('todo'))el.className='todo';
+      if(tag==='OL'){const st=parseInt(n.getAttribute('start'));if(st>1&&st<100000)el.setAttribute('start',st)}   // 코드 블록 뒤에 이어지는 번호
       if(tag==='LI'&&n.classList.contains('done'))el.className='done';
       // 다른 앱에서 온 span 서식(굵게, 기울임, 밑줄, 취소선)은 태그로 바꾼다
       let inner=el;
@@ -848,7 +880,7 @@ function toPlain(root,opt){
       if(tag==='PRE'){start();preText(c).split('\n').forEach(l=>out.push(l));continue}
       if(tag==='UL'||tag==='OL'){
         start();
-        walk(c,{type:tag,todo:c.classList.contains('todo'),n:0,depth:(ctx.depth||0)+1});
+        walk(c,{type:tag,todo:c.classList.contains('todo'),n:(parseInt(c.getAttribute('start'))||1)-1,depth:(ctx.depth||0)+1});
         start();continue;
       }
       if(tag==='LI'){
@@ -872,7 +904,7 @@ function renderText(t,host){
   try{document.execCommand('defaultParagraphSeparator',false,'p')}catch(e){}
   const wrap=document.createElement('div');wrap.className='textwrap';
   const svg=(d)=>'<svg class="ico" viewBox="0 0 24 24">'+d+'</svg>';
-  const sizes=[10,12,14,15,16,18,20,24,28,32,40,48,64,72];
+  const sizes=[10,12,14,15,16,18,20,24,28,32,36,40,44,48,52];   // 글자 크기 단계 (가장 작게 10, 가장 크게 52)
   wrap.innerHTML=
     '<div class="rtbar" role="toolbar" aria-label="서식 도구">'+
     '<button data-c="zoomOut" title="축소 (Ctrl+휠)" aria-label="축소">−</button>'+
@@ -883,19 +915,12 @@ function renderText(t,host){
     '<button data-c="underline" title="밑줄 (Ctrl+U)" aria-label="밑줄"><u>U</u></button>'+
     '<button data-c="strikeThrough" title="취소선 (Ctrl+Shift+X)" aria-label="취소선"><s>S</s></button>'+
     '<span class="rsep"></span>'+
-    '<select class="rs" data-c="size" title="글자 크기 (Ctrl+] 크게, Ctrl+[ 작게)" aria-label="글자 크기">'+sizes.map(s=>'<option value="'+s+'"'+(s===15?' selected':'')+'>'+s+(s===15?' (기본)':'')+'</option>').join('')+'</select>'+
-    '<select class="rs" data-c="block" title="문단 스타일 (본문 Alt+1, 제목 1 Alt+2)" aria-label="문단 스타일"><option value="p" title="단축키 Alt+1">본문</option><option value="h1" title="단축키 Alt+2">제목 1</option></select>'+
-    '<label class="rc" title="글자색">A<input type="color" data-c="foreColor" value="#d92d20" aria-label="글자색"></label>'+
-    '<label class="rc" title="형광펜 (Ctrl+Shift+H는 켜기/끄기)">'+svg('<path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/>')+'<input type="color" data-c="hiliteColor" value="#fff176" aria-label="형광펜 색"></label>'+
-    '<span class="rsep"></span>'+
     '<button data-c="ul" title="글머리 목록 (Alt+L)" aria-label="글머리 목록">'+svg('<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>')+'</button>'+
     '<button data-c="ol" title="번호 목록 (Alt+N)" aria-label="번호 목록">'+svg('<path d="M10 6h10M10 12h10M10 18h10M4 5l1-1v4M3.5 13.5h2l-2 2.5h2.2M3.5 18.5h2l-1 1.2 1 1.3h-2"/>')+'</button>'+
-    '<button data-c="todo" title="체크리스트 (Alt+T)" aria-label="체크리스트">'+svg('<rect x="3" y="4" width="6" height="6" rx="1"/><path d="m4.2 7 1.3 1.3L8 5.8M12 7h9M3 15h6v5H3zM12 17.5h9"/>')+'</button>'+
     '<span class="rsep"></span>'+
     '<button data-c="justifyLeft" title="왼쪽 정렬 (Ctrl+Shift+L)" aria-label="왼쪽 정렬">'+svg('<path d="M4 6h16M4 12h10M4 18h14"/>')+'</button>'+
-    '<button data-c="justifyCenter" title="가운데 정렬 (Ctrl+Shift+E)" aria-label="가운데 정렬">'+svg('<path d="M4 6h16M7 12h10M5 18h14"/>')+'</button>'+
-    '<button data-c="justifyRight" title="오른쪽 정렬 (Ctrl+Shift+R)" aria-label="오른쪽 정렬">'+svg('<path d="M4 6h16M10 12h10M6 18h14"/>')+'</button>'+
-    '<span class="rsep"></span>'+
+    '<span class="rsep"></span>'+   // 가운데·오른쪽 정렬 버튼은 막대에서 뺐지만 Ctrl+Shift+E / R 단축키는 그대로 된다
+
     '<button data-c="hr" title="구분선 (Alt+H)" aria-label="구분선">'+svg('<path d="M3 12h18"/>')+'</button>'+
     '<button data-c="code" title="코드 블록 (Alt+C)" aria-label="코드 블록">'+svg('<path d="m8 8-5 4 5 4M16 8l5 4-5 4M14 5l-4 14"/>')+'</button>'+
     '<span class="rsep"></span>'+
@@ -910,32 +935,63 @@ function renderText(t,host){
   ed.style.zoom=t.zoom||1;
 
   // ---- 상태 표시 ----
+  const LINE_SEL='li,p,div,h1,h2,h3';   // 한 줄이 되는 블록
+  // 커서의 줄·열: 커서 앞의 블록·줄바꿈 수를 세고, 블록 안에서는 글자 수를 센다
+  // (전에는 커서 앞 내용을 통째로 복사해 글로 바꿔 세어서, 긴 메모일수록 커서를 움직일 때마다 느렸다)
   const caret=()=>{
     const s=getSelection();
     if(!s.rangeCount||!ed.contains(s.anchorNode))return{line:1,col:1};
-    const r=document.createRange();r.selectNodeContents(ed);r.setEnd(s.anchorNode,s.anchorOffset);
-    const tmp=document.createElement('div');tmp.append(r.cloneContents());
-    const ls=toPlain(tmp,{prefix:false}).split('\n');
-    return{line:ls.length,col:ls[ls.length-1].length+1};
+    const n=s.anchorNode,el=n.nodeType===3?n.parentElement:n;
+    let blk=el.closest(LINE_SEL+',pre');if(blk&&(!ed.contains(blk)||blk===ed))blk=null;
+    // 커서 블록 앞의 블록·줄바꿈을 센다 (코드 블록 안은 들어가지 않고 줄 수만 더한다)
+    let line=1;
+    const w=document.createTreeWalker(ed,NodeFilter.SHOW_ELEMENT,{acceptNode:x=>x.parentElement!==ed&&x.parentElement.closest('pre')?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+    let x;
+    while((x=w.nextNode())&&x!==blk){
+      const tg=x.tagName;
+      if(tg==='BR'||tg==='HR')line++;
+      else if(tg==='PRE')line+=preText(x).split('\n').length;
+      else if(/^(P|DIV|H[1-3]|LI)$/.test(tg)&&!(tg!=='LI'&&x.parentElement.tagName==='LI'&&x.parentElement.firstElementChild===x))line++;
+    }
+    if(!blk)return{line,col:1};
+    const r=document.createRange();r.setStart(blk,0);r.setEnd(n,s.anchorOffset);
+    let txt=r.toString();
+    if(blk.tagName==='PRE'){const ls=txt.split('\n');return{line:line+ls.length-1,col:ls[ls.length-1].length+1}}
+    let lastBr=null;for(const br of blk.querySelectorAll('br')){if(r.comparePoint(br,0)<=0){line++;lastBr=br}}
+    if(lastBr){const r2=document.createRange();r2.setStart(blk,0);r2.setEndBefore(lastBr);txt=txt.slice(r2.toString().length)}
+    return{line,col:txt.length+1};
   };
-  // 문단 스타일 선택 상자에 마우스를 올리면 지금 고른 스타일의 단축키가 나온다
-  const blkTip=()=>{const b=bar.querySelector('[data-c=block]');if(b)b.title=(b.value==='h1'?'제목 1 · 단축키 Alt+2':'본문 · 단축키 Alt+1')+' (목록을 열면 각 항목에 마우스를 올려도 볼 수 있어요)'};
-  blkTip();
   const upd=()=>{
     const c=caret();
     setStatus('줄 '+c.line+', 열 '+c.col,t.text.length+'자 · '+Math.round((t.zoom||1)*100)+'%');
-    ed.classList.toggle('empty',t.text.trim()===''&&!ed.querySelector('ul,ol,hr,img,pre'));
+    ed.classList.toggle('empty',!ed.textContent.trim()&&!ed.querySelector('ul,ol,hr,img,pre'));
     bar.querySelector('.zp').textContent=Math.round((t.zoom||1)*100)+'%';
   };
-  const sync=()=>{fixCode();t.html=ed.innerHTML;t.text=toPlain(ed);refreshTitle(t);saveSoon();upd();hlSoon();delSync()};
+  // 입력 때마다 하는 일은 구조 정리뿐이고, 저장용 HTML·글·제목·상태 표시는 입력이 잠시 멈춘 뒤 한 번만 만든다
+  // (사진이 든 메모는 innerHTML 직렬화만으로 키 입력마다 10ms가 넘게 걸렸다). 탭 전환·저장·내보내기 전에는 flush로 바로 만든다
+  let pending=false,deriveTimer=0;
+  const derive=()=>{
+    pending=false;clearTimeout(deriveTimer);deriveTimer=0;
+    t.html=ed.innerHTML;t.text=toPlain(ed);refreshTitle(t);upd();hlSoon();delSync();
+  };
+  const flush=()=>{if(pending)derive()};
+  const sync=()=>{
+    fixCode();pending=true;
+    clearTimeout(deriveTimer);deriveTimer=setTimeout(derive,150);
+    if(closestOf('pre'))hlSoon();   // 코드 블록 안에서 칠 때는 색칠이 바로 따라오게
+    saveSoon();
+  };
+  ed.addEventListener('blur',flush);
 
   // ---- 선택 영역 기억: 도구 막대를 눌러도 편집 위치를 잃지 않는다 ----
   let saved=null,pendingPx=null,plainNext=false;
+  let selRaf=0;
   const onSel=()=>{
     if(!ed.isConnected){document.removeEventListener('selectionchange',onSel);return}
     const s=getSelection();
     if(s.rangeCount&&ed.contains(s.anchorNode))saved=s.getRangeAt(0).cloneRange();
-    ui();upd();delSync();
+    if(selRaf)return;   // 한 프레임에 여러 번 와도 화면 갱신은 한 번만
+    selRaf=requestAnimationFrame(()=>{selRaf=0;if(ed.isConnected){ui();upd();delSync()}});
   };
   document.addEventListener('selectionchange',onSel);
   // 선택이 이미 편집 칸 안에 있으면 그대로 두고, 포커스가 다른 칸(글자 크기 목록 등)으로 갔을 때만 기억해 둔 선택을 되살린다
@@ -964,19 +1020,6 @@ function renderText(t,host){
       else if(c==='code')on=!!closestOf('pre');
       b.classList.toggle('on',on);
     });
-    // 글자 크기: 가장 가까운 span의 font-size, 없으면 기본 15
-    const sp=closestOf('span[style*="font-size"]');
-    const px=sp?Math.round(parseFloat(sp.style.fontSize)):15;
-    const ss=bar.querySelector('[data-c=size]');
-    if(!sizes.includes(px)){
-      let o=ss.querySelector('option[data-extra]');
-      if(!o){o=document.createElement('option');o.dataset.extra='1';ss.append(o)}
-      o.value=px;o.textContent=px;
-    }
-    ss.value=String(px);
-    const h=closestOf('h1,h2,h3');
-    bar.querySelector('[data-c=block]').value=h&&h.tagName==='H1'?'h1':'p';
-    blkTip();
   };
 
   // ---- 코드 블록 (붙여넣은 코드, 도구 막대 버튼, ``` + Enter) ----
@@ -994,26 +1037,43 @@ function renderText(t,host){
       const nx=pre.nextSibling;
       if(pre.parentNode===ed&&(!nx||nx.tagName==='PRE')){const p=document.createElement('p');p.innerHTML='<br>';pre.after(p)}
     });
+    fixListNums();
+  };
+  // 번호 목록 사이에 코드 블록(과 빈 줄)만 있으면 뒤 목록은 1부터 다시 세지 않고 앞 목록 번호를 이어 받는다
+  const fixListNums=()=>{
+    ed.querySelectorAll(':scope>ol').forEach(ol=>{
+      let p=ol.previousElementSibling,code=false;
+      while(p&&(p.tagName==='PRE'||emptyP(p))){if(p.tagName==='PRE')code=true;p=p.previousElementSibling}
+      const n=code&&p&&p.tagName==='OL'?(parseInt(p.getAttribute('start'))||1)+p.querySelectorAll(':scope>li').length:1;
+      if(n>1)ol.setAttribute('start',n);else ol.removeAttribute('start');
+    });
   };
   // 글자 색 입히기: 글을 건드리지 않고 브라우저의 Highlight 기능으로 색만 얹는다 (지원하지 않는 브라우저에서는 색 없이 보인다)
   const CB_KINDS=['c','s','n','k','t','f'];
   const canHl=!!(window.CSS&&CSS.highlights&&typeof Highlight==='function');
   let hlTimer=0;
+  const hlCache=new WeakMap();   // 코드 블록 → 마지막으로 색칠한 글과 범위. 글이 바뀐 블록만 다시 토큰을 나눈다
   const hl=()=>{
     if(!canHl||!ed.isConnected)return;
     const sets={};CB_KINDS.forEach(k=>{sets[k]=[]});
     ed.querySelectorAll('pre.cb').forEach(pre=>{
       const{s,segs}=preMap(pre);
       if(!s||!segs.length)return;
-      let j=0;
-      for(const[k,a,b]of codeTokens(s,codeLangOf(s,pre.dataset.lang))){
-        while(j<segs.length&&segs[j][1]+segs[j][0].nodeValue.length<=a)j++;
-        for(let q=j;q<segs.length&&segs[q][1]<b;q++){
-          const nd=segs[q][0],st=segs[q][1];
-          const o1=Math.max(a,st)-st,o2=Math.min(b,st+nd.nodeValue.length)-st;
-          if(o2>o1){const r=new Range();r.setStart(nd,o1);r.setEnd(nd,o2);sets[k].push(r)}
+      let c=hlCache.get(pre);
+      if(!c||c.s!==s||c.n!==segs.length||c.first!==segs[0][0]||c.lang!==pre.dataset.lang){
+        c={s,n:segs.length,first:segs[0][0],lang:pre.dataset.lang,r:{}};CB_KINDS.forEach(k=>{c.r[k]=[]});
+        let j=0;
+        for(const[k,a,b]of codeTokens(s,codeLangOf(s,pre.dataset.lang))){
+          while(j<segs.length&&segs[j][1]+segs[j][0].nodeValue.length<=a)j++;
+          for(let q=j;q<segs.length&&segs[q][1]<b;q++){
+            const nd=segs[q][0],st=segs[q][1];
+            const o1=Math.max(a,st)-st,o2=Math.min(b,st+nd.nodeValue.length)-st;
+            if(o2>o1){const r=new Range();r.setStart(nd,o1);r.setEnd(nd,o2);c.r[k].push(r)}
+          }
         }
+        hlCache.set(pre,c);
       }
+      CB_KINDS.forEach(k=>{for(const r of c.r[k])sets[k].push(r)});
     });
     CB_KINDS.forEach(k=>CSS.highlights.set('cb-'+k,new Highlight(...sets[k])));
   };
@@ -1096,7 +1156,11 @@ function renderText(t,host){
   const removeCodeBlockRaw=pre=>{
     const up=pre.previousSibling,nx=pre.nextSibling;
     pre.remove();
-    if(up&&/^(P|H1|H2|H3)$/.test(up.tagName)){if(emptyP(nx))nx.remove();caretEnd(up)}
+    if(up&&nx&&up.tagName==='OL'&&nx.tagName==='OL'){   // 번호 목록 사이의 코드 블록을 지우면 두 목록을 하나로 잇는다
+      const f=nx.firstElementChild;up.append(...nx.childNodes);nx.remove();
+      if(f)caretTo(f,0);else caretEnd(up);
+    }
+    else if(up&&/^(P|H1|H2|H3)$/.test(up.tagName)){if(emptyP(nx))nx.remove();caretEnd(up)}
     else if(nx)caretTo(nx,0);
     if(!ed.firstChild){ed.innerHTML='<p><br></p>';caretTo(ed.firstChild,0)}
     after();
@@ -1207,7 +1271,19 @@ function renderText(t,host){
       const ps=preMap(cur).s.split('\n').map(l=>{const p=document.createElement('p');if(l)p.textContent=l;else p.innerHTML='<br>';return p});
       cur.replaceWith(...ps);caretTo(ps[0],0);after();return;
     }
-    if(closestOf('li')){flash('목록 안에서는 코드 블록을 만들 수 없어요');return}
+    const li=closestOf('li');
+    if(li){
+      // 맨 바깥 목록의 항목이면 그 자리에서 목록을 둘로 나누고 사이에 코드 블록을 둔다 (번호는 fixListNums가 이어 준다)
+      const lst=li.parentElement;
+      if(lst.parentElement!==ed||li.querySelector('ul,ol,img')||!sl.isCollapsed){flash('목록 안에서는 코드 블록을 만들 수 없어요');return}
+      const text=toPlain(li,{prefix:false}).replace(/ /g,' ').replace(/\n+$/,'');
+      const np=newPre(text,codeLangOf(text));
+      const rest=[...lst.children].slice([...lst.children].indexOf(li)+1);
+      li.remove();lst.after(np);
+      if(rest.length){const l2=lst.cloneNode(false);l2.removeAttribute('start');l2.append(...rest);np.after(l2)}
+      if(!lst.children.length)lst.remove();
+      after();caretEnd(np);return;
+    }
     const rg=sl.getRangeAt(0);
     const bl=[...ed.children].filter(b=>/^(P|DIV|H1|H2|H3)$/.test(b.tagName)&&rg.intersectsNode(b));
     if(bl.length>1&&!rg.collapsed){   // 줄 전체를 끌어 고르면 끝이 다음 줄 맨 앞에 걸리므로 그 줄은 뺀다
@@ -1234,14 +1310,30 @@ function renderText(t,host){
     if(!sp.getAttribute('style'))sp.replaceWith(...sp.childNodes);
   });
   const isList=n=>n.nodeType===1&&/^(UL|OL)$/.test(n.tagName);
-  // 브라우저의 formatBlock은 목록 항목을 만나면 항목 글이 아니라 목록째로 <h1>이나 <p>로 감싸 버린다.
-  // 그렇게 감싸인 목록은 밖으로 빼내어 제목/본문 전환이 다시 되게 한다 (예전에 망가진 메모도 같이 고쳐진다)
+  // 선택 위치 기억/되살리기: 노드를 다른 곳으로 옮기면 브라우저가 그 안에 있던 선택을 부모 자리로 밀어내므로,
+  // 옮기기 전 노드·위치를 적어 두었다가 같은 자리로 다시 잡는다 (skip에 걸리는 노드는 되살리지 않는다)
+  const selPts=()=>{const s=getSelection();if(!s.rangeCount||!ed.contains(s.anchorNode))return null;const r=s.getRangeAt(0);return[r.startContainer,r.startOffset,r.endContainer,r.endOffset]};
+  const selBack=(pts,skip)=>{
+    if(!pts)return false;
+    const fix=(n,o)=>{
+      if(!n.isConnected||!ed.contains(n)||(skip&&skip(n)))return null;
+      if(n.nodeName==='LI'&&o===0&&n.firstChild&&n.firstChild.tagName==='H1')n=n.firstChild;   // 항목 글을 <h1>로 쌌으면 그 안으로
+      return[n,Math.min(o,n.nodeType===3?n.nodeValue.length:n.childNodes.length)];
+    };
+    const a=fix(pts[0],pts[1]),b=fix(pts[2],pts[3]);if(!a||!b)return false;
+    try{const r=document.createRange();r.setStart(a[0],a[1]);r.setEnd(b[0],b[1]);const s=getSelection();s.removeAllRanges();s.addRange(r);saved=r.cloneRange();return true}catch(e){return false}
+  };
+  // 브라우저는 목록을 만들거나(insertOrderedList) 문단 스타일을 바꿀 때(formatBlock) 목록을 <p>나 <h1>로 감싸 버린다.
+  // 그렇게 감싸인 목록은 밖으로 빼내고, <h1>로 싸였으면 항목마다 제목으로 바꿔 보이는 모습을 지킨다 (예전에 망가진 메모도 같이 고쳐진다)
   const unwrapListWrap=()=>{
+    const pts=selPts();let moved=false;
     for(let i=0;i<200;i++){
       const u=ed.querySelector(':scope :is(h1,h2,h3,p,div)>:is(ul,ol)');if(!u)break;   // :scope 뒤에 공백: 편집기 자신은 빼고 안쪽 요소만
-      const w=u.parentElement;w.after(u);
+      const w=u.parentElement;w.after(u);moved=true;
+      if(w.tagName==='H1')liBlock([...u.children].filter(c=>c.tagName==='LI'),'h1');
       if(w.textContent.trim()===''&&!w.querySelector('img,pre'))w.remove();
     }
+    if(moved)selBack(pts,n=>n.nodeType===1&&/^(P|DIV|H[1-3])$/.test(n.tagName)&&!n.closest('li'));
   };
   // 목록 항목의 제목/본문: 항목 안의 글만 <li><h1>…</h1></li> 로 싸거나 다시 벗긴다 (안에 든 하위 목록은 그대로 둔다)
   const liBlock=(items,tag)=>{
@@ -1254,40 +1346,6 @@ function renderText(t,host){
       if(!nh.childNodes.length)nh.innerHTML='<br>';
       li.prepend(nh);stripSize(nh);
     });
-  };
-  const setBlock=tag=>{
-    restore();
-    if(closestOf('pre')){if(tag==='p')codeToggle();else noFmtInCode();return}
-    unwrapListWrap();
-    let sl=getSelection(),rg=sl.rangeCount?sl.getRangeAt(0):null;
-    if(!rg)return;
-    // 선택에 걸친 목록 항목들 (하위 목록만 걸친 바깥 항목은 빼고, 항목 자체의 글이 걸친 것만)
-    const own=li=>rg.startContainer===li||rg.endContainer===li||[...li.childNodes].some(n=>!isList(n)&&rg.intersectsNode(n));
-    const items=[...ed.querySelectorAll('li')].filter(li=>rg.intersectsNode(li)&&own(li));
-    if(items.length){
-      // 글 노드를 <h1> 안팎으로 옮기면 선택 범위가 항목 자리로 밀려나므로, 옮긴 뒤 같은 노드·위치로 다시 잡는다
-      const pts=[rg.startContainer,rg.startOffset,rg.endContainer,rg.endOffset];
-      const anc=rg.commonAncestorContainer,top=(anc.nodeType===3?anc.parentElement:anc).closest('ul,ol');
-      liBlock(items,tag);
-      const fix=(n,o)=>{
-        if(n.nodeName==='LI'&&tag==='h1'&&n.firstChild&&n.firstChild.tagName==='H1')n=n.firstChild;
-        return[n,Math.min(o,n.nodeType===3?n.nodeValue.length:n.childNodes.length)];
-      };
-      try{
-        const nr=document.createRange(),[a,b]=fix(pts[0],pts[1]),[c,d]=fix(pts[2],pts[3]);
-        nr.setStart(a,b);nr.setEnd(c,d);sl.removeAllRanges();sl.addRange(nr);saved=nr.cloneRange();
-      }catch(e){}
-      if(top&&ed.contains(top)){after();return}   // 선택이 목록 안에만 있으면 여기서 끝
-      sl=getSelection();rg=sl.rangeCount?sl.getRangeAt(0):null;if(!rg)return;
-    }
-    const here=closestOf('h1');
-    if(tag==='h1'&&here&&!items.length){stripSize(here);after();return}
-    document.execCommand('formatBlock',false,'<'+tag+'>');
-    unwrapListWrap();
-    ed.querySelectorAll('h1 h1,h1 h2,h1 h3').forEach(x=>x.replaceWith(...x.childNodes));
-    sl=getSelection();rg=sl.rangeCount?sl.getRangeAt(0):null;
-    if(tag==='h1'&&rg)[...ed.querySelectorAll('h1')].filter(h=>rg.intersectsNode(h)).forEach(stripSize);
-    after();
   };
   // 구분선 뒤에는 이어 쓸 수 있는 빈 문단을 꼭 만든다 (브라우저가 글을 줄 밖에 두는 것을 막는다)
   const insertHr=()=>{
@@ -1312,8 +1370,8 @@ function renderText(t,host){
     document.execCommand('styleWithCSS',false,false);
     after();
   };
-  // execCommand('fontSize')가 만든 <font>를 px 단위 span으로 바꾼다
-  const fixFonts=px=>{
+  // execCommand('fontSize')가 만든 <font>를 px 단위 span으로 바꾼다. typing: 글자를 치는 중이면 커서를 글 뒤에 둔다 (범위로 잡으면 다음 글자가 덮어쓴다)
+  const fixFonts=(px,typing)=>{
     const fs=[...ed.querySelectorAll('font')];
     if(!fs.length)return false;
     const made=[];
@@ -1329,19 +1387,61 @@ function renderText(t,host){
       if(!c.getAttribute('style'))c.replaceWith(...c.childNodes);
     }));
     const r=document.createRange();
-    if(made.length===1&&!made[0].textContent){r.selectNodeContents(made[0]);r.collapse(false)}
+    if(typing||(made.length===1&&!made[0].textContent)){r.selectNodeContents(made[made.length-1]);r.collapse(false)}
     else{r.setStartBefore(made[0]);r.setEndAfter(made[made.length-1])}
     const s=getSelection();s.removeAllRanges();s.addRange(r);saved=r.cloneRange();
     return true;
   };
-  const setSize=px=>{
-    restore();
-    if(noFmtInCode())return;
-    document.execCommand('styleWithCSS',false,false);
-    document.execCommand('fontSize',false,'7');
-    if(!fixFonts(px))pendingPx=px;   // 커서만 있을 때는 글자를 입력하는 순간 적용한다
-    after();
+  // 글자 크기 한 단계 위/아래 (가장 작게 10, 가장 크게 52)
+  const stepOf=(p,dir)=>{
+    const i=sizes.findIndex(x=>x>=p);
+    return dir>0?sizes[Math.min(sizes.length-1,(i<0?sizes.length:sizes[i]>p?i:i+1))]:sizes[Math.max(0,(i<0?sizes.length:i)-1)];
   };
+  // 노드의 지금 글자 크기: 가장 가까운 크기 span, 없으면 기본 18
+  const pxOf=n=>{const el=n.nodeType===3?n.parentElement:n;const sp=el&&el.closest?el.closest('span[style*="font-size"]'):null;return sp&&ed.contains(sp)?Math.round(parseFloat(sp.style.fontSize)):18};
+  // 글자 크기 바꾸기. map: 지금 크기(px) → 새 크기(px). 글 조각마다 제 크기를 기준으로 바꾸므로 크기가 섞인 선택도 조각마다 한 단계씩 움직인다.
+  // 브라우저의 fontSize 명령은 기존 크기를 먼저 지워 버려 기준을 알 수 없으므로, 범위 안 글 조각을 직접 span으로 싼다.
+  // 커서만 있으면 그 줄 전체를 바꾸고, 빈 줄이면 다음에 치는 글자부터 적용한다
+  const applySize=map=>withUndo(()=>{
+    restore();if(noFmtInCode())return;
+    const sl=getSelection();if(!sl.rangeCount)return;
+    let back=null,rg=sl.getRangeAt(0);
+    if(rg.collapsed){
+      const b=closestOf(LINE_SEL);
+      if(!b||b===ed||b.textContent===''){   // 빈 줄: 브라우저에 입력 서식만 걸어 두고 글자를 치는 순간 바꾼다
+        document.execCommand('styleWithCSS',false,false);document.execCommand('fontSize',false,'7');
+        pendingPx=map(pendingPx!==null?pendingPx:pxOf(sl.anchorNode));after();return;
+      }
+      back=caretOff();
+      rg=document.createRange();rg.selectNodeContents(b);
+      const sub=[...b.children].find(isList);if(sub)rg.setEndBefore(sub);   // 항목 안의 하위 목록은 빼고 항목 글만
+    }
+    pendingPx=null;
+    // 범위 양 끝의 글 노드를 잘라 범위 안 조각만 남긴다 (끝을 먼저 잘라야 시작 쪽 위치가 흔들리지 않는다)
+    if(rg.endContainer.nodeType===3&&rg.endOffset<rg.endContainer.nodeValue.length)rg.endContainer.splitText(rg.endOffset);
+    if(rg.startContainer.nodeType===3&&rg.startOffset>0){const t=rg.startContainer.splitText(rg.startOffset);rg.setStart(t,0)}
+    const texts=[];
+    if(rg.commonAncestorContainer.nodeType===3)texts.push(rg.commonAncestorContainer);
+    else{const w=document.createTreeWalker(rg.commonAncestorContainer,NodeFilter.SHOW_TEXT);let t;while((t=w.nextNode())){if(t.nodeValue&&rg.intersectsNode(t)&&!t.parentElement.closest('pre'))texts.push(t)}}
+    if(!texts.length){after();return}
+    // 먼저 조각마다 기준 크기와 처리 방법을 정하고(범위가 흔들리기 전에), 그 다음 한꺼번에 바꾼다
+    const inside=new Map();   // 크기 span → 그 안의 글이 모두 범위 안인지
+    const plan=texts.map(tn=>{
+      const sp=tn.parentElement.closest('span[style*="font-size"]'),own=sp&&ed.contains(sp)?sp:null;
+      const base=own?Math.round(parseFloat(own.style.fontSize)):18;
+      if(own&&!inside.has(own)){const w=document.createTreeWalker(own,NodeFilter.SHOW_TEXT);let t,all=true;while((t=w.nextNode()))if(t.nodeValue&&!rg.intersectsNode(t)){all=false;break}inside.set(own,all)}
+      return{tn,sp:own&&inside.get(own)?own:null,px:map(base)};
+    });
+    const done=new Set(),made=[];
+    for(const{tn,sp,px}of plan){
+      if(sp){if(!done.has(sp)){done.add(sp);sp.style.fontSize=px+'px'}made.push(sp)}   // span의 글이 모두 범위 안이면 그 span의 크기만 바꾼다
+      else{const s=document.createElement('span');s.style.fontSize=px+'px';tn.replaceWith(s);s.append(tn);made.push(s)}
+    }
+    const r=document.createRange();r.setStartBefore(made[0]);r.setEndAfter(made[made.length-1]);
+    sl.removeAllRanges();sl.addRange(r);saved=r.cloneRange();
+    if(back!==null){const b=closestOf(LINE_SEL);if(b&&b!==ed)caretAt(b,back)}
+    after();
+  });
   const wrapLooseImg=()=>{   // 목록을 풀면 이미지가 편집기 바로 아래에 맨몸으로 남을 수 있어 문단으로 감싼다
     const im=ed.querySelector(':scope>img');
     if(!im)return null;
@@ -1350,10 +1450,26 @@ function renderText(t,host){
     if(p.lastChild&&p.lastChild.tagName==='BR'&&p.childNodes.length>1)p.lastChild.remove();
     return im;
   };
+  // 맨 바깥 목록의 항목 하나를 목록에서 빼내 문단으로 만든다. 앞뒤 항목은 각각 목록으로 남긴다
+  // (브라우저 명령에 맡기면 글이 문단 없이 편집기 바로 아래에 남고, 위에 빈 줄이 있으면 그 줄을 지워 버린다)
+  const unlistItem=li=>{
+    const lst=li.parentElement,items=[...lst.children],rest=items.slice(items.indexOf(li)+1);
+    const kids=[...li.childNodes].filter(n=>!(n.nodeType===3&&n.nodeValue===''));
+    let blk;
+    if(kids.length===1&&kids[0].nodeType===1&&/^(P|DIV|H[1-3])$/.test(kids[0].tagName))blk=kids[0];
+    else{blk=document.createElement('p');blk.append(...li.childNodes)}
+    if(!blk.childNodes.length)blk.innerHTML='<br>';
+    lst.after(blk);
+    if(rest.length){const l2=lst.cloneNode(false);l2.removeAttribute('start');l2.append(...rest);blk.after(l2)}
+    li.remove();if(!lst.children.length)lst.remove();
+    return blk;
+  };
   const listToggle=kind=>{   // kind: 'ul' | 'ol' | 'todo'
     restore();
     if(noFmtInCode())return;
     const l=closestOf('ul,ol');
+    // 브라우저가 목록을 만들면서 글 노드를 새로 만들고 커서를 항목 맨 앞으로 옮기므로, 블록 안 글자 수로 자리를 적어 두었다가 되살린다
+    const off=caretOff();
     if(kind==='todo'){
       if(l&&l.tagName==='UL'&&!l.classList.contains('todo'))l.classList.add('todo');
       else if(l&&l.classList.contains('todo'))document.execCommand('insertUnorderedList');
@@ -1370,8 +1486,22 @@ function renderText(t,host){
     }else{
       document.execCommand('insertOrderedList');
     }
+    unwrapListWrap();
+    if(off!==null){const b=closestOf(LINE_SEL);if(b&&b!==ed)caretAt(b,off)}
     wrapLooseImg();
     after();
+  };
+  // 커서 앞 글자 수(현재 블록 기준)와, 블록 안에서 그 글자 수만큼 간 자리에 커서 두기
+  const caretOff=()=>{
+    const s=getSelection();if(!s.rangeCount||!s.isCollapsed)return null;
+    const b=closestOf(LINE_SEL);if(!b||b===ed)return null;
+    const r=s.getRangeAt(0),h=document.createRange();h.setStart(b,0);h.setEnd(r.startContainer,r.startOffset);
+    return h.toString().length;
+  };
+  const caretAt=(b,off)=>{
+    const w=document.createTreeWalker(b,NodeFilter.SHOW_TEXT);let n;
+    while((n=w.nextNode())){if(off<=n.nodeValue.length){caretTo(n,off);return true}off-=n.nodeValue.length}
+    return false;
   };
   const setZoom=z=>{
     z=Math.min(3,Math.max(0.5,Math.round(z*10)/10));
@@ -1392,37 +1522,29 @@ function renderText(t,host){
     const b=e.target.closest('button[data-c]');
     if(b&&actionsMap[b.dataset.c])actionsMap[b.dataset.c]();
   });
-  bar.querySelector('[data-c=size]').onchange=e=>setSize(+e.target.value);
-  bar.querySelector('[data-c=block]').onchange=e=>{setBlock(e.target.value);blkTip()};
-  const colorIn=(name)=>{
-    const el=bar.querySelector('[data-c='+name+']');
-    el.oninput=()=>cmdCss(name,el.value);
-  };
-  colorIn('foreColor');colorIn('hiliteColor');
 
   // ---- 드래그로 선택하면 바로 위에 나타나는 빠른 서식 막대 ----
   const stb=document.createElement('div');stb.className='seltb';stb.hidden=true;stb.setAttribute('role','toolbar');stb.setAttribute('aria-label','선택 영역 서식');
-  const FC=['#222222','#d92d20','#e8590c','#2f9e44','#1971c2','#7048e8'],HC=[['rgba(255,235,59,.4)','노랑'],['rgba(76,217,100,.35)','초록'],['rgba(66,165,245,.35)','파랑']];
-  stb.innerHTML='<button data-s="smaller" title="글자 작게" aria-label="글자 작게">A−</button><button data-s="bigger" title="글자 크게" aria-label="글자 크게">A+</button><span class="ssep"></span>'+
+  const FC=['#222222','#d92d20','#1971c2'];   // 검정, 빨강, 파랑
+  stb.innerHTML='<button data-s="smaller" title="글자 작게 (Alt+↓)" aria-label="글자 작게">A−</button><button data-s="bigger" title="글자 크게 (Alt+↑)" aria-label="글자 크게">A+</button><span class="ssep"></span>'+
     FC.map(c=>'<button class="sw" data-s="fc" data-v="'+c+'" style="background:'+c+'" title="글자색 '+c+'" aria-label="글자색 '+c+'"></button>').join('')+
     '<label class="sw pal" title="팔레트에서 글자색 고르기"><input type="color" value="#d92d20" aria-label="글자색 팔레트"></label>'+
     '<span class="ssep"></span>'+
-    HC.map(c=>'<button class="sw hl" data-s="hc" data-v="'+c[0]+'" style="background:'+c[0]+'" title="형광펜 '+c[1]+'" aria-label="형광펜 '+c[1]+'"></button>').join('')+
-    '<button data-s="nohl" title="형광펜 지우기" aria-label="형광펜 지우기">✕</button><span class="ssep"></span>'+
     '<button data-s="bold" title="굵게" aria-label="굵게"><b>B</b></button>';
   wrap.append(stb);
-  const curPx=()=>{const sp=closestOf('span[style*="font-size"]');return sp?Math.round(parseFloat(sp.style.fontSize)):15};
-  const stepSize=dir=>{
-    const p=curPx(),i=sizes.findIndex(x=>x>=p);
-    const n=dir>0?sizes[Math.min(sizes.length-1,(i<0?sizes.length:sizes[i]>p?i:i+1))]:sizes[Math.max(0,(i<0?sizes.length:i)-1)];
-    setSize(n);
-  };
-  const toggleHilite=()=>{
-    restore();
-    const sl=getSelection(),rg=sl.rangeCount?sl.getRangeAt(0):null;
-    const lit=sp=>!/transparent|rgba\(0,\s*0,\s*0,\s*0\)/.test(sp.style.backgroundColor||'transparent');
-    const none=!(rg&&!rg.collapsed?[...ed.querySelectorAll('span[style*="background"]')].some(sp=>lit(sp)&&rg.intersectsNode(sp)):(()=>{const hs=closestOf('span[style*="background"]');return hs&&lit(hs)})());
-    cmdCss('hiliteColor',none?'rgba(255,235,59,.4)':'transparent');
+  // 글자 크기를 조각마다 한 단계씩 키우거나 줄인다 (가장 작게 10, 가장 크게 52)
+  const stepSize=dir=>applySize(p=>stepOf(p,dir));
+  // Shift+Enter: 줄을 나누지 않고 커서만 다음 줄 맨 앞으로 옮긴다. 마지막 줄이면 아래에 빈 줄을 만들어 거기로 간다
+  const shiftEnter=e=>{
+    let b=closestOf(LINE_SEL);if(!b||b===ed)return false;
+    e.preventDefault();
+    let n=b.querySelector(':scope>ul>li,:scope>ol>li')||b.nextElementSibling;   // 항목 안에 하위 목록이 있으면 그 첫 항목이 다음 줄
+    while(!n){b=b.parentElement;if(b===ed){b=null;break}n=b.nextElementSibling}   // 목록의 마지막 항목이면 목록 다음 블록으로
+    while(n&&n.tagName==='HR')n=n.nextElementSibling;   // 구분선은 건너뛴다
+    if(!n){const p=document.createElement('p');p.innerHTML='<br>';ed.append(p);n=p;after()}
+    const tgt=n.matches('ul,ol')?(n.querySelector('li')||n):n;
+    if(!caretAt(tgt,0))caretTo(tgt,0);
+    return true;
   };
   const placeTb=()=>{
     const s=getSelection();
@@ -1449,24 +1571,16 @@ function renderText(t,host){
     const b=e.target.closest('button[data-s]');if(!b)return;
     const k=b.dataset.s;
     if(k==='fc')cmdCss('foreColor',b.dataset.v);
-    else if(k==='hc')cmdCss('hiliteColor',b.dataset.v);
-    else if(k==='nohl')cmdCss('hiliteColor','transparent');
     else if(k==='bold')cmd('bold');
     else{
       stepSize(k==='bigger'?1:-1);
     }
     setTimeout(placeTb,0);
   });
-  // 색 버튼 아래 표시선
-  bar.querySelectorAll('.rc').forEach(l=>{
-    const i=l.querySelector('input'),m=document.createElement('i');
-    m.style.background=i.value;l.append(m);
-    i.addEventListener('input',()=>{m.style.background=i.value});
-  });
 
   // ---- 입력, 붙여넣기, 키보드 ----
   ed.addEventListener('input',e=>{
-    if(pendingPx!==null&&fixFonts(pendingPx))pendingPx=null;
+    if(pendingPx!==null&&fixFonts(pendingPx,true))pendingPx=null;
     if(e.inputType==='insertParagraph'){const li=closestOf('li.done');if(li)li.classList.remove('done')}
     if(!ed.firstChild)ed.innerHTML='<p><br></p>';
     sync();
@@ -1509,6 +1623,7 @@ function renderText(t,host){
     const mod=e.ctrlKey||e.metaKey;
     if(mod&&e.code==='KeyI'){e.preventDefault();return}   // 기울임은 쓰지 않는다
     if(e.key==='Enter'&&!mod&&!e.altKey&&!e.shiftKey&&codeEnter(e))return;
+    if(e.key==='Enter'&&e.shiftKey&&!mod&&!e.altKey&&!closestOf('pre')&&shiftEnter(e))return;
     if(e.key==='Tab'&&!mod&&!e.altKey&&!e.shiftKey&&codeTab(e))return;
     if(mod&&!e.altKey&&(e.code==='KeyZ'||e.code==='KeyY')){
       if((e.code==='KeyZ'&&!e.shiftKey?blkUndo():blkRedo())){e.preventDefault();return}
@@ -1520,35 +1635,30 @@ function renderText(t,host){
     if(mod&&e.shiftKey&&!e.altKey){
       const k={Digit8:'ul',Digit7:'ol',Digit9:'todo'}[e.code];
       if(k){e.preventDefault();listToggle(k);return}
-      const f={KeyX:()=>cmd('strikeThrough'),KeyH:toggleHilite,KeyL:()=>cmd('justifyLeft'),KeyE:()=>cmd('justifyCenter'),KeyR:()=>cmd('justifyRight')}[e.code];
+      const f={KeyX:()=>cmd('strikeThrough'),KeyL:()=>cmd('justifyLeft'),KeyE:()=>cmd('justifyCenter'),KeyR:()=>cmd('justifyRight')}[e.code];
       if(f){e.preventDefault();f();return}
     }
-    // 그림 탭의 Alt+1~4(도구 바꾸기)와 같은 키가 메모 탭에서는 문단 스타일을 바꾼다
     if(e.altKey&&!mod&&!e.shiftKey){
-      const bk={Digit1:'p',Digit2:'h1'}[e.code];
-      if(bk){e.preventDefault();setBlock(bk);return}
+      // Alt+↑ 글자 크게, Alt+↓ 글자 작게 (NumLock을 끈 숫자판의 8/2도 ArrowUp/ArrowDown으로 들어온다.
+      // Alt+= 는 윈도우 한글 입력기가 전각/반각 전환으로 가로채므로 쓰지 않는다)
+      if(e.key==='ArrowUp'){e.preventDefault();stepSize(1);return}
+      if(e.key==='ArrowDown'){e.preventDefault();stepSize(-1);return}
       if(e.code==='KeyH'){e.preventDefault();insertHr();return}
       if(e.code==='KeyC'){e.preventDefault();codeToggle();return}
       const lk={KeyL:'ul',KeyN:'ol',KeyT:'todo'}[e.code];
       if(lk){e.preventDefault();listToggle(lk);return}
     }
-    if(mod&&!e.shiftKey&&!e.altKey){
-      if(e.code==='BracketRight'){e.preventDefault();stepSize(1);return}
-      if(e.code==='BracketLeft'){e.preventDefault();stepSize(-1);return}
-    }
     if(e.key==='Tab'&&!mod&&!e.altKey&&!e.shiftKey){e.preventDefault();document.execCommand('insertText',false,'\t')}
-    // 이미지가 든 목록 항목 맨 앞에서 Backspace: 앞 줄과 합쳐지지 않고 글머리만 없앤다
+    // 맨 바깥 목록 항목의 맨 앞에서 Backspace: 앞 줄과 합쳐지지 않고 글머리(번호)만 없앤다
+    // (브라우저에 맡기면 위에 빈 줄이 있을 때 그 줄을 지우고 목록이 위로 올라가기만 한다)
     if(e.key==='Backspace'&&!mod&&!e.altKey&&!e.shiftKey&&!curImg){
       const sl=getSelection(),li=sl.rangeCount&&sl.isCollapsed?closestOf('li'):null;
-      if(li&&li.querySelector('img')){
+      if(li&&li.parentElement.parentElement===ed&&!li.querySelector('ul,ol')){
         const r=sl.getRangeAt(0),hd=document.createRange();hd.setStart(li,0);hd.setEnd(r.endContainer,r.endOffset);
-        if(hd.toString()===''&&!hd.cloneContents().querySelector('img')){
+        if(hd.toString()===''&&!hd.cloneContents().querySelector('img')){   // 커서 앞에 이미지가 있으면 그 이미지를 지우는 보통 Backspace
           e.preventDefault();
-          document.execCommand(li.parentElement.tagName==='OL'?'insertOrderedList':'insertUnorderedList');
-          // 목록을 풀면 이미지가 편집기 바로 아래에 맨몸으로 남으므로 문단으로 감싼다
-          const im=wrapLooseImg();
-          if(im){const rr=document.createRange();rr.setStartBefore(im);rr.collapse(true);sl.removeAllRanges();sl.addRange(rr)}
-          after();return;
+          withUndo(()=>{const b=unlistItem(li);if(!caretAt(b,0))caretTo(b,0);after()});
+          return;
         }
       }
     }
@@ -1832,13 +1942,13 @@ function renderText(t,host){
     ({prev:()=>jump(-1),next:()=>jump(1),rep:replaceOne,all:replaceAll,x:close})[f.dataset.f]();
   };
 
-  rt[t.id]=Object.assign(rt[t.id]||{},{ta:ed,openFind:open,findNext:()=>jump(1),addImage});
+  rt[t.id]=Object.assign(rt[t.id]||{},{ta:ed,openFind:open,findNext:()=>jump(1),addImage,flush});
   unwrapListWrap();fixCode();hl();
   upd();
   if(!matchMedia('(pointer:coarse)').matches)ed.focus();
 }
 function safeName(s){return s.replace(/[\\/:*?"<>|]/g,'_')}
-function saveText(t){download(new Blob([t.text],{type:'text/plain;charset=utf-8'}),safeName(t.title)+'.txt')}
+function saveText(t){flushAll();download(new Blob([t.text],{type:'text/plain;charset=utf-8'}),safeName(t.title)+'.txt')}
 // ---- 마크다운(.md) 내보내기 ----
 // 메모 HTML을 마크다운으로 바꾼다. 이미지는 images/ 폴더 파일로 빼고 본문에는 상대 경로를 쓴다
 function htmlToMd(html){
@@ -1879,7 +1989,7 @@ function htmlToMd(html){
   };
   const list=(el,depth)=>{
     const ordered=el.tagName==='OL',todo=el.classList.contains('todo');
-    let n=0;
+    let n=(parseInt(el.getAttribute('start'))||1)-1;
     for(const li of el.children){
       if(li.tagName!=='LI')continue;
       n++;
@@ -1928,6 +2038,7 @@ function htmlToMd(html){
 }
 // 이미지는 data 주소로 .md 안에 그대로 넣으므로 파일 하나로 끝나고, 압축을 풀 필요가 없다
 function saveMd(t){
+  flushAll();
   const{md,images}=htmlToMd(t.html||textToHtml(t.text));
   download(new Blob([md],{type:'text/markdown;charset=utf-8'}),safeName(t.title)+'.md');
   flash(images.length?'마크다운 파일(.md)로 내보냈습니다 (이미지 '+images.length+'개가 파일 안에 들어 있어요)':'마크다운 파일(.md)로 내보냈습니다');
@@ -1935,8 +2046,7 @@ function saveMd(t){
 
 // ---- PDF 내보내기 ----
 // 메모를 A4 쪽 크기로 나눠 그린 뒤 쪽마다 이미지로 넣어 PDF 한 파일로 만든다 (압축 파일이 아니라 바로 열리는 .pdf)
-const PDF_CSS='.pdfdoc{font:15px/1.6 "Noto Sans KR","Malgun Gothic","Segoe UI",sans-serif;color:#111;white-space:pre-wrap;word-break:break-word}'+
-  '.pdfdoc p,.pdfdoc div{margin:0}.pdfdoc h1{font-size:1.7em;margin:.3em 0;line-height:1.3}.pdfdoc ul,.pdfdoc ol{margin:.2em 0;padding-left:1.6em}'+
+const PDF_CSS='.pdfdoc{font:18px/1.6 "Noto Sans KR","Malgun Gothic","Segoe UI",sans-serif;color:#111;white-space:pre-wrap;word-break:break-word}'+  '.pdfdoc p,.pdfdoc div{margin:0}.pdfdoc h1{font-size:1.7em;margin:.3em 0;line-height:1.3}.pdfdoc ul,.pdfdoc ol{margin:.2em 0;padding-left:1.6em}'+
   '.pdfdoc ul.todo{list-style:none;padding-left:1.7em}.pdfdoc ul.todo>li{position:relative}.pdfdoc ul.todo>li::before{content:"☐";position:absolute;left:-1.5em}'+
   '.pdfdoc ul.todo>li.done::before{content:"☑"}.pdfdoc ul.todo>li.done{color:#888;text-decoration:line-through}'+
   '.pdfdoc pre{margin:.5em 0;padding:10px 12px;border:1px solid #ddd;border-radius:8px;background:#f5f5f8;font:13px/1.5 D2Coding,Consolas,"Malgun Gothic",monospace;white-space:pre-wrap;word-break:break-all}'+
@@ -1967,6 +2077,7 @@ function makePdf(pages,ptW,ptH){
 let pdfBusy=false;
 async function savePdf(t){
   if(pdfBusy)return;
+  flushAll();
   const src=sanitizeHtml(t.html||textToHtml(t.text));
   if(!t.text.trim()&&!/<img\b/.test(src)){flash('내보낼 내용이 없습니다');return}
   pdfBusy=true;flash('PDF를 만드는 중입니다…');
@@ -2016,9 +2127,9 @@ async function savePdf(t){
   }
 }
 function saveHtml(t){
+  flushAll();
   const doc='<!doctype html>\n<html lang="ko"><head><meta charset="utf-8"><title>'+esc(t.title)+'</title>'+
-    '<style>body{font:15px/1.6 "Noto Sans KR","Malgun Gothic",sans-serif;max-width:860px;margin:2rem auto;padding:0 1rem;white-space:pre-wrap}'+
-    'p,div{margin:0}ul.todo{list-style:none;padding-left:0}ul.todo>li::before{content:"☐ "}ul.todo>li.done::before{content:"☑ "}ul.todo>li.done{text-decoration:line-through;color:#888}'+
+    '<style>body{font:18px/1.6 "Noto Sans KR","Malgun Gothic",sans-serif;max-width:860px;margin:2rem auto;padding:0 1rem;white-space:pre-wrap}'+    'p,div{margin:0}ul.todo{list-style:none;padding-left:0}ul.todo>li::before{content:"☐ "}ul.todo>li.done::before{content:"☑ "}ul.todo>li.done{text-decoration:line-through;color:#888}'+
     'hr{border:0;border-top:1px solid #ddd}img{max-width:100%;height:auto}pre{margin:.5em 0;padding:10px 12px;border:1px solid #ddd;border-radius:8px;background:#f5f5f8;font:13px/1.5 D2Coding,Consolas,monospace;white-space:pre-wrap}</style></head><body>'+(t.html||textToHtml(t.text))+'</body></html>';
   download(new Blob([doc],{type:'text/html;charset=utf-8'}),safeName(t.title)+'.html');
 }
@@ -4107,6 +4218,7 @@ actions.saveMd=()=>{const t=active();if(t.kind==='text')saveMd(t);else flash('�
 actions.saveHtml=()=>{const t=active();if(t.kind==='text')saveHtml(t);else flash('메모장에서만 서식 포함 저장을 쓸 수 있습니다')};
 // 프로젝트 파일(.npaint): 모든 탭을 사진과 획 그대로 저장하고 다시 불러온다
 actions.saveProject=()=>{
+  flushAll();
   const data={format:'notepad-paint',version:1,tabs,activeId};
   download(new Blob([JSON.stringify(data)],{type:'application/json'}),'메모장그림-프로젝트.npaint');
   flash('프로젝트 파일로 저장했습니다 ('+tabs.length+'개)');
@@ -4159,7 +4271,7 @@ document.addEventListener('keydown',e=>{
 });
 const KEYS_COMMON=[['Ctrl+S','저장'],['Ctrl+Z','실행 취소'],['Ctrl+F','찾기 (메모, 코드)'],['Alt+Shift+1/2/3','새 메모장/그림판/코드']];
 const KEYS_BY_TAB={
-  text:{n:'메모장',k:[['Alt+1','본문'],['Alt+2','제목'],['Alt+L','글머리 목록'],['Alt+N','번호 목록'],['Alt+T','체크리스트'],['Alt+H','구분선'],['Alt+C','코드 블록 (붙여넣으면 자동)'],['Ctrl+B','굵게']]},
+  text:{n:'메모장',k:[['Alt+↑','글자 크게 (선택이 없으면 그 줄 전체)'],['Alt+↓','글자 작게 (선택이 없으면 그 줄 전체)'],['Shift+Enter','줄을 나누지 않고 다음 줄로'],['Alt+L','글머리 목록'],['Alt+N','번호 목록'],['Alt+T','체크리스트'],['Alt+H','구분선'],['Alt+C','코드 블록 (붙여넣으면 자동)'],['Ctrl+B','굵게'],['Ctrl+Shift+L / E / R','왼쪽 / 가운데 / 오른쪽 정렬']]},
   draw:{n:'그림판',k:[['Alt+1 ~ 4','선택 / 펜 / 텍스트 / 지우개'],['Ctrl+C / V','복사 / 붙여넣기'],['Ctrl+D','복제'],['Delete','삭제']]},
   code:{n:'코드',k:[['Tab','들여쓰기'],['Ctrl+/','주석 켜기/끄기'],['Ctrl+D','줄 복제'],['Ctrl+Enter','미리보기 실행']]}
 };
@@ -5448,8 +5560,7 @@ $('#theme').onclick=()=>{
 };
 
 // ---- init ----
-load();
-render();
+load().then(render);
 </script>
 </body>
 </html>
